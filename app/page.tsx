@@ -13,7 +13,7 @@ export default function Home() {
             COO | Advisor | Builder
           </p>
           <p className="text-lg text-gray-500 max-w-2xl">
-            Welcome to my digital space. I'm passionate about operations, 
+            Welcome to my digital space. I'm passionate about operations,
             technology, and building great products.
           </p>
         </div>

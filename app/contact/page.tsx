@@ -26,9 +26,10 @@ export default function Contact() {
             </a>
 
             {/* LinkedIn */}
-            <a 
-              href="https://linkedin.com/in/yourprofile"
+            <a
+              href="https://www.linkedin.com/in/brettchereskin/"
               target="_blank"
+              rel="noopener noreferrer"
               className="bg-white rounded-xl p-8 shadow-lg hover:shadow-xl transition-all hover:scale-105"
             >
               <div className="text-4xl mb-4">💼</div>
