@@ -14,15 +14,15 @@ export default function Contact() {
             Reach out through any of these channels.
           </p>
 
-          <div className="grid md:grid-cols-2 gap-8 mb-12">
+          <div className="grid md:grid-cols-3 gap-8">
             {/* Email */}
-            <a 
-              href="mailto:your.email@example.com"
+            <a
+              href="mailto:Brett.Chereskin@gmail.com"
               className="bg-white rounded-xl p-8 shadow-lg hover:shadow-xl transition-all hover:scale-105"
             >
               <div className="text-4xl mb-4">📧</div>
               <h3 className="text-2xl font-bold text-gray-900 mb-2">Email</h3>
-              <p className="text-gray-600">your.email@example.com</p>
+              <p className="text-gray-600">Brett.Chereskin@gmail.com</p>
             </a>
 
             {/* LinkedIn */}
@@ -38,40 +38,16 @@ export default function Contact() {
             </a>
 
             {/* Twitter/X */}
-            <a 
-              href="https://twitter.com/yourhandle"
+            <a
+              href="https://twitter.com/BChereskin"
               target="_blank"
+              rel="noopener noreferrer"
               className="bg-white rounded-xl p-8 shadow-lg hover:shadow-xl transition-all hover:scale-105"
             >
-              <div className="text-4xl mb-4">🐦</div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">Twitter</h3>
-              <p className="text-gray-600">@yourhandle</p>
+              <div className="text-4xl mb-4">𝕏</div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">Twitter / X</h3>
+              <p className="text-gray-600">@BChereskin</p>
             </a>
-
-            {/* Schedule */}
-            <a 
-              href="https://calendly.com/yourlink"
-              target="_blank"
-              className="bg-white rounded-xl p-8 shadow-lg hover:shadow-xl transition-all hover:scale-105"
-            >
-              <div className="text-4xl mb-4">📅</div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">Schedule a Call</h3>
-              <p className="text-gray-600">Book time on my calendar</p>
-            </a>
-          </div>
-
-          {/* Optional: Simple contact form placeholder */}
-          <div className="bg-white rounded-xl p-8 shadow-lg">
-            <h2 className="text-3xl font-bold text-gray-900 mb-6">
-              Send a Quick Message
-            </h2>
-            <p className="text-gray-600 mb-4">
-              Want to add a contact form here? We can integrate one in a future iteration 
-              using services like Formspree, Netlify Forms, or custom backend logic.
-            </p>
-            <p className="text-sm text-gray-500">
-              For now, the links above are the best way to reach me!
-            </p>
           </div>
         </div>
       </main>

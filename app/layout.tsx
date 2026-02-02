@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Brett Chereskin",
-  description: "COO | Advisor | Builder",
+  description: "COO at dub | West Point Graduate | Army Veteran | NYC",
 };
 
 export default function RootLayout({
