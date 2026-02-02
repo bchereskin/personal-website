@@ -33,8 +33,8 @@ export default async function BlogPost({
             ← Back to Blog
           </Link>
 
-          <div className="flex items-center gap-4 text-sm text-gray-500 mb-4">
-            <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full font-medium">
+          <div className="flex items-center gap-4 text-sm text-gray-600 mb-4">
+            <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full font-medium">
               {post.category}
             </span>
             <span>{formatDate(post.date)}</span>
@@ -46,20 +46,20 @@ export default async function BlogPost({
           </h1>
 
           <div className="bg-white rounded-xl p-8 md:p-12 shadow-lg">
-            <div className="prose prose-lg max-w-none prose-headings:text-gray-900 prose-p:text-gray-600 prose-strong:text-gray-900 prose-ul:text-gray-600 prose-li:text-gray-600">
+            <div className="prose prose-lg max-w-none text-gray-800">
               {post.content.split('\n').map((paragraph, index) => {
                 const trimmed = paragraph.trim();
                 if (!trimmed) return null;
                 if (trimmed.startsWith('## ')) {
                   return (
-                    <h2 key={index} className="text-2xl font-bold mt-8 mb-4">
+                    <h2 key={index} className="text-2xl font-bold text-gray-900 mt-8 mb-4">
                       {trimmed.replace('## ', '')}
                     </h2>
                   );
                 }
                 if (trimmed.startsWith('### ')) {
                   return (
-                    <h3 key={index} className="text-xl font-bold mt-6 mb-3">
+                    <h3 key={index} className="text-xl font-bold text-gray-900 mt-6 mb-3">
                       {trimmed.replace('### ', '')}
                     </h3>
                   );
@@ -68,21 +68,21 @@ export default async function BlogPost({
                   const match = trimmed.match(/- \*\*(.+?)\*\*:?\s*(.*)/)
                   if (match) {
                     return (
-                      <p key={index} className="ml-4 mb-2">
-                        <strong>{match[1]}:</strong> {match[2]}
+                      <p key={index} className="ml-4 mb-2 text-gray-800">
+                        <strong className="text-gray-900">{match[1]}:</strong> {match[2]}
                       </p>
                     );
                   }
                 }
                 if (trimmed.startsWith('- ')) {
                   return (
-                    <p key={index} className="ml-4 mb-2">
+                    <p key={index} className="ml-4 mb-2 text-gray-800">
                       • {trimmed.replace('- ', '')}
                     </p>
                   );
                 }
                 return (
-                  <p key={index} className="mb-4">
+                  <p key={index} className="mb-4 text-gray-800 leading-relaxed">
                     {trimmed}
                   </p>
                 );
