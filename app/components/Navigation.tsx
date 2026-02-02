@@ -6,7 +6,7 @@ export default function Navigation() {
       <div className="max-w-6xl mx-auto px-6 py-4">
         <div className="flex justify-between items-center">
           <Link href="/" className="text-2xl font-bold text-gray-900">
-            BP
+            BC
           </Link>
           
           <div className="flex gap-8">
@@ -16,14 +16,20 @@ export default function Navigation() {
             >
               Home
             </Link>
-            <Link 
-              href="/projects" 
+            <Link
+              href="/projects"
               className="text-gray-600 hover:text-gray-900 transition-colors"
             >
               Projects
             </Link>
-            <Link 
-              href="/contact" 
+            <Link
+              href="/blog"
+              className="text-gray-600 hover:text-gray-900 transition-colors"
+            >
+              Blog
+            </Link>
+            <Link
+              href="/contact"
               className="text-gray-600 hover:text-gray-900 transition-colors"
             >
               Contact
