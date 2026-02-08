@@ -1,4 +1,15 @@
-<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="32" height="32" rx="6" fill="#1e40af"/>
-  <text x="16" y="22" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="14" font-weight="700" fill="white">BC</text>
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 512 512"
+  width="32"
+  height="32">
+  <path
+    d="M256 32 L416 96 V288 C416 368 336 432 256 480 C176 432 96 368 96 288 V96 Z"
+    fill="none"
+    stroke="#f5f2ed"
+    stroke-width="28"
+    stroke-linejoin="round"/>
+  <path
+    d="M256 120 L320 240 H288 V360 H224 V240 H192 Z"
+    fill="#f5f2ed"/>
 </svg>

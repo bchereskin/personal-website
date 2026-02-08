@@ -1,27 +1,327 @@
+'use client';
+
 import Navigation from '@/app/components/Navigation';
+import Link from 'next/link';
+import Image from 'next/image';
+import { useScrollAnimation } from '@/app/hooks/useScrollAnimation';
+
+function AnimatedSection({
+  children,
+  className = '',
+  animation = 'animate-fade-in-up',
+  delay = ''
+}: {
+  children: React.ReactNode;
+  className?: string;
+  animation?: string;
+  delay?: string;
+}) {
+  const { ref, isVisible } = useScrollAnimation(0.1);
+
+  return (
+    <div
+      ref={ref}
+      className={`${className} ${isVisible ? `${animation} ${delay}` : 'opacity-0'}`}
+    >
+      {children}
+    </div>
+  );
+}
 
 export default function Home() {
   return (
     <>
       <Navigation />
-      <main className="flex min-h-screen flex-col items-center justify-center p-24 bg-gradient-to-br from-green-50 to-blue-50">
-        <div className="text-center">
-          <h1 className="text-6xl font-bold text-gray-900 mb-4">
-            Brett Chereskin
-          </h1>
-          <p className="text-xl text-gray-700 mb-8">
-            COO at dub | West Point Graduate | Army Veteran
-          </p>
-          <p className="text-lg text-gray-600 max-w-2xl mb-6">
-            12-year Army veteran turned tech operator. I bring military precision
-            to startup chaos—scaling operations, building teams, and turning
-            ambitious visions into reality.
-          </p>
-          <p className="text-base text-gray-500 max-w-xl">
-            Based in New York City. Commercial pilot. Passionate about defense tech,
-            fintech, and helping non-technical leaders harness AI.
-          </p>
-        </div>
+      <main className="min-h-screen bg-[var(--background)]">
+        {/* Hero Section with Background Image */}
+        <section className="relative min-h-screen flex flex-col items-center justify-center px-6 overflow-hidden">
+          {/* Background Image */}
+          <div className="absolute inset-0 z-0">
+            <Image
+              src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2070"
+              alt="City skyline"
+              fill
+              className="object-cover opacity-30"
+              priority
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-[var(--background)] via-transparent to-[var(--background)]" />
+          </div>
+
+          {/* Decorative gradient orbs */}
+          <div className="gradient-orb w-96 h-96 bg-[var(--primary)] opacity-20 -top-48 -left-48 animate-pulse-glow" />
+          <div className="gradient-orb w-80 h-80 bg-[var(--accent)] opacity-15 top-1/3 -right-40 animate-pulse-glow" style={{ animationDelay: '2s' }} />
+
+          <div className="relative z-10 max-w-4xl text-center">
+            <p className="text-[var(--primary)] font-medium tracking-widest uppercase mb-4 animate-fade-in-up">
+              COO & Operations Leader
+            </p>
+            <h1 className="text-6xl md:text-8xl font-bold mb-6 animate-fade-in-up delay-100">
+              <span className="gradient-text">Brett</span><br />
+              <span className="gradient-text">Chereskin</span>
+            </h1>
+            <p className="text-xl md:text-2xl text-[var(--neutral-300)] mb-10 animate-fade-in-up delay-200 max-w-2xl mx-auto">
+              Turning complexity into clarity. Building the systems
+              and teams that scale ambitious companies.
+            </p>
+            <div className="flex flex-wrap justify-center gap-4 animate-fade-in-up delay-300">
+              <Link
+                href="/about"
+                className="px-8 py-4 bg-[var(--primary)] text-[var(--neutral-900)] rounded-lg font-semibold hover:bg-[var(--primary-light)] transition-all hover-lift"
+              >
+                About Me
+              </Link>
+              <Link
+                href="/contact"
+                className="px-8 py-4 border border-[var(--neutral-500)] text-[var(--neutral-100)] rounded-lg font-semibold hover:border-[var(--primary)] hover:text-[var(--primary)] transition-all"
+              >
+                Get in Touch
+              </Link>
+            </div>
+          </div>
+
+          {/* Scroll indicator */}
+          <div className="absolute bottom-8 z-10 animate-bounce">
+            <svg className="w-6 h-6 text-[var(--neutral-400)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+            </svg>
+          </div>
+        </section>
+
+        {/* Stats Section */}
+        <section className="py-16 px-6 border-y border-[var(--neutral-700)]">
+          <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8">
+            <AnimatedSection className="text-center">
+              <p className="text-4xl md:text-5xl font-bold gradient-text mb-2">12+</p>
+              <p className="text-[var(--neutral-400)] text-sm uppercase tracking-wider">Military Leadership</p>
+            </AnimatedSection>
+            <AnimatedSection className="text-center" delay="delay-100">
+              <p className="text-4xl md:text-5xl font-bold gradient-text mb-2">COO</p>
+              <p className="text-[var(--neutral-400)] text-sm uppercase tracking-wider">at dub</p>
+            </AnimatedSection>
+            <AnimatedSection className="text-center" delay="delay-200">
+              <p className="text-4xl md:text-5xl font-bold gradient-text mb-2">West Point</p>
+              <p className="text-[var(--neutral-400)] text-sm uppercase tracking-wider">2006 Grad</p>
+            </AnimatedSection>
+            <AnimatedSection className="text-center" delay="delay-300">
+              <p className="text-4xl md:text-5xl font-bold gradient-text mb-2">NYC</p>
+              <p className="text-[var(--neutral-400)] text-sm uppercase tracking-wider">Based</p>
+            </AnimatedSection>
+          </div>
+        </section>
+
+        {/* What I Do Section */}
+        <section className="py-24 px-6 relative overflow-hidden">
+          {/* Background decoration */}
+          <div className="gradient-orb w-[500px] h-[500px] bg-[var(--primary)] opacity-10 -bottom-64 -left-64" />
+
+          <div className="max-w-6xl mx-auto relative z-10">
+            <AnimatedSection className="text-center mb-16">
+              <p className="text-[var(--accent)] font-medium tracking-widest uppercase mb-3">Expertise</p>
+              <h2 className="text-4xl md:text-5xl font-bold text-[var(--neutral-50)] mb-4">
+                What I Do
+              </h2>
+              <p className="text-lg text-[var(--neutral-400)] max-w-2xl mx-auto">
+                I help ambitious companies build the operational foundation for sustainable growth.
+              </p>
+            </AnimatedSection>
+
+            <div className="grid md:grid-cols-3 gap-6">
+              <AnimatedSection delay="delay-100">
+                <div className="group bg-[var(--card-bg)] rounded-2xl p-8 hover:bg-[var(--card-bg-hover)] transition-all hover-lift border border-[var(--neutral-700)] h-full">
+                  <div className="w-14 h-14 bg-[var(--primary)]/20 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                    <svg className="w-7 h-7 text-[var(--primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-xl font-bold text-[var(--neutral-100)] mb-3">
+                    Scale Operations
+                  </h3>
+                  <p className="text-[var(--neutral-400)]">
+                    Transform scrappy processes into scalable systems. Build the infrastructure
+                    that lets teams move fast without breaking things.
+                  </p>
+                </div>
+              </AnimatedSection>
+
+              <AnimatedSection delay="delay-200">
+                <div className="group bg-[var(--card-bg)] rounded-2xl p-8 hover:bg-[var(--card-bg-hover)] transition-all hover-lift border border-[var(--neutral-700)] h-full">
+                  <div className="w-14 h-14 bg-[var(--accent)]/20 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                    <svg className="w-7 h-7 text-[var(--accent)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-xl font-bold text-[var(--neutral-100)] mb-3">
+                    Build Teams
+                  </h3>
+                  <p className="text-[var(--neutral-400)]">
+                    Hire, develop, and lead high-performing teams. Create cultures where
+                    people do their best work and grow their careers.
+                  </p>
+                </div>
+              </AnimatedSection>
+
+              <AnimatedSection delay="delay-300">
+                <div className="group bg-[var(--card-bg)] rounded-2xl p-8 hover:bg-[var(--card-bg-hover)] transition-all hover-lift border border-[var(--neutral-700)] h-full">
+                  <div className="w-14 h-14 bg-[var(--primary)]/20 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                    <svg className="w-7 h-7 text-[var(--primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-xl font-bold text-[var(--neutral-100)] mb-3">
+                    Drive Strategy
+                  </h3>
+                  <p className="text-[var(--neutral-400)]">
+                    Turn vision into execution. Bridge the gap between ambitious goals
+                    and the daily work that makes them happen.
+                  </p>
+                </div>
+              </AnimatedSection>
+            </div>
+          </div>
+        </section>
+
+        {/* Experience Section with Images */}
+        <section className="py-24 px-6 relative">
+          <div className="max-w-6xl mx-auto">
+            <AnimatedSection className="text-center mb-16">
+              <p className="text-[var(--accent)] font-medium tracking-widest uppercase mb-3">Experience</p>
+              <h2 className="text-4xl md:text-5xl font-bold text-[var(--neutral-50)]">
+                Where I've Led
+              </h2>
+            </AnimatedSection>
+
+            {/* Featured Experience - dub */}
+            <AnimatedSection className="mb-8">
+              <div className="relative rounded-3xl overflow-hidden group" style={{ background: 'linear-gradient(135deg, #121110 0%, #1a1918 100%)' }}>
+                <div className="absolute inset-0 opacity-30">
+                  <div className="absolute top-0 right-0 w-96 h-96 bg-[#f08752] rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2" />
+                  <div className="absolute bottom-0 left-1/3 w-64 h-64 bg-[#e07139] rounded-full blur-[100px] translate-y-1/2" />
+                </div>
+                <div className="relative z-10 p-8 md:p-12 md:flex md:items-center md:justify-between">
+                  <div className="md:w-2/3">
+                    <span className="inline-block px-3 py-1 bg-[#f08752] text-[#121110] text-sm font-semibold rounded-full mb-4">
+                      Current
+                    </span>
+                    <h3 className="text-3xl md:text-4xl font-bold text-[#f5f2ed] mb-3">
+                      COO at dub
+                    </h3>
+                    <p className="text-[#bfb3a6] text-lg mb-6 max-w-xl">
+                      Leading operations at a NYC fintech. Building scalable systems,
+                      driving cross-functional execution, and scaling the team through
+                      rapid growth.
+                    </p>
+                    <a
+                      href="https://www.dubapp.com"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 text-[#f08752] font-medium hover:text-[#ffd2b4] transition-colors"
+                    >
+                      Visit dub
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                      </svg>
+                    </a>
+                  </div>
+                  <div className="hidden md:block text-8xl font-bold text-[#f08752]/20">
+                    dub
+                  </div>
+                </div>
+              </div>
+            </AnimatedSection>
+
+            {/* Other Experience */}
+            <div className="grid md:grid-cols-3 gap-6">
+              {/* Affirm - Purple/Indigo theme with fintech imagery */}
+              <AnimatedSection delay="delay-100">
+                <div className="relative rounded-2xl overflow-hidden group h-80">
+                  <Image
+                    src="https://images.unsplash.com/photo-1563013544-824ae1b704d3?q=80&w=2070"
+                    alt="Digital payments"
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#13131f] via-[#13131f]/70 to-[#1a1a2e]/40" />
+                  <div className="absolute inset-0 opacity-30">
+                    <div className="absolute top-0 right-0 w-48 h-48 bg-[#6366f1] rounded-full blur-[80px]" />
+                    <div className="absolute bottom-0 left-0 w-32 h-32 bg-[#8b5cf6] rounded-full blur-[60px]" />
+                  </div>
+                  <div className="absolute bottom-0 left-0 right-0 p-6 z-10">
+                    <span className="inline-block px-2 py-1 bg-[#6366f1]/30 text-[#a5b4fc] text-xs font-medium rounded mb-2">
+                      Previous
+                    </span>
+                    <h3 className="text-xl font-bold text-white">Affirm</h3>
+                    <p className="text-[#94a3b8] text-sm">Business Operations</p>
+                  </div>
+                </div>
+              </AnimatedSection>
+
+              {/* U.S. Army - Aviation theme */}
+              <AnimatedSection delay="delay-200">
+                <div className="relative rounded-2xl overflow-hidden group h-80">
+                  <Image
+                    src="/kingair.jpg"
+                    alt="King Air aircraft"
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[var(--background)] via-[var(--background)]/60 to-transparent" />
+                  <div className="absolute bottom-0 left-0 right-0 p-6">
+                    <span className="inline-block px-2 py-1 bg-[var(--accent)]/20 text-[var(--accent)] text-xs font-medium rounded mb-2">
+                      12 Years
+                    </span>
+                    <h3 className="text-xl font-bold text-[var(--neutral-50)]">U.S. Army</h3>
+                    <p className="text-[var(--neutral-400)] text-sm">Aviator • Manned & Unmanned • Leadership</p>
+                  </div>
+                </div>
+              </AnimatedSection>
+
+              {/* Advisory */}
+              <AnimatedSection delay="delay-300">
+                <div className="relative rounded-2xl overflow-hidden group h-80">
+                  <Image
+                    src="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?q=80&w=2070"
+                    alt="Advisory meeting"
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[var(--background)] via-[var(--background)]/50 to-transparent" />
+                  <div className="absolute bottom-0 left-0 right-0 p-6">
+                    <h3 className="text-xl font-bold text-[var(--neutral-50)]">Startup Advisor</h3>
+                    <p className="text-[var(--neutral-400)] text-sm">Early Ops • GTM • Fintech</p>
+                  </div>
+                </div>
+              </AnimatedSection>
+            </div>
+          </div>
+        </section>
+
+        {/* CTA Section */}
+        <section className="py-24 px-6 relative overflow-hidden">
+          <div className="absolute inset-0">
+            <Image
+              src="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=2070"
+              alt="Collaboration"
+              fill
+              className="object-cover opacity-20"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-[var(--background)] via-[var(--background)]/90 to-[var(--background)]" />
+          </div>
+
+          <AnimatedSection className="max-w-4xl mx-auto text-center relative z-10">
+            <h2 className="text-4xl md:text-5xl font-bold text-[var(--neutral-50)] mb-4">
+              Let's Build Something
+            </h2>
+            <p className="text-lg text-[var(--neutral-400)] mb-8 max-w-2xl mx-auto">
+              Whether you're scaling a startup, navigating a transition, or just want to connect—I'd love to hear from you.
+            </p>
+            <Link
+              href="/contact"
+              className="inline-block px-8 py-4 bg-[var(--accent)] text-white rounded-lg font-semibold hover:bg-[var(--accent-dark)] transition-all hover-lift"
+            >
+              Get in Touch
+            </Link>
+          </AnimatedSection>
+        </section>
       </main>
     </>
   );
