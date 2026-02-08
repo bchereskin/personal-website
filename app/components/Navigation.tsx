@@ -10,17 +10,17 @@ export default function Navigation() {
           </Link>
           
           <div className="flex gap-8">
-            <Link 
-              href="/" 
+            <Link
+              href="/"
               className="text-gray-600 hover:text-gray-900 transition-colors"
             >
               Home
             </Link>
             <Link
-              href="/projects"
+              href="/about"
               className="text-gray-600 hover:text-gray-900 transition-colors"
             >
-              Projects
+              About
             </Link>
             <Link
               href="/blog"
