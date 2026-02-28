@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import Navigation from '@/app/components/Navigation';
 import Footer from '@/app/components/Footer';
+import CommentsSection from '@/app/components/CommentsSection';
 import { posts, getPostBySlug, formatDate } from '../posts';
 
 export function generateStaticParams() {
@@ -170,6 +171,8 @@ export default async function BlogPost({
                 Back to all posts
               </Link>
             </div>
+
+            <CommentsSection slug={slug} />
           </article>
         </section>
       </main>
