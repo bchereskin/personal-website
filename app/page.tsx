@@ -54,15 +54,14 @@ export default function Home() {
 
           <div className="relative z-10 max-w-4xl text-center">
             <p className="text-[var(--primary)] font-medium tracking-widest uppercase mb-4 animate-fade-in-up">
-              COO & Operations Leader
+              Operator · Builder · AI Practitioner
             </p>
             <h1 className="text-6xl md:text-8xl font-bold mb-6 animate-fade-in-up delay-100">
               <span className="gradient-text">Brett</span><br />
               <span className="gradient-text">Chereskin</span>
             </h1>
             <p className="text-xl md:text-2xl text-[var(--neutral-300)] mb-10 animate-fade-in-up delay-200 max-w-2xl mx-auto">
-              Turning complexity into clarity. Building the systems
-              and teams that scale ambitious companies.
+              Operational leader applying military discipline, fintech scale, and emerging AI to help companies run faster and build smarter.
             </p>
             <div className="flex flex-wrap justify-center gap-4 animate-fade-in-up delay-300">
               <Link
@@ -122,7 +121,7 @@ export default function Home() {
                 What I Do
               </h2>
               <p className="text-lg text-[var(--neutral-400)] max-w-2xl mx-auto">
-                I help ambitious companies build the operational foundation for sustainable growth.
+                I bring operational leadership and hands-on AI expertise together — helping companies scale faster, build smarter, and unlock what they've been putting off.
               </p>
             </AnimatedSection>
 
@@ -148,15 +147,14 @@ export default function Home() {
                 <div className="group bg-[var(--card-bg)] rounded-2xl p-8 hover:bg-[var(--card-bg-hover)] transition-all hover-lift border border-[var(--neutral-700)] h-full">
                   <div className="w-14 h-14 bg-[var(--accent)]/20 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                     <svg className="w-7 h-7 text-[var(--accent)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                     </svg>
                   </div>
                   <h3 className="text-xl font-bold text-[var(--neutral-100)] mb-3">
-                    Build Teams
+                    Leverage AI
                   </h3>
                   <p className="text-[var(--neutral-400)]">
-                    Hire, develop, and lead high-performing teams. Create cultures where
-                    people do their best work and grow their careers.
+                    Apply emerging AI tools to compress timelines, unlock capabilities that used to require large teams, and build operational leverage that compounds.
                   </p>
                 </div>
               </AnimatedSection>
@@ -288,7 +286,7 @@ export default function Home() {
                   <div className="absolute inset-0 bg-gradient-to-t from-[var(--background)] via-[var(--background)]/50 to-transparent" />
                   <div className="absolute bottom-0 left-0 right-0 p-6">
                     <h3 className="text-xl font-bold text-[var(--neutral-50)]">Startup Advisor</h3>
-                    <p className="text-[var(--neutral-400)] text-sm">Early Ops • GTM • Fintech</p>
+                    <p className="text-[var(--neutral-400)] text-sm">Ops • GTM • AI Strategy</p>
                   </div>
                 </div>
               </AnimatedSection>
@@ -310,10 +308,10 @@ export default function Home() {
 
           <AnimatedSection className="max-w-4xl mx-auto text-center relative z-10">
             <h2 className="text-4xl md:text-5xl font-bold text-[var(--neutral-50)] mb-4">
-              Let's Build Something
+              Let's Work Together
             </h2>
             <p className="text-lg text-[var(--neutral-400)] mb-8 max-w-2xl mx-auto">
-              Whether you're scaling a startup, navigating a transition, or just want to connect—I'd love to hear from you.
+              Whether you're scaling operations, exploring how AI fits into your business, or just want to connect—I'd love to hear from you.
             </p>
             <Link
               href="/contact"
