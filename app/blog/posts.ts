@@ -10,6 +10,170 @@ export interface BlogPost {
 
 export const posts: BlogPost[] = [
   {
+    slug: 'from-static-site-to-product',
+    title: 'From Static Site to Full-Stack Product: Building Features with AI in a Day',
+    excerpt: 'What happens when you give a non-technical founder a full dev session and an AI co-engineer? A comment system, a CRM, an auth-protected admin dashboard, and a handful of hard-won technical lessons.',
+    date: '2026-02-28',
+    readTime: '12 min read',
+    category: 'AI & Building',
+    content: `
+Two days ago I had a personal website. Nice design, two blog posts, a contact page that didn't actually work. Today I have a full-stack product: a working contact form that emails me, a CRM that logs every submission to a database, an auth-protected admin dashboard where I can review contacts and comments, a blog comment system with email notifications, and a redesigned footer.
+
+I built all of it in one session, with no prior coding knowledge, using Claude Code as my co-engineer.
+
+This post is about what I built, how I built it, and what I actually learned—including the parts that broke and why.
+
+## The Starting Point
+
+Before this session, the site was mostly static. The contact form submitted to nowhere. The blog had no way for readers to engage. There was no way for me to see who had visited or reached out.
+
+The goal was to make it real—to turn a portfolio into something that actually functions as a professional touchpoint.
+
+[CALLOUT] The constraint that matters most isn't technical skill. It's being able to describe what you want with enough clarity that the AI can act on it. That's a skill you already have.
+
+## What Got Built
+
+Here's the full list, in order:
+
+### 1. Vercel Analytics
+
+The simplest add. One package install, one component added to the root layout. Now I can see page views, visitor counts, and traffic sources without shipping any custom tracking code.
+
+What I learned: even trivial features have an order of operations. Adding the package first, then the component, then verifying it appears in the Vercel dashboard—that sequence matters. Skipping ahead causes confusion.
+
+### 2. Contact Form + Resend Email
+
+The contact page already had a form. It just didn't do anything. I connected it to a proper API route that sends me an email via Resend every time someone submits.
+
+This is where I hit my first real lesson.
+
+### The Resend Silent Failure
+
+After the initial implementation, everything looked like it was working—the form submitted, no errors appeared. But no email arrived.
+
+The root cause: Resend's SDK doesn't throw an error when something goes wrong. It returns an object with two fields—data and error. Meanwhile, we were using **Promise.allSettled** to run the email send, which marks a Promise as "fulfilled" even when the SDK-level error is present inside the result.
+
+The fix was explicit: after checking that the promise didn't reject, we added a second check for the error field on the resolved value. Only then does a Resend API error actually surface.
+
+[CALLOUT] **The lesson:** SDKs that return errors instead of throwing them require you to check twice—once for the Promise, once for the payload. allSettled is not the same as "everything succeeded."
+
+After fixing the code, the form still failed in production. Turned out the Resend API key and destination email weren't set as environment variables in Vercel—they only existed in my local .env.local file, which is gitignored and never deployed.
+
+Two separate bugs, one symptom. That's how debugging usually goes.
+
+### 3. Supabase CRM — Contacts Table
+
+Once the contact form was working, it felt wasteful to only receive the submission by email with no persistent record. So we added a Supabase Postgres table to log every contact.
+
+The table structure is simple: name, email, message, timestamp. Every form submission now writes to the database *and* sends me an email. If the email fails, the database record still saves. The two operations are independent.
+
+This is what a basic CRM foundation looks like—not Salesforce, not HubSpot, just a database table you own.
+
+### 4. Supabase Auth + Admin Dashboard
+
+With data in the database, I needed a way to see it. A public-facing admin page would be a security nightmare, so we added real authentication using Supabase Auth.
+
+The setup involved:
+- **Supabase Auth** with email/password (no OAuth complexity)
+- A **server-side auth check** using Supabase SSR on every admin page load
+- A **login page** that redirects to /admin on success
+- A **logout button** that clears the session and redirects back to login
+- **Row Level Security** policies in Postgres so the database itself enforces access control
+
+The admin dashboard pulls contacts and comments from Supabase and displays them in a clean table. I can see who reached out, when, and what they said—without touching a database directly.
+
+### The Lazy Init Pattern
+
+Here's a technical detail that caused a build failure and required real debugging.
+
+The first implementation created the Supabase client at the module level—as a top-of-file constant. This fails at build time in Next.js. During static analysis, Next.js evaluates all module-level code. If that code tries to read environment variables or create network clients before the runtime environment exists, the build breaks.
+
+The fix is a **lazy singleton**—a function that creates the client on first call and caches the result in a module-level variable. A simple null check: if the client exists, return it; if not, create it and store it. The client only gets instantiated when a real request comes in, not at module load time.
+
+This pattern applies to any SDK that needs runtime environment variables—Resend, Stripe, OpenAI, anything. It's one of those patterns you'll use in every Next.js project once you've been burned by it once.
+
+### 5. Blog Comment System
+
+Adding comments required the most pieces working together:
+
+- A Supabase **comments** table with RLS policies
+- An API route handling both GET (fetch comments) and POST (submit comment)
+- A client-side **CommentsSection** component that fetches comments, renders the form, and optimistically adds new comments to the list without requiring a page refresh
+- Spam protection via a honeypot field (a hidden input that bots fill but humans don't)
+- Input validation: field lengths, email format, existence check for the post slug
+
+The optimistic update was the detail I appreciated most. When you submit a comment, it appears immediately—before the server confirms. If the server fails, the comment disappears. This is how good UX works: assume success, handle failure gracefully.
+
+### 6. Comment Email Notifications
+
+Once comments were saving to the database, I wanted to know when they arrived. Same pattern as the contact form—Resend sends me an email with the commenter's name, the post they commented on, and their message. The reply-to is set to their email, so I can respond directly from my inbox.
+
+The email failure is deliberately decoupled from the comment save. If Resend has a bad moment, the comment still saves and the reader still sees it appear. The notification is a nice-to-have, not a critical path.
+
+### 7. Footer Redesign
+
+The original footer had navigation links (redundant with the persistent top nav), a branding block, and a multi-column layout that stacked awkwardly on mobile.
+
+Research into how sites like Vercel, Linear, and Leerob's blog handle footers pointed to the same answer: minimal, flat, single row. Copyright left. Icon-only social links right. No nav, no labels, no stacking.
+
+The redesign dropped the footer to nine lines of code and looked immediately better.
+
+## The Design Upgrade: Blog Renderer
+
+The blog renderer also got a full rewrite. The original version wrapped everything in a card—it felt sterile.
+
+Research into modern reading experiences pointed to a few consistent patterns:
+- **Open prose on dark background** — no card wrapper, content breathes
+- **max-width ~70ch** — optimal line length for reading
+- **line-height 1.7–1.8** — generous spacing reduces fatigue
+- **Lead paragraph treatment** — slightly larger, slightly bolder first paragraph
+- **H2 with left accent border** — structural clarity without visual noise
+- **Pull quote blocks** — for key insights worth highlighting
+
+The renderer was rewritten as a proper block parser. Content strings get pre-processed into typed blocks (headings, paragraphs, callouts, bullets, model cards), then each block renders independently. This made it easy to add new block types—like the [CALLOUT] block you're reading right now—without touching the rendering logic.
+
+## What This Session Actually Proved
+
+I want to be honest about what this kind of building reveals.
+
+[CALLOUT] The technology works. The limiting factor is always the human on the other end of the conversation—specifically, how well they can describe what they want and how patiently they can debug when things break.
+
+A few things I noticed:
+
+- **Debugging is collaborative, not frustrating**. When the Resend silent failure appeared, we worked through it systematically: check the promise, check the payload, check the environment variables. The AI didn't just guess—it reasoned through each layer. That changed my relationship with broken things.
+
+- **The order of operations matters more than it seems**. Several issues came from doing things out of sequence. The right mental model is: always verify the previous step actually worked before moving to the next one.
+
+- **Production is different from local**. Environment variables, build-time evaluation, RLS policies in a live database—none of these exist in your local environment. The gap between "works on my machine" and "works in production" is where most of the interesting problems live.
+
+- **Small scope changes compound quickly**. None of the individual features were complicated. But each one built on the last. By the end of the session, the site had a surface area I couldn't have planned from the start.
+
+## The Technical Stack, End State
+
+Here's what the site is running after this session:
+
+[MODEL] Supabase (Postgres) | Stores **contacts**, **comments**, and handles **authentication**. Free tier handles the traffic easily. RLS policies enforce access control at the database level—not just in the application.
+
+[MODEL] Resend | Sends **contact notifications** and **comment notifications** by email. Returns **{ data, error }** instead of throwing—requires explicit error checking. Don't assume a resolved Promise means success.
+
+[MODEL] Vercel Analytics | Page view and visitor tracking, zero configuration. Added in under five minutes. Worth doing on any site you actually care about.
+
+[MODEL] Next.js API Routes | All backend logic lives in app/api/. Server components handle data fetching. Client components handle interactivity. The separation keeps things clean.
+
+## What's Next
+
+The CRM is the most interesting thing here, even if it's currently just a database table and a dashboard.
+
+Every contact form submission is a signal. Over time, those signals start to tell a story: who's reaching out, what they care about, what they found valuable. That's not a small thing for someone who spends a lot of time thinking about go-to-market and relationship-building.
+
+The technical infrastructure is now in place. What gets built on top of it is the interesting question.
+
+If you're a non-technical leader reading this and wondering whether this is accessible to you: it is. The session I'm describing wasn't smooth—there were bugs, there were wrong turns, there were moments where I had to debug something I didn't fully understand. That's the job. The tools handle the implementation. You handle the judgment.
+
+Start with something real, something low-stakes, something you actually care about. The rest follows.
+    `,
+  },
+  {
     slug: 'building-my-website-with-ai',
     title: 'Building My Personal Website with AI: A Multi-Model Workflow',
     excerpt: 'How I built a professional website in one session using Claude Code, ChatGPT, and strategic prompting—without writing a single line of code myself.',

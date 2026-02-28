@@ -36,6 +36,64 @@ export async function generateMetadata({
   };
 }
 
+type Block =
+  | { type: 'h2'; text: string }
+  | { type: 'h3'; text: string }
+  | { type: 'p'; text: string }
+  | { type: 'callout'; text: string }
+  | { type: 'model'; text: string }
+  | { type: 'bullets'; items: string[] };
+
+function parseContent(content: string): Block[] {
+  const lines = content.split('\n');
+  const blocks: Block[] = [];
+  let i = 0;
+
+  while (i < lines.length) {
+    const line = lines[i].trim();
+    if (!line) { i++; continue; }
+
+    if (line.startsWith('## ')) {
+      blocks.push({ type: 'h2', text: line.slice(3) });
+      i++;
+    } else if (line.startsWith('### ')) {
+      blocks.push({ type: 'h3', text: line.slice(4) });
+      i++;
+    } else if (line.startsWith('[CALLOUT]')) {
+      blocks.push({ type: 'callout', text: line.slice(9).trim() });
+      i++;
+    } else if (line.startsWith('[MODEL]')) {
+      blocks.push({ type: 'model', text: line.slice(7).trim() });
+      i++;
+    } else if (line.startsWith('- ')) {
+      const items: string[] = [];
+      while (i < lines.length && lines[i].trim().startsWith('- ')) {
+        items.push(lines[i].trim().slice(2));
+        i++;
+      }
+      blocks.push({ type: 'bullets', items });
+    } else {
+      blocks.push({ type: 'p', text: line });
+      i++;
+    }
+  }
+
+  return blocks;
+}
+
+function RenderBold({ text }: { text: string }) {
+  const parts = text.split(/\*\*(.+?)\*\*/g);
+  return (
+    <>
+      {parts.map((part, i) =>
+        i % 2 === 1
+          ? <strong key={i} className="text-[var(--neutral-100)] font-semibold">{part}</strong>
+          : part
+      )}
+    </>
+  );
+}
+
 export default async function BlogPost({
   params,
 }: {
@@ -44,14 +102,16 @@ export default async function BlogPost({
   const { slug } = await params;
   const post = getPostBySlug(slug);
 
-  if (!post) {
-    notFound();
-  }
+  if (!post) notFound();
+
+  const blocks = parseContent(post.content);
+  const firstParaIndex = blocks.findIndex(b => b.type === 'p');
 
   return (
     <>
       <Navigation />
       <main className="min-h-screen bg-[var(--background)]">
+
         {/* Hero */}
         <section className="relative pt-32 pb-16 px-6 overflow-hidden">
           <div className="absolute inset-0 z-0">
@@ -65,10 +125,10 @@ export default async function BlogPost({
             <div className="absolute inset-0 bg-gradient-to-b from-[var(--background)] via-transparent to-[var(--background)]" />
           </div>
 
-          <article className="max-w-3xl mx-auto relative z-10">
+          <div className="max-w-2xl mx-auto relative z-10">
             <Link
               href="/blog"
-              className="inline-flex items-center gap-2 text-[var(--neutral-400)] hover:text-[var(--primary)] transition-colors mb-8 font-medium"
+              className="inline-flex items-center gap-2 text-[var(--neutral-400)] hover:text-[var(--primary)] transition-colors mb-8 text-sm font-medium"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -76,94 +136,103 @@ export default async function BlogPost({
               Back to Blog
             </Link>
 
-            <div className="flex items-center gap-4 text-sm text-[var(--neutral-500)] mb-4 animate-fade-in-up">
-              <span className="bg-[var(--primary)]/20 text-[var(--primary)] px-3 py-1 rounded-full font-medium">
+            <div className="flex flex-wrap items-center gap-3 text-sm text-[var(--neutral-500)] mb-5 animate-fade-in-up">
+              <span className="bg-[var(--primary)]/20 text-[var(--primary)] px-3 py-1 rounded-full font-medium text-xs uppercase tracking-wide">
                 {post.category}
               </span>
               <span>{formatDate(post.date)}</span>
+              <span>·</span>
               <span>{post.readTime}</span>
             </div>
 
-            <h1 className="text-4xl md:text-5xl font-bold text-[var(--neutral-50)] animate-fade-in-up delay-100">
+            <h1 className="text-4xl md:text-5xl font-bold text-[var(--neutral-50)] leading-[1.15] animate-fade-in-up delay-100">
               {post.title}
             </h1>
-          </article>
+          </div>
         </section>
 
         {/* Content */}
-        <section className="py-8 px-6 pb-20">
-          <article className="max-w-3xl mx-auto">
-            <div className="bg-[var(--card-bg)] rounded-2xl p-8 md:p-12 border border-[var(--neutral-700)] animate-fade-in-up delay-200">
-              <div className="prose prose-lg max-w-none">
-                {post.content.split('\n').map((paragraph, index) => {
-                  const trimmed = paragraph.trim();
-                  if (!trimmed) return null;
+        <section className="px-6 pb-24">
+          <article className="max-w-2xl mx-auto animate-fade-in-up delay-200">
 
-                  // Helper to render inline bold text
-                  const renderWithBold = (text: string) => {
-                    const parts = text.split(/\*\*(.+?)\*\*/g);
-                    return parts.map((part, i) =>
-                      i % 2 === 1 ? <strong key={i} className="text-[var(--neutral-100)]">{part}</strong> : part
-                    );
-                  };
+            {blocks.map((block, index) => {
 
-                  if (trimmed.startsWith('## ')) {
-                    return (
-                      <h2 key={index} className="text-2xl font-bold text-[var(--neutral-50)] mt-8 mb-4">
-                        {trimmed.replace('## ', '')}
-                      </h2>
-                    );
-                  }
-                  if (trimmed.startsWith('### ')) {
-                    return (
-                      <h3 key={index} className="text-xl font-bold text-[var(--neutral-100)] mt-6 mb-3">
-                        {trimmed.replace('### ', '')}
-                      </h3>
-                    );
-                  }
-                  // Model comparison cards
-                  if (trimmed.startsWith('[MODEL]')) {
-                    const content = trimmed.replace('[MODEL]', '').trim();
-                    const [name, ...rest] = content.split('|').map(s => s.trim());
-                    const details = rest.join('|');
-                    return (
-                      <div key={index} className="bg-[var(--background)] rounded-xl p-5 mb-3 border border-[var(--neutral-700)]">
-                        <h4 className="font-bold text-[var(--primary)] mb-2">{name}</h4>
-                        <p className="text-[var(--neutral-400)] text-sm">{renderWithBold(details)}</p>
-                      </div>
-                    );
-                  }
-                  if (trimmed.startsWith('- **')) {
-                    const match = trimmed.match(/- \*\*(.+?)\*\*:?\s*(.*)/)
-                    if (match) {
+              if (block.type === 'h2') {
+                return (
+                  <h2 key={index} className="text-xl font-bold text-[var(--primary)] mt-14 mb-5 pl-4 border-l-2 border-[var(--accent)]">
+                    {block.text}
+                  </h2>
+                );
+              }
+
+              if (block.type === 'h3') {
+                return (
+                  <h3 key={index} className="text-base font-semibold text-[var(--neutral-100)] uppercase tracking-wider mt-8 mb-3">
+                    {block.text}
+                  </h3>
+                );
+              }
+
+              if (block.type === 'callout') {
+                return (
+                  <blockquote key={index} className="border-l-2 border-[var(--primary)] pl-5 my-8 text-[var(--neutral-200)] text-[17px] leading-[1.8] italic">
+                    <RenderBold text={block.text} />
+                  </blockquote>
+                );
+              }
+
+              if (block.type === 'model') {
+                const [name, ...rest] = block.text.split('|').map(s => s.trim());
+                const details = rest.join('|');
+                return (
+                  <div key={index} className="rounded-xl p-5 mb-4 border border-[var(--neutral-700)] bg-[var(--background)]">
+                    <h4 className="font-bold text-[var(--primary)] mb-2 text-sm">{name}</h4>
+                    <p className="text-[var(--neutral-400)] text-sm leading-relaxed"><RenderBold text={details} /></p>
+                  </div>
+                );
+              }
+
+              if (block.type === 'bullets') {
+                return (
+                  <ul key={index} className="mb-7 space-y-2.5">
+                    {block.items.map((item, i) => {
+                      const boldMatch = item.match(/^\*\*(.+?)\*\*:?\s*(.*)/);
                       return (
-                        <p key={index} className="ml-4 mb-2 text-[var(--neutral-300)]">
-                          <strong className="text-[var(--neutral-100)]">{match[1]}:</strong> {match[2]}
-                        </p>
+                        <li key={i} className="flex items-start gap-3 text-[var(--neutral-300)] leading-[1.75] text-[17px]">
+                          <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)] mt-[0.65em] flex-shrink-0" />
+                          <span>
+                            {boldMatch
+                              ? <><strong className="text-[var(--neutral-100)]">{boldMatch[1]}</strong>{boldMatch[2] ? `: ${boldMatch[2]}` : ''}</>
+                              : <RenderBold text={item} />
+                            }
+                          </span>
+                        </li>
                       );
-                    }
-                  }
-                  if (trimmed.startsWith('- ')) {
-                    return (
-                      <p key={index} className="ml-4 mb-2 text-[var(--neutral-300)] flex items-start gap-3">
-                        <span className="w-2 h-2 rounded-full bg-[var(--primary)] mt-2 flex-shrink-0" />
-                        <span>{renderWithBold(trimmed.replace('- ', ''))}</span>
-                      </p>
-                    );
-                  }
-                  return (
-                    <p key={index} className="mb-4 text-[var(--neutral-300)] leading-relaxed">
-                      {renderWithBold(trimmed)}
-                    </p>
-                  );
-                })}
-              </div>
-            </div>
+                    })}
+                  </ul>
+                );
+              }
 
-            <div className="mt-12 pt-8 border-t border-[var(--neutral-700)]">
+              // Paragraph — first one gets lead treatment
+              const isLead = index === firstParaIndex;
+              return (
+                <p
+                  key={index}
+                  className={
+                    isLead
+                      ? 'text-[19px] leading-[1.8] text-[var(--neutral-100)] mb-8 font-[450]'
+                      : 'text-[17px] leading-[1.8] text-[var(--neutral-300)] mb-7'
+                  }
+                >
+                  <RenderBold text={block.text} />
+                </p>
+              );
+            })}
+
+            <div className="mt-14 pt-8 border-t border-[var(--neutral-700)]">
               <Link
                 href="/blog"
-                className="inline-flex items-center gap-2 text-[var(--primary)] hover:text-[var(--primary-light)] transition-colors font-medium"
+                className="inline-flex items-center gap-2 text-[var(--primary)] hover:opacity-80 transition-opacity text-sm font-medium"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -175,6 +244,7 @@ export default async function BlogPost({
             <CommentsSection slug={slug} />
           </article>
         </section>
+
       </main>
       <Footer />
     </>
