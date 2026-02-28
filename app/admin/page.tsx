@@ -1,0 +1,33 @@
+import { redirect } from 'next/navigation';
+import { createSupabaseServer } from '@/app/lib/supabase-server';
+import { getAdminSupabase } from '@/app/lib/supabase-admin';
+import AdminDashboard from './AdminDashboard';
+
+export const dynamic = 'force-dynamic';
+
+export default async function AdminPage() {
+  const supabase = await createSupabaseServer();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect('/admin/login');
+
+  const admin = getAdminSupabase();
+
+  const [{ data: contacts }, { data: comments }] = await Promise.all([
+    admin
+      .from('contacts')
+      .select('id, name, email, subject, message, created_at')
+      .order('created_at', { ascending: false }),
+    admin
+      .from('comments')
+      .select('id, slug, name, email, body, created_at')
+      .order('created_at', { ascending: false }),
+  ]);
+
+  return (
+    <AdminDashboard
+      contacts={contacts ?? []}
+      comments={comments ?? []}
+      userEmail={user.email ?? ''}
+    />
+  );
+}
