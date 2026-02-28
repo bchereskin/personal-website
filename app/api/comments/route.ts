@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { Resend } from 'resend';
 import { getSupabase } from '@/app/lib/supabase';
 import { getPostBySlug } from '@/app/blog/posts';
 
@@ -54,6 +55,31 @@ export async function POST(request: NextRequest) {
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  const post = getPostBySlug(slug);
+  const { error: emailError } = await new Resend(process.env.RESEND_API_KEY).emails.send({
+    from: 'comments@brettchereskin.com',
+    to: process.env.CONTACT_EMAIL!,
+    replyTo: email,
+    subject: `[Comment] ${post!.title} — ${name}`,
+    html: `
+      <div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;">
+        <h2 style="color:#7d9a78;margin-bottom:4px;">New comment from ${name}</h2>
+        <p style="color:#888;font-size:14px;margin-top:0;">${new Date().toLocaleString()}</p>
+        <hr style="border:none;border-top:1px solid #333;margin:16px 0;" />
+        <p><strong>Post:</strong> <a href="https://brettchereskin.com/blog/${slug}">${post!.title}</a></p>
+        <p><strong>Email:</strong> <a href="mailto:${email}">${email}</a></p>
+        <hr style="border:none;border-top:1px solid #333;margin:16px 0;" />
+        <p style="white-space:pre-wrap;">${commentBody}</p>
+        <hr style="border:none;border-top:1px solid #333;margin:16px 0;" />
+        <p style="font-size:12px;color:#888;">Sent via brettchereskin.com</p>
+      </div>
+    `,
+  });
+
+  if (emailError) {
+    console.error('Comment notification email failed:', emailError);
   }
 
   return NextResponse.json(data, { status: 201 });
