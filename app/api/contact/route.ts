@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { getSupabase } from '@/app/lib/supabase';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 const SUBJECTS = ['General Inquiry', 'Business Inquiry', 'Advisory', 'Speaking', 'Other'];
 
 export async function POST(request: NextRequest) {
@@ -33,7 +31,7 @@ export async function POST(request: NextRequest) {
     getSupabase()
       .from('contacts')
       .insert({ name, email, subject, message }),
-    resend.emails.send({
+    new Resend(process.env.RESEND_API_KEY).emails.send({
       from: 'contact@brettchereskin.com',
       to: process.env.CONTACT_EMAIL!,
       replyTo: email,
