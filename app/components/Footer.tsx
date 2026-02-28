@@ -3,15 +3,15 @@ import Link from 'next/link';
 export default function Footer() {
   return (
     <footer className="border-t border-[var(--neutral-700)] bg-[var(--background)]">
-      <div className="max-w-6xl mx-auto px-6 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-8">
+      <div className="max-w-6xl mx-auto px-6 py-10">
+        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-8">
           {/* Brand */}
           <div>
             <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity text-[var(--neutral-50)] mb-3">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 512 512"
-                className="w-8 h-8"
+                className="w-7 h-7"
                 role="img"
                 aria-label="Brett Chereskin logo"
               >
@@ -27,28 +27,17 @@ export default function Footer() {
                   fill="currentColor"
                 />
               </svg>
-              <span className="text-lg font-semibold">Brett Chereskin</span>
+              <span className="text-base font-semibold">Brett Chereskin</span>
             </Link>
             <p className="text-[var(--neutral-400)] text-sm">
               Turning complexity into clarity.
             </p>
           </div>
 
-          {/* Navigation */}
-          <div>
-            <p className="text-[var(--neutral-300)] font-semibold text-sm uppercase tracking-wider mb-4">Pages</p>
-            <div className="flex flex-col gap-2">
-              <Link href="/" className="text-[var(--neutral-400)] hover:text-[var(--neutral-50)] transition-colors text-sm">Home</Link>
-              <Link href="/about" className="text-[var(--neutral-400)] hover:text-[var(--neutral-50)] transition-colors text-sm">About</Link>
-              <Link href="/blog" className="text-[var(--neutral-400)] hover:text-[var(--neutral-50)] transition-colors text-sm">Blog</Link>
-              <Link href="/contact" className="text-[var(--neutral-400)] hover:text-[var(--neutral-50)] transition-colors text-sm">Contact</Link>
-            </div>
-          </div>
-
-          {/* Social */}
-          <div>
+          {/* Connect */}
+          <div className="text-left md:text-right">
             <p className="text-[var(--neutral-300)] font-semibold text-sm uppercase tracking-wider mb-4">Connect</p>
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-2 md:items-end">
               <a
                 href="https://www.linkedin.com/in/brettchereskin/"
                 target="_blank"
@@ -85,7 +74,7 @@ export default function Footer() {
         </div>
 
         {/* Copyright */}
-        <div className="mt-10 pt-6 border-t border-[var(--neutral-700)]">
+        <div className="mt-8 pt-6 border-t border-[var(--neutral-700)]">
           <p className="text-[var(--neutral-500)] text-sm text-center">
             &copy; {new Date().getFullYear()} Brett Chereskin. All rights reserved.
           </p>
