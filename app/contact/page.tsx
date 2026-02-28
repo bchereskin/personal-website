@@ -1,35 +1,64 @@
 'use client';
 
+import { useState } from 'react';
 import Navigation from '@/app/components/Navigation';
 import Footer from '@/app/components/Footer';
 import Image from 'next/image';
 import { useScrollAnimation } from '@/app/hooks/useScrollAnimation';
 
-function AnimatedCard({
-  children,
-  delay = ''
-}: {
-  children: React.ReactNode;
-  delay?: string;
-}) {
+function AnimatedCard({ children, delay = '' }: { children: React.ReactNode; delay?: string }) {
   const { ref, isVisible } = useScrollAnimation(0.1);
-
   return (
-    <div
-      ref={ref}
-      className={`${isVisible ? `animate-fade-in-up ${delay}` : 'opacity-0'}`}
-    >
+    <div ref={ref} className={`${isVisible ? `animate-fade-in-up ${delay}` : 'opacity-0'}`}>
       {children}
     </div>
   );
 }
 
+const SUBJECTS = ['General Inquiry', 'Business Inquiry', 'Advisory', 'Speaking', 'Other'];
+
+const inputClass =
+  'w-full bg-[var(--neutral-800)] border border-[var(--neutral-600)] rounded-lg px-4 py-3 text-[var(--neutral-100)] placeholder-[var(--neutral-500)] focus:outline-none focus:border-[var(--primary)] transition-colors text-sm';
+
 export default function Contact() {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [subject, setSubject] = useState('');
+  const [message, setMessage] = useState('');
+  const [honeypot, setHoneypot] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState('');
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError('');
+    setSubmitting(true);
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, subject, message, honeypot }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        setError(data.error || 'Something went wrong. Please try again.');
+        return;
+      }
+      setSubmitted(true);
+      setName(''); setEmail(''); setSubject(''); setMessage('');
+    } catch {
+      setError('Something went wrong. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
   return (
     <>
       <Navigation />
       <main className="min-h-screen bg-[var(--background)]">
-        {/* Hero Section */}
+        {/* Hero */}
         <section className="relative pt-32 pb-16 px-6 overflow-hidden">
           <div className="absolute inset-0 z-0">
             <Image
@@ -41,13 +70,12 @@ export default function Contact() {
             />
             <div className="absolute inset-0 bg-gradient-to-b from-[var(--background)] via-transparent to-[var(--background)]" />
           </div>
-
           <div className="max-w-4xl mx-auto relative z-10">
             <p className="text-[var(--primary)] font-medium tracking-widest uppercase mb-3 animate-fade-in-up">
               Get in Touch
             </p>
             <h1 className="text-5xl md:text-6xl font-bold text-[var(--neutral-50)] mb-4 animate-fade-in-up delay-100">
-              Let's Connect
+              Let&apos;s Connect
             </h1>
             <p className="text-xl text-[var(--neutral-400)] animate-fade-in-up delay-200">
               Interested in consulting, advisory work, or just want to chat?
@@ -56,11 +84,10 @@ export default function Contact() {
           </div>
         </section>
 
-        {/* Contact Cards */}
-        <section className="py-16 px-6">
+        {/* Social Cards */}
+        <section className="pt-8 pb-4 px-6">
           <div className="max-w-4xl mx-auto">
             <div className="grid md:grid-cols-3 gap-6">
-              {/* Email */}
               <AnimatedCard delay="delay-100">
                 <a
                   href="mailto:Brett.Chereskin@gmail.com"
@@ -76,7 +103,6 @@ export default function Contact() {
                 </a>
               </AnimatedCard>
 
-              {/* LinkedIn */}
               <AnimatedCard delay="delay-200">
                 <a
                   href="https://www.linkedin.com/in/brettchereskin/"
@@ -86,7 +112,7 @@ export default function Contact() {
                 >
                   <div className="w-14 h-14 bg-[var(--accent)]/20 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                     <svg className="w-7 h-7 text-[var(--accent)]" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
                     </svg>
                   </div>
                   <h3 className="text-xl font-bold text-[var(--neutral-50)] mb-2">LinkedIn</h3>
@@ -94,7 +120,6 @@ export default function Contact() {
                 </a>
               </AnimatedCard>
 
-              {/* Twitter/X */}
               <AnimatedCard delay="delay-300">
                 <a
                   href="https://twitter.com/BChereskin"
@@ -104,7 +129,7 @@ export default function Contact() {
                 >
                   <div className="w-14 h-14 bg-[var(--neutral-600)] rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                     <svg className="w-7 h-7 text-[var(--neutral-100)]" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
                     </svg>
                   </div>
                   <h3 className="text-xl font-bold text-[var(--neutral-50)] mb-2">Twitter / X</h3>
@@ -112,33 +137,153 @@ export default function Contact() {
                 </a>
               </AnimatedCard>
             </div>
+          </div>
+        </section>
 
-            {/* Advisory CTA */}
-            <AnimatedCard delay="delay-400">
-              <div className="mt-12 relative rounded-2xl overflow-hidden">
-                <div className="absolute inset-0">
-                  <Image
-                    src="https://images.unsplash.com/photo-1552664730-d307ca884978?q=80&w=2070"
-                    alt="Team meeting"
-                    fill
-                    className="object-cover opacity-30"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-r from-[var(--background)] via-[var(--background)]/90 to-[var(--background)]/70" />
-                </div>
-                <div className="relative z-10 p-8 md:p-12">
-                  <h2 className="text-2xl md:text-3xl font-bold text-[var(--neutral-50)] mb-3">
-                    Looking for advisory support?
+        {/* Contact Form + Advisory copy */}
+        <section className="py-16 px-6 pb-24">
+          <div className="max-w-4xl mx-auto">
+            <AnimatedCard delay="delay-100">
+              <div className="grid md:grid-cols-5 gap-10 items-start">
+                {/* Left — advisory copy */}
+                <div className="md:col-span-2">
+                  <h2 className="text-2xl font-bold text-[var(--neutral-50)] mb-4">
+                    Send a message
                   </h2>
-                  <p className="text-[var(--neutral-300)] mb-6 max-w-xl text-lg">
-                    I work with early-stage startups on operations, scaling, and go-to-market strategy.
-                    Let's discuss how I can help your company grow.
+                  <p className="text-[var(--neutral-300)] mb-6 leading-relaxed">
+                    I work with early-stage startups on operations, scaling, and go-to-market strategy. I&apos;m always open to new conversations.
                   </p>
-                  <a
-                    href="mailto:Brett.Chereskin@gmail.com?subject=Advisory%20Inquiry"
-                    className="inline-block bg-[var(--primary)] text-[var(--neutral-900)] px-8 py-4 rounded-lg font-semibold hover:bg-[var(--primary-light)] transition-all hover-lift"
-                  >
-                    Start a conversation
-                  </a>
+                  <div className="space-y-4">
+                    {[
+                      { label: 'Advisory & consulting', desc: 'Ops, GTM, scaling' },
+                      { label: 'Speaking', desc: 'Leadership & AI topics' },
+                      { label: 'General', desc: 'Anything else' },
+                    ].map(({ label, desc }) => (
+                      <div key={label} className="flex items-start gap-3">
+                        <span className="w-2 h-2 rounded-full bg-[var(--primary)] mt-2 flex-shrink-0" />
+                        <div>
+                          <p className="text-[var(--neutral-100)] font-medium text-sm">{label}</p>
+                          <p className="text-[var(--neutral-500)] text-xs">{desc}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Right — form */}
+                <div className="md:col-span-3 glass rounded-2xl p-6 md:p-8">
+                  {submitted ? (
+                    <div className="text-center py-8">
+                      <div className="w-14 h-14 bg-[var(--primary)]/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg className="w-7 h-7 text-[var(--primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                      <h3 className="text-xl font-bold text-[var(--neutral-50)] mb-2">Message sent!</h3>
+                      <p className="text-[var(--neutral-400)] text-sm">Thanks for reaching out — I&apos;ll be in touch within 48 hours.</p>
+                      <button
+                        onClick={() => setSubmitted(false)}
+                        className="mt-6 text-sm text-[var(--primary)] hover:text-[var(--primary-light)] transition-colors"
+                      >
+                        Send another message
+                      </button>
+                    </div>
+                  ) : (
+                    <form onSubmit={handleSubmit} noValidate>
+                      {/* Honeypot */}
+                      <input
+                        type="text"
+                        name="website"
+                        value={honeypot}
+                        onChange={(e) => setHoneypot(e.target.value)}
+                        tabIndex={-1}
+                        aria-hidden="true"
+                        className="absolute opacity-0 pointer-events-none w-0 h-0"
+                      />
+
+                      {error && (
+                        <div className="mb-5 px-4 py-3 rounded-lg bg-[var(--accent-dark)] text-[var(--neutral-50)] text-sm">
+                          {error}
+                        </div>
+                      )}
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                        <div>
+                          <label htmlFor="contact-name" className="block text-sm text-[var(--neutral-300)] mb-1.5">
+                            Name <span className="text-[var(--accent)]">*</span>
+                          </label>
+                          <input
+                            id="contact-name"
+                            type="text"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            placeholder="Your name"
+                            required
+                            maxLength={100}
+                            className={inputClass}
+                          />
+                        </div>
+                        <div>
+                          <label htmlFor="contact-email" className="block text-sm text-[var(--neutral-300)] mb-1.5">
+                            Email <span className="text-[var(--accent)]">*</span>
+                          </label>
+                          <input
+                            id="contact-email"
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            placeholder="you@example.com"
+                            required
+                            maxLength={200}
+                            className={inputClass}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="mb-4">
+                        <label htmlFor="contact-subject" className="block text-sm text-[var(--neutral-300)] mb-1.5">
+                          Subject <span className="text-[var(--accent)]">*</span>
+                        </label>
+                        <select
+                          id="contact-subject"
+                          value={subject}
+                          onChange={(e) => setSubject(e.target.value)}
+                          required
+                          className={`${inputClass} cursor-pointer`}
+                        >
+                          <option value="" disabled>Select a topic…</option>
+                          {SUBJECTS.map((s) => (
+                            <option key={s} value={s}>{s}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div className="mb-6">
+                        <label htmlFor="contact-message" className="block text-sm text-[var(--neutral-300)] mb-1.5">
+                          Message <span className="text-[var(--accent)]">*</span>
+                        </label>
+                        <textarea
+                          id="contact-message"
+                          value={message}
+                          onChange={(e) => setMessage(e.target.value)}
+                          placeholder="Tell me about your project or what you have in mind…"
+                          required
+                          maxLength={5000}
+                          rows={5}
+                          className={`${inputClass} resize-y`}
+                        />
+                        <p className="mt-1 text-xs text-[var(--neutral-500)] text-right">{message.length}/5000</p>
+                      </div>
+
+                      <button
+                        type="submit"
+                        disabled={submitting || !name.trim() || !email.trim() || !subject || !message.trim()}
+                        className="w-full py-3 rounded-lg bg-[var(--primary)] text-[var(--background)] font-semibold text-sm hover:bg-[var(--primary-light)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      >
+                        {submitting ? 'Sending…' : 'Send message'}
+                      </button>
+                    </form>
+                  )}
                 </div>
               </div>
             </AnimatedCard>
