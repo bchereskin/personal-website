@@ -59,6 +59,11 @@ export async function POST(request: NextRequest) {
     console.error('Contact email failed:', emailResult.reason);
     return NextResponse.json({ error: 'Failed to send message. Please try again.' }, { status: 500 });
   }
+  const { error: emailError } = emailResult.value as { data: unknown; error: unknown };
+  if (emailError) {
+    console.error('Contact email API error:', emailError);
+    return NextResponse.json({ error: 'Failed to send message. Please try again.' }, { status: 500 });
+  }
 
   return NextResponse.json({ ok: true }, { status: 201 });
 }
