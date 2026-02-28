@@ -1,13 +1,38 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import Navigation from '@/app/components/Navigation';
+import Footer from '@/app/components/Footer';
 import { posts, getPostBySlug, formatDate } from '../posts';
 
 export function generateStaticParams() {
   return posts.map((post) => ({
     slug: post.slug,
   }));
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const post = getPostBySlug(slug);
+
+  if (!post) return {};
+
+  return {
+    title: post.title,
+    description: post.excerpt,
+    openGraph: {
+      title: post.title,
+      description: post.excerpt,
+      type: 'article',
+      publishedTime: post.date,
+      url: `https://www.brettchereskin.com/blog/${post.slug}`,
+    },
+  };
 }
 
 export default async function BlogPost({
@@ -148,6 +173,7 @@ export default async function BlogPost({
           </article>
         </section>
       </main>
+      <Footer />
     </>
   );
 }

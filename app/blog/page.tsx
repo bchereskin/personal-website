@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import Navigation from '@/app/components/Navigation';
+import Footer from '@/app/components/Footer';
 import { posts, formatDate } from './posts';
 import { useScrollAnimation } from '@/app/hooks/useScrollAnimation';
 
@@ -89,6 +90,7 @@ export default function Blog() {
           </div>
         </section>
       </main>
+      <Footer />
     </>
   );
 }

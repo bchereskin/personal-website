@@ -1,6 +1,7 @@
 'use client';
 
 import Navigation from '@/app/components/Navigation';
+import Footer from '@/app/components/Footer';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useScrollAnimation } from '@/app/hooks/useScrollAnimation';
@@ -322,6 +323,7 @@ export default function About() {
           </div>
         </section>
       </main>
+      <Footer />
     </>
   );
 }
