@@ -19,7 +19,7 @@ export const posts: BlogPost[] = [
     content: `
 Let me tell you about a moment that stopped me cold.
 
-It was 11 PM on a Tuesday. I had just finished building a comment section for this blog, a lead-capture system for my contact form, an email notification pipeline, and a password-protected admin dashboard. From scratch. In a single day.
+It was a Friday night. I had just finished building a comment section for this blog, a lead-capture system for my contact form, an email notification pipeline, and a password-protected admin dashboard. From scratch. In a single day.
 
 I sat back and stared at the screen. Not because anything had gone wrong. Because I was trying to reconcile what had just happened with everything I thought I knew about building software.
 
@@ -39,7 +39,7 @@ Three weeks if you were lucky. And that was for something simple. Something a cu
 
 With Claude Code, I described what I wanted in plain English. It built it. I tested it, noticed the email format was wrong, said so, and it was fixed in thirty seconds. The entire loop — from idea to deployed, working product — collapsed into a conversation.
 
-Not a conversation with a vendor. Not a conversation with my engineering team. A conversation with an AI tool, sitting on my couch, after my kids went to bed.
+Not a conversation with a vendor. Not a conversation with my engineering team. A conversation with an AI tool, sitting on my couch on a Friday night.
 
 [CALLOUT] The most dangerous question in business right now is not "what should we build?" It is "what have we been putting off because building felt too expensive?" That list just became a to-do list.
 
@@ -92,9 +92,11 @@ What have you been putting off?
 
 Not the moonshot ideas. The practical ones. The reporting dashboard that would give your leadership team real visibility. The client onboarding workflow that is still half-manual and half-email. The internal tool that three people on your team have asked for twice and been told "it is on the roadmap."
 
-Those are not hypothetical projects anymore. They are Tuesday.
+Those are not hypothetical projects anymore. They are this weekend.
 
-I work with companies to find these opportunities and actually build them — not just the tools, but the organizational muscle to keep building. If you are curious what that looks like for your team, reach out through the contact form. And if something here resonated — or if you have your own story about what you have built or want to build — I would genuinely love to hear it. Drop a comment below.
+I keep having this conversation with operators and founders — people who run things, people who build things — and the moment always comes where they say some version of "wait, I could actually do that myself?" That moment is what I am writing about. That is the shift.
+
+So I will ask you directly: what is on your list? What have you been putting off because the cost of building never justified the effort? I am genuinely curious — drop it in the comments. Some of the best conversations I have had started with someone sharing exactly that.
     `,
   },
   {
@@ -179,7 +181,7 @@ Your first attempt will produce generic output. That is not a failure — it is 
 
 By the third or fourth round, something shifts. You stop thinking about the tool and start thinking about what you are building. You stop wondering if AI is good enough and start wondering what else you could build. That is the moment that matters. That is when the future stops being abstract and becomes personal.
 
-What would you build if you could build anything? I am not being rhetorical — I genuinely want to know. Drop a comment below. And if you want to think through how these tools apply to your specific work, reach out through the contact page. That is exactly the kind of conversation I love having.
+What would you build if you could build anything? I am not being rhetorical — I genuinely want to know. Drop a comment below. I have found that the most interesting ideas come from operators who have been quietly carrying them around, waiting for the right moment. This might be it.
     `,
   },
   {
