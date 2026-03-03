@@ -43,6 +43,29 @@ function formatCommentDate(dateStr: string) {
   });
 }
 
+const COLLAPSE_THRESHOLD = 300;
+
+function CollapsibleText({ body, className }: { body: string; className?: string }) {
+  const [expanded, setExpanded] = useState(false);
+  const isLong = body.length > COLLAPSE_THRESHOLD;
+
+  return (
+    <div>
+      <p className={`${className || ''} leading-relaxed whitespace-pre-wrap break-words`}>
+        {isLong && !expanded ? body.slice(0, COLLAPSE_THRESHOLD).trimEnd() + '…' : body}
+      </p>
+      {isLong && (
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="text-xs text-[var(--neutral-500)] hover:text-[var(--primary)] transition-colors mt-1"
+        >
+          {expanded ? 'Show less' : 'Show more'}
+        </button>
+      )}
+    </div>
+  );
+}
+
 const inputClass =
   'w-full bg-[var(--neutral-800)] border border-[var(--neutral-600)] rounded-lg px-4 py-3 text-[var(--neutral-100)] placeholder-[var(--neutral-500)] focus:outline-none focus:border-[var(--primary)] transition-colors text-sm';
 
@@ -238,7 +261,7 @@ function ReplyItem({
           </div>
         ) : (
           <div>
-            <p className="text-[var(--neutral-200)] leading-relaxed whitespace-pre-wrap break-words text-sm">{reply.body}</p>
+            <CollapsibleText body={reply.body} className="text-[var(--neutral-200)] text-sm" />
             <div className="flex gap-3 mt-1">
               {editable && <button onClick={() => setEditing(true)} className="text-xs text-[var(--neutral-500)] hover:text-[var(--primary)] transition-colors">Edit</button>}
               <button onClick={onReplyClick} className="text-xs text-[var(--neutral-500)] hover:text-[var(--primary)] transition-colors">Reply</button>
@@ -266,6 +289,7 @@ function CommentItem({
   editable: boolean;
 }) {
   const [showReplyForm, setShowReplyForm] = useState(false);
+  const [threadCollapsed, setThreadCollapsed] = useState(false);
   const [editing, setEditing] = useState(false);
   const [editBody, setEditBody] = useState(comment.body);
   const [saving, setSaving] = useState(false);
@@ -338,7 +362,7 @@ function CommentItem({
             </div>
           ) : (
             <div>
-              <p className="text-[var(--neutral-200)] leading-relaxed whitespace-pre-wrap break-words">{comment.body}</p>
+              <CollapsibleText body={comment.body} className="text-[var(--neutral-200)]" />
               <div className="flex gap-3 mt-2">
                 {editable && (
                   <button
@@ -361,15 +385,36 @@ function CommentItem({
       </div>
 
       {replies.length > 0 && (
-        <div className="mt-4 ml-14 border-l-2 border-[var(--neutral-700)] pl-4 space-y-4">
-          {replies.map((reply) => (
-            <ReplyItem
-              key={reply.id}
-              reply={reply}
-              onEdit={onEdit}
-              onReplyClick={() => setShowReplyForm(true)}
-            />
-          ))}
+        <div className="mt-4 ml-14">
+          {threadCollapsed ? (
+            <button
+              onClick={() => setThreadCollapsed(false)}
+              className="flex items-center gap-2 text-xs text-[var(--neutral-500)] hover:text-[var(--primary)] transition-colors py-1"
+            >
+              <span className="inline-block w-4 text-center">+</span>
+              {replies.length} {replies.length === 1 ? 'reply' : 'replies'}
+            </button>
+          ) : (
+            <div className="flex">
+              <button
+                onClick={() => setThreadCollapsed(true)}
+                className="flex-shrink-0 w-4 group flex justify-center"
+                title="Collapse thread"
+              >
+                <div className="w-0.5 h-full bg-[var(--neutral-700)] group-hover:bg-[var(--primary)] transition-colors rounded-full" />
+              </button>
+              <div className="flex-1 pl-3 space-y-4">
+                {replies.map((reply) => (
+                  <ReplyItem
+                    key={reply.id}
+                    reply={reply}
+                    onEdit={onEdit}
+                    onReplyClick={() => setShowReplyForm(true)}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
