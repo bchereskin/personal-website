@@ -43,6 +43,29 @@ function formatCommentDate(dateStr: string) {
   });
 }
 
+const COLLAPSE_THRESHOLD = 300;
+
+function CollapsibleText({ body, className }: { body: string; className?: string }) {
+  const [expanded, setExpanded] = useState(false);
+  const isLong = body.length > COLLAPSE_THRESHOLD;
+
+  return (
+    <div>
+      <p className={`${className || ''} leading-relaxed whitespace-pre-wrap break-words`}>
+        {isLong && !expanded ? body.slice(0, COLLAPSE_THRESHOLD).trimEnd() + '…' : body}
+      </p>
+      {isLong && (
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="text-xs text-[var(--neutral-500)] hover:text-[var(--primary)] transition-colors mt-1"
+        >
+          {expanded ? 'Show less' : 'Show more'}
+        </button>
+      )}
+    </div>
+  );
+}
+
 const inputClass =
   'w-full bg-[var(--neutral-800)] border border-[var(--neutral-600)] rounded-lg px-4 py-3 text-[var(--neutral-100)] placeholder-[var(--neutral-500)] focus:outline-none focus:border-[var(--primary)] transition-colors text-sm';
 
@@ -173,6 +196,83 @@ function ReplyForm({
   );
 }
 
+function ReplyItem({
+  reply,
+  onEdit,
+  onReplyClick,
+}: {
+  reply: Comment;
+  onEdit: (id: number, newBody: string) => Promise<boolean>;
+  onReplyClick: () => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [editBody, setEditBody] = useState(reply.body);
+  const [saving, setSaving] = useState(false);
+  const [editError, setEditError] = useState('');
+  const editable = isEditable(reply);
+
+  const initials = reply.name
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
+
+  async function handleSave() {
+    if (!editBody.trim() || editBody === reply.body) { setEditing(false); return; }
+    setSaving(true);
+    setEditError('');
+    const success = await onEdit(reply.id, editBody);
+    setSaving(false);
+    if (success) { setEditing(false); } else { setEditError('Failed to save. Edit window may have expired.'); }
+  }
+
+  return (
+    <div className="flex gap-3">
+      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[var(--neutral-700)] flex items-center justify-center text-xs font-semibold text-[var(--primary)]">
+        {initials}
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-baseline gap-2 flex-wrap mb-1">
+          <span className="font-semibold text-[var(--neutral-100)] text-sm">{reply.name}</span>
+          <span className="text-xs text-[var(--neutral-400)]">{formatCommentDate(reply.created_at)}</span>
+          {editable && !editing && (
+            <span className="text-xs text-[var(--neutral-500)]">{timeRemaining(reply.created_at)}</span>
+          )}
+        </div>
+        {editing ? (
+          <div>
+            <textarea
+              value={editBody}
+              onChange={(e) => setEditBody(e.target.value)}
+              maxLength={2000}
+              rows={3}
+              className="w-full bg-[var(--neutral-800)] border border-[var(--neutral-600)] rounded-lg px-3 py-2 text-[var(--neutral-100)] focus:outline-none focus:border-[var(--primary)] transition-colors text-sm resize-y"
+            />
+            {editError && <p className="text-xs text-[var(--accent)] mt-1">{editError}</p>}
+            <div className="flex gap-2 mt-2">
+              <button onClick={handleSave} disabled={saving || !editBody.trim()} className="px-3 py-1.5 rounded-md bg-[var(--primary)] text-[var(--background)] text-xs font-semibold hover:bg-[var(--primary-light)] disabled:opacity-50 transition-colors">
+                {saving ? 'Saving…' : 'Save'}
+              </button>
+              <button onClick={() => { setEditing(false); setEditBody(reply.body); setEditError(''); }} disabled={saving} className="px-3 py-1.5 rounded-md bg-[var(--neutral-700)] text-[var(--neutral-300)] text-xs hover:bg-[var(--neutral-600)] transition-colors">
+                Cancel
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div>
+            <CollapsibleText body={reply.body} className="text-[var(--neutral-200)] text-sm" />
+            <div className="flex gap-3 mt-1">
+              {editable && <button onClick={() => setEditing(true)} className="text-xs text-[var(--neutral-500)] hover:text-[var(--primary)] transition-colors">Edit</button>}
+              <button onClick={onReplyClick} className="text-xs text-[var(--neutral-500)] hover:text-[var(--primary)] transition-colors">Reply</button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function CommentItem({
   comment,
   replies,
@@ -189,6 +289,7 @@ function CommentItem({
   editable: boolean;
 }) {
   const [showReplyForm, setShowReplyForm] = useState(false);
+  const [threadCollapsed, setThreadCollapsed] = useState(false);
   const [editing, setEditing] = useState(false);
   const [editBody, setEditBody] = useState(comment.body);
   const [saving, setSaving] = useState(false);
@@ -261,7 +362,7 @@ function CommentItem({
             </div>
           ) : (
             <div>
-              <p className="text-[var(--neutral-200)] leading-relaxed whitespace-pre-wrap break-words">{comment.body}</p>
+              <CollapsibleText body={comment.body} className="text-[var(--neutral-200)]" />
               <div className="flex gap-3 mt-2">
                 {editable && (
                   <button
@@ -284,30 +385,36 @@ function CommentItem({
       </div>
 
       {replies.length > 0 && (
-        <div className="mt-4 ml-14 border-l-2 border-[var(--neutral-700)] pl-4 space-y-4">
-          {replies.map((reply) => {
-            const replyInitials = reply.name
-              .split(' ')
-              .map((n) => n[0])
-              .join('')
-              .toUpperCase()
-              .slice(0, 2);
-
-            return (
-              <div key={reply.id} className="flex gap-3">
-                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[var(--neutral-700)] flex items-center justify-center text-xs font-semibold text-[var(--primary)]">
-                  {replyInitials}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-baseline gap-2 flex-wrap mb-1">
-                    <span className="font-semibold text-[var(--neutral-100)] text-sm">{reply.name}</span>
-                    <span className="text-xs text-[var(--neutral-400)]">{formatCommentDate(reply.created_at)}</span>
-                  </div>
-                  <p className="text-[var(--neutral-200)] leading-relaxed whitespace-pre-wrap break-words text-sm">{reply.body}</p>
-                </div>
+        <div className="mt-4 ml-14">
+          {threadCollapsed ? (
+            <button
+              onClick={() => setThreadCollapsed(false)}
+              className="flex items-center gap-2 text-xs text-[var(--neutral-500)] hover:text-[var(--primary)] transition-colors py-1"
+            >
+              <span className="inline-block w-4 text-center">+</span>
+              {replies.length} {replies.length === 1 ? 'reply' : 'replies'}
+            </button>
+          ) : (
+            <div className="flex">
+              <button
+                onClick={() => setThreadCollapsed(true)}
+                className="flex-shrink-0 w-4 group flex justify-center"
+                title="Collapse thread"
+              >
+                <div className="w-0.5 h-full bg-[var(--neutral-700)] group-hover:bg-[var(--primary)] transition-colors rounded-full" />
+              </button>
+              <div className="flex-1 pl-3 space-y-4">
+                {replies.map((reply) => (
+                  <ReplyItem
+                    key={reply.id}
+                    reply={reply}
+                    onEdit={onEdit}
+                    onReplyClick={() => setShowReplyForm(true)}
+                  />
+                ))}
               </div>
-            );
-          })}
+            </div>
+          )}
         </div>
       )}
 
