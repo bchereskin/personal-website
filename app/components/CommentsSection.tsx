@@ -27,14 +27,6 @@ function isEditable(comment: Comment): boolean {
   return Date.now() - created < EDIT_WINDOW_MS;
 }
 
-function formatCommentDate(dateStr: string) {
-  return new Date(dateStr).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
-}
-
 function timeRemaining(createdAt: string): string {
   const elapsed = Date.now() - new Date(createdAt).getTime();
   const remaining = EDIT_WINDOW_MS - elapsed;
@@ -43,15 +35,160 @@ function timeRemaining(createdAt: string): string {
   return `${mins}m left to edit`;
 }
 
+function formatCommentDate(dateStr: string) {
+  return new Date(dateStr).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+}
+
+const inputClass =
+  'w-full bg-[var(--neutral-800)] border border-[var(--neutral-600)] rounded-lg px-4 py-3 text-[var(--neutral-100)] placeholder-[var(--neutral-500)] focus:outline-none focus:border-[var(--primary)] transition-colors text-sm';
+
+function ReplyForm({
+  slug,
+  parentId,
+  onSubmitted,
+  onCancel,
+}: {
+  slug: string;
+  parentId: number;
+  onSubmitted: (comment: Comment) => void;
+  onCancel: () => void;
+}) {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [body, setBody] = useState('');
+  const [notifyReplies, setNotifyReplies] = useState(false);
+  const [honeypot, setHoneypot] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError('');
+    setSubmitting(true);
+
+    try {
+      const res = await fetch('/api/comments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          slug,
+          name,
+          email,
+          body,
+          honeypot,
+          parent_id: parentId,
+          notify_replies: notifyReplies,
+        }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        setError(data.error || 'Something went wrong.');
+        return;
+      }
+
+      const newComment = await res.json();
+      if (newComment.edit_token) {
+        saveEditToken(newComment.id, newComment.edit_token);
+      }
+      onSubmitted(newComment);
+    } catch {
+      setError('Something went wrong.');
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="mt-4 pl-14 space-y-3">
+      <input
+        type="text"
+        name="company"
+        value={honeypot}
+        onChange={(e) => setHoneypot(e.target.value)}
+        tabIndex={-1}
+        aria-hidden="true"
+        className="absolute opacity-0 pointer-events-none w-0 h-0"
+      />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Your name *"
+          required
+          maxLength={100}
+          className={inputClass}
+        />
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="Email (not published) *"
+          required
+          maxLength={200}
+          className={inputClass}
+        />
+      </div>
+      <textarea
+        value={body}
+        onChange={(e) => setBody(e.target.value)}
+        placeholder="Write a reply…"
+        required
+        maxLength={2000}
+        rows={3}
+        className={`${inputClass} resize-y`}
+      />
+      <label className="flex items-center gap-2 cursor-pointer">
+        <input
+          type="checkbox"
+          checked={notifyReplies}
+          onChange={(e) => setNotifyReplies(e.target.checked)}
+          className="w-4 h-4 rounded border-[var(--neutral-600)] bg-[var(--neutral-800)] accent-[var(--primary)]"
+        />
+        <span className="text-xs text-[var(--neutral-400)]">Notify me of replies</span>
+      </label>
+      {error && <p className="text-xs text-[var(--accent)]">{error}</p>}
+      <div className="flex gap-2">
+        <button
+          type="submit"
+          disabled={submitting || !name.trim() || !email.trim() || !body.trim()}
+          className="px-4 py-2 rounded-lg bg-[var(--primary)] text-[var(--background)] font-semibold text-xs hover:bg-[var(--primary-light)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        >
+          {submitting ? 'Posting…' : 'Reply'}
+        </button>
+        <button
+          type="button"
+          onClick={onCancel}
+          className="px-4 py-2 rounded-lg bg-[var(--neutral-700)] text-[var(--neutral-300)] text-xs hover:bg-[var(--neutral-600)] transition-colors"
+        >
+          Cancel
+        </button>
+      </div>
+    </form>
+  );
+}
+
 function CommentItem({
   comment,
+  replies,
+  slug,
+  onNewReply,
   onEdit,
   editable,
 }: {
   comment: Comment;
+  replies: Comment[];
+  slug: string;
+  onNewReply: (comment: Comment) => void;
   onEdit: (id: number, newBody: string) => Promise<boolean>;
   editable: boolean;
 }) {
+  const [showReplyForm, setShowReplyForm] = useState(false);
   const [editing, setEditing] = useState(false);
   const [editBody, setEditBody] = useState(comment.body);
   const [saving, setSaving] = useState(false);
@@ -81,68 +218,110 @@ function CommentItem({
   }
 
   return (
-    <div className="flex gap-4 py-6 border-b border-[var(--neutral-700)] last:border-0">
-      <div className="flex-shrink-0 w-10 h-10 rounded-full bg-[var(--neutral-700)] flex items-center justify-center text-sm font-semibold text-[var(--primary)]">
-        {initials}
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-baseline gap-2 flex-wrap mb-1">
-          <span className="font-semibold text-[var(--neutral-100)]">{comment.name}</span>
-          <span className="text-xs text-[var(--neutral-400)]">{formatCommentDate(comment.created_at)}</span>
-          {editable && !editing && (
-            <span className="text-xs text-[var(--neutral-500)]">{timeRemaining(comment.created_at)}</span>
+    <div className="py-6 border-b border-[var(--neutral-700)] last:border-0">
+      <div className="flex gap-4">
+        <div className="flex-shrink-0 w-10 h-10 rounded-full bg-[var(--neutral-700)] flex items-center justify-center text-sm font-semibold text-[var(--primary)]">
+          {initials}
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-baseline gap-2 flex-wrap mb-1">
+            <span className="font-semibold text-[var(--neutral-100)]">{comment.name}</span>
+            <span className="text-xs text-[var(--neutral-400)]">{formatCommentDate(comment.created_at)}</span>
+            {editable && !editing && (
+              <span className="text-xs text-[var(--neutral-500)]">{timeRemaining(comment.created_at)}</span>
+            )}
+          </div>
+
+          {editing ? (
+            <div className="mt-2">
+              <textarea
+                value={editBody}
+                onChange={(e) => setEditBody(e.target.value)}
+                maxLength={2000}
+                rows={3}
+                className="w-full bg-[var(--neutral-800)] border border-[var(--neutral-600)] rounded-lg px-4 py-3 text-[var(--neutral-100)] placeholder-[var(--neutral-500)] focus:outline-none focus:border-[var(--primary)] transition-colors text-sm resize-y"
+              />
+              {editError && <p className="text-xs text-[var(--accent)] mt-1">{editError}</p>}
+              <div className="flex gap-2 mt-2">
+                <button
+                  onClick={handleSave}
+                  disabled={saving || !editBody.trim()}
+                  className="px-3 py-1.5 rounded-md bg-[var(--primary)] text-[var(--background)] text-xs font-semibold hover:bg-[var(--primary-light)] disabled:opacity-50 transition-colors"
+                >
+                  {saving ? 'Saving…' : 'Save'}
+                </button>
+                <button
+                  onClick={() => { setEditing(false); setEditBody(comment.body); setEditError(''); }}
+                  disabled={saving}
+                  className="px-3 py-1.5 rounded-md bg-[var(--neutral-700)] text-[var(--neutral-300)] text-xs hover:bg-[var(--neutral-600)] transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div>
+              <p className="text-[var(--neutral-200)] leading-relaxed whitespace-pre-wrap break-words">{comment.body}</p>
+              <div className="flex gap-3 mt-2">
+                {editable && (
+                  <button
+                    onClick={() => setEditing(true)}
+                    className="text-xs text-[var(--neutral-500)] hover:text-[var(--primary)] transition-colors"
+                  >
+                    Edit
+                  </button>
+                )}
+                <button
+                  onClick={() => setShowReplyForm(!showReplyForm)}
+                  className="text-xs text-[var(--neutral-500)] hover:text-[var(--primary)] transition-colors"
+                >
+                  Reply
+                </button>
+              </div>
+            </div>
           )}
         </div>
-
-        {editing ? (
-          <div className="mt-2">
-            <textarea
-              value={editBody}
-              onChange={(e) => setEditBody(e.target.value)}
-              maxLength={2000}
-              rows={3}
-              className="w-full bg-[var(--neutral-800)] border border-[var(--neutral-600)] rounded-lg px-4 py-3 text-[var(--neutral-100)] placeholder-[var(--neutral-500)] focus:outline-none focus:border-[var(--primary)] transition-colors text-sm resize-y"
-            />
-            {editError && (
-              <p className="text-xs text-[var(--accent)] mt-1">{editError}</p>
-            )}
-            <div className="flex gap-2 mt-2">
-              <button
-                onClick={handleSave}
-                disabled={saving || !editBody.trim()}
-                className="px-3 py-1.5 rounded-md bg-[var(--primary)] text-[var(--background)] text-xs font-semibold hover:bg-[var(--primary-light)] disabled:opacity-50 transition-colors"
-              >
-                {saving ? 'Saving…' : 'Save'}
-              </button>
-              <button
-                onClick={() => {
-                  setEditing(false);
-                  setEditBody(comment.body);
-                  setEditError('');
-                }}
-                disabled={saving}
-                className="px-3 py-1.5 rounded-md bg-[var(--neutral-700)] text-[var(--neutral-300)] text-xs hover:bg-[var(--neutral-600)] transition-colors"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        ) : (
-          <div className="group">
-            <p className="text-[var(--neutral-200)] leading-relaxed whitespace-pre-wrap break-words">
-              {comment.body}
-            </p>
-            {editable && (
-              <button
-                onClick={() => setEditing(true)}
-                className="mt-1 text-xs text-[var(--neutral-500)] hover:text-[var(--primary)] transition-colors"
-              >
-                Edit
-              </button>
-            )}
-          </div>
-        )}
       </div>
+
+      {replies.length > 0 && (
+        <div className="mt-4 ml-14 border-l-2 border-[var(--neutral-700)] pl-4 space-y-4">
+          {replies.map((reply) => {
+            const replyInitials = reply.name
+              .split(' ')
+              .map((n) => n[0])
+              .join('')
+              .toUpperCase()
+              .slice(0, 2);
+
+            return (
+              <div key={reply.id} className="flex gap-3">
+                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[var(--neutral-700)] flex items-center justify-center text-xs font-semibold text-[var(--primary)]">
+                  {replyInitials}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-baseline gap-2 flex-wrap mb-1">
+                    <span className="font-semibold text-[var(--neutral-100)] text-sm">{reply.name}</span>
+                    <span className="text-xs text-[var(--neutral-400)]">{formatCommentDate(reply.created_at)}</span>
+                  </div>
+                  <p className="text-[var(--neutral-200)] leading-relaxed whitespace-pre-wrap break-words text-sm">{reply.body}</p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {showReplyForm && (
+        <ReplyForm
+          slug={slug}
+          parentId={comment.id}
+          onSubmitted={(newReply) => {
+            onNewReply(newReply);
+            setShowReplyForm(false);
+          }}
+          onCancel={() => setShowReplyForm(false)}
+        />
+      )}
     </div>
   );
 }
@@ -158,6 +337,7 @@ export default function CommentsSection({ slug }: { slug: string }) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [body, setBody] = useState('');
+  const [notifyReplies, setNotifyReplies] = useState(false);
   const [honeypot, setHoneypot] = useState('');
 
   useEffect(() => {
@@ -181,6 +361,9 @@ export default function CommentsSection({ slug }: { slug: string }) {
     fetchComments();
   }, [fetchComments]);
 
+  const topLevelComments = comments.filter((c) => !c.parent_id);
+  const getReplies = (parentId: number) => comments.filter((c) => c.parent_id === parentId);
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError('');
@@ -190,7 +373,7 @@ export default function CommentsSection({ slug }: { slug: string }) {
       const res = await fetch('/api/comments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ slug, name, email, body, honeypot }),
+        body: JSON.stringify({ slug, name, email, body, honeypot, notify_replies: notifyReplies }),
       });
 
       if (!res.ok) {
@@ -210,6 +393,7 @@ export default function CommentsSection({ slug }: { slug: string }) {
       setName('');
       setEmail('');
       setBody('');
+      setNotifyReplies(false);
       setSubmitted(true);
       setTimeout(() => setSubmitted(false), 5000);
     } catch {
@@ -217,6 +401,10 @@ export default function CommentsSection({ slug }: { slug: string }) {
     } finally {
       setSubmitting(false);
     }
+  }
+
+  function handleNewReply(reply: Comment) {
+    setComments((prev) => [...prev, reply]);
   }
 
   async function handleEdit(commentId: number, newBody: string): Promise<boolean> {
@@ -242,9 +430,6 @@ export default function CommentsSection({ slug }: { slug: string }) {
     return false;
   }
 
-  const inputClass =
-    'w-full bg-[var(--neutral-800)] border border-[var(--neutral-600)] rounded-lg px-4 py-3 text-[var(--neutral-100)] placeholder-[var(--neutral-500)] focus:outline-none focus:border-[var(--primary)] transition-colors text-sm';
-
   return (
     <section className="mt-16 pt-12 border-t border-[var(--neutral-700)]">
       <h2 className="text-2xl font-bold text-[var(--neutral-50)] mb-8">
@@ -253,10 +438,18 @@ export default function CommentsSection({ slug }: { slug: string }) {
 
       {loading ? (
         <div className="text-[var(--neutral-400)] text-sm mb-10">Loading comments…</div>
-      ) : comments.length > 0 ? (
+      ) : topLevelComments.length > 0 ? (
         <div className="mb-12">
-          {comments.map((c) => (
-            <CommentItem key={c.id} comment={c} editable={isEditable(c)} onEdit={handleEdit} />
+          {topLevelComments.map((c) => (
+            <CommentItem
+              key={c.id}
+              comment={c}
+              replies={getReplies(c.id)}
+              slug={slug}
+              onNewReply={handleNewReply}
+              onEdit={handleEdit}
+              editable={isEditable(c)}
+            />
           ))}
         </div>
       ) : (
@@ -323,7 +516,7 @@ export default function CommentsSection({ slug }: { slug: string }) {
             </div>
           </div>
 
-          <div className="mb-6">
+          <div className="mb-4">
             <label htmlFor="comment-body" className="block text-sm text-[var(--neutral-300)] mb-1.5">
               Comment <span className="text-[var(--accent)]">*</span>
             </label>
@@ -339,6 +532,16 @@ export default function CommentsSection({ slug }: { slug: string }) {
             />
             <p className="mt-1 text-xs text-[var(--neutral-500)] text-right">{body.length}/2000</p>
           </div>
+
+          <label className="flex items-center gap-2 mb-6 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={notifyReplies}
+              onChange={(e) => setNotifyReplies(e.target.checked)}
+              className="w-4 h-4 rounded border-[var(--neutral-600)] bg-[var(--neutral-800)] accent-[var(--primary)]"
+            />
+            <span className="text-sm text-[var(--neutral-400)]">Notify me when someone replies</span>
+          </label>
 
           <button
             type="submit"

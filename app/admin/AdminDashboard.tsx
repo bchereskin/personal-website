@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createSupabaseBrowser } from '@/app/lib/supabase-browser';
+import { posts } from '@/app/blog/posts';
 
 interface Contact {
   id: number;
@@ -47,11 +48,14 @@ export default function AdminDashboard({
   userEmail: string;
 }) {
   const router = useRouter();
-  const [tab, setTab] = useState<'contacts' | 'comments'>('contacts');
+  const [tab, setTab] = useState<'contacts' | 'comments' | 'notify'>('contacts');
   const [contacts, setContacts] = useState(initialContacts);
   const [comments, setComments] = useState(initialComments);
   const [deleting, setDeleting] = useState<number | null>(null);
   const [expanded, setExpanded] = useState<number | null>(null);
+  const [notifySlug, setNotifySlug] = useState(posts[0]?.slug || '');
+  const [notifying, setNotifying] = useState(false);
+  const [notifyResult, setNotifyResult] = useState<string | null>(null);
 
   async function handleLogout() {
     const supabase = createSupabaseBrowser();
@@ -72,6 +76,29 @@ export default function AdminDashboard({
     const res = await fetch(`/api/admin/comments/${id}`, { method: 'DELETE' });
     if (res.ok) setComments((prev) => prev.filter((c) => c.id !== id));
     setDeleting(null);
+  }
+
+  async function notifySubscribers() {
+    if (!notifySlug) return;
+    setNotifying(true);
+    setNotifyResult(null);
+    try {
+      const res = await fetch('/api/admin/notify-subscribers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slug: notifySlug }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setNotifyResult(`Sent to ${data.sent} subscriber${data.sent !== 1 ? 's' : ''}`);
+      } else {
+        setNotifyResult(data.error || 'Failed to send');
+      }
+    } catch {
+      setNotifyResult('Failed to send');
+    } finally {
+      setNotifying(false);
+    }
   }
 
   const tabClass = (active: boolean) =>
@@ -130,6 +157,9 @@ export default function AdminDashboard({
           </button>
           <button className={tabClass(tab === 'comments')} onClick={() => setTab('comments')}>
             Comments ({comments.length})
+          </button>
+          <button className={tabClass(tab === 'notify')} onClick={() => setTab('notify')}>
+            Notify Subscribers
           </button>
         </div>
 
@@ -247,6 +277,39 @@ export default function AdminDashboard({
                   </tbody>
                 </table>
               </div>
+            )}
+          </div>
+        )}
+
+        {/* Notify subscribers */}
+        {tab === 'notify' && (
+          <div className="bg-[var(--card-bg)] border border-[var(--neutral-700)] rounded-2xl p-8 max-w-lg">
+            <h3 className="text-lg font-semibold text-[var(--neutral-100)] mb-2">Notify blog subscribers</h3>
+            <p className="text-sm text-[var(--neutral-400)] mb-6">Send an email to all subscribers about a new post.</p>
+
+            <label className="block text-sm text-[var(--neutral-300)] mb-2">Select post</label>
+            <select
+              value={notifySlug}
+              onChange={(e) => setNotifySlug(e.target.value)}
+              className="w-full bg-[var(--neutral-800)] border border-[var(--neutral-600)] rounded-lg px-4 py-3 text-[var(--neutral-100)] text-sm mb-6 focus:outline-none focus:border-[var(--primary)]"
+            >
+              {posts.map((p) => (
+                <option key={p.slug} value={p.slug}>{p.title}</option>
+              ))}
+            </select>
+
+            <button
+              onClick={notifySubscribers}
+              disabled={notifying || !notifySlug}
+              className="px-6 py-3 rounded-lg bg-[var(--primary)] text-[var(--background)] font-semibold text-sm hover:bg-[var(--primary-light)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {notifying ? 'Sending…' : 'Send notification'}
+            </button>
+
+            {notifyResult && (
+              <p className={`mt-4 text-sm ${notifyResult.startsWith('Sent') ? 'text-[var(--primary)]' : 'text-[var(--accent)]'}`}>
+                {notifyResult}
+              </p>
             )}
           </div>
         )}

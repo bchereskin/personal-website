@@ -4,6 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import Navigation from '@/app/components/Navigation';
 import Footer from '@/app/components/Footer';
+import SubscribeForm from '@/app/components/SubscribeForm';
 import { posts, formatDate } from './posts';
 import { useScrollAnimation } from '@/app/hooks/useScrollAnimation';
 
@@ -87,6 +88,26 @@ export default function Blog() {
                 </AnimatedArticle>
               ))}
             </div>
+
+            {/* Subscribe Section */}
+            <AnimatedArticle>
+              <div className="glass rounded-2xl p-8 mt-12">
+                <div className="flex items-start gap-4 mb-5">
+                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-[var(--primary)]/20 flex items-center justify-center">
+                    <svg className="w-5 h-5 text-[var(--primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-[var(--neutral-50)]">Stay updated</h3>
+                    <p className="text-[var(--neutral-400)] text-sm mt-1">
+                      Get notified when I publish new posts. No spam, unsubscribe anytime.
+                    </p>
+                  </div>
+                </div>
+                <SubscribeForm />
+              </div>
+            </AnimatedArticle>
           </div>
         </section>
       </main>
