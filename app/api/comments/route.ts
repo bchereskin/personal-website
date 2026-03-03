@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
   const { data, error } = await getSupabase()
     .from('comments')
     .insert({ slug, name, email, body: commentBody })
-    .select('id, name, body, created_at')
+    .select('id, name, body, created_at, edit_token')
     .single();
 
   if (error) {
@@ -83,4 +83,50 @@ export async function POST(request: NextRequest) {
   }
 
   return NextResponse.json(data, { status: 201 });
+}
+
+const EDIT_WINDOW_MS = 15 * 60 * 1000;
+
+export async function PUT(request: NextRequest) {
+  const { id, edit_token, body: newBody } = await request.json();
+
+  if (!id || !edit_token || !newBody) {
+    return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
+  }
+
+  if (typeof newBody !== 'string' || newBody.length > 2000 || !newBody.trim()) {
+    return NextResponse.json({ error: 'Invalid comment body' }, { status: 400 });
+  }
+
+  const { data: comment, error: fetchError } = await getSupabase()
+    .from('comments')
+    .select('id, edit_token, created_at')
+    .eq('id', id)
+    .single();
+
+  if (fetchError || !comment) {
+    return NextResponse.json({ error: 'Comment not found' }, { status: 404 });
+  }
+
+  if (comment.edit_token !== edit_token) {
+    return NextResponse.json({ error: 'Invalid token' }, { status: 403 });
+  }
+
+  const created = new Date(comment.created_at).getTime();
+  if (Date.now() - created > EDIT_WINDOW_MS) {
+    return NextResponse.json({ error: 'Edit window has expired' }, { status: 403 });
+  }
+
+  const { data: updated, error: updateError } = await getSupabase()
+    .from('comments')
+    .update({ body: newBody.trim() })
+    .eq('id', id)
+    .select('id, name, body, created_at')
+    .single();
+
+  if (updateError) {
+    return NextResponse.json({ error: updateError.message }, { status: 500 });
+  }
+
+  return NextResponse.json(updated);
 }

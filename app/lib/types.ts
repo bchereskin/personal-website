@@ -5,4 +5,5 @@ export interface Comment {
   email: string;
   body: string;
   created_at: string;
+  edit_token?: string;
 }
