@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import Navigation from '@/app/components/Navigation';
@@ -28,6 +29,8 @@ function AnimatedArticle({
 }
 
 export default function Blog() {
+  const [showSubscribe, setShowSubscribe] = useState(false);
+
   return (
     <>
       <Navigation />
@@ -55,11 +58,27 @@ export default function Blog() {
             <p className="text-xl text-[var(--neutral-400)] animate-fade-in-up delay-200">
               Thoughts on leadership, operations, and building great companies.
             </p>
+            <div className="mt-5 animate-fade-in-up delay-300">
+              <button
+                onClick={() => setShowSubscribe(!showSubscribe)}
+                className="inline-flex items-center gap-2 text-sm font-medium text-[var(--neutral-400)] hover:text-[var(--primary)] transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+                {showSubscribe ? 'Hide' : 'Subscribe for updates'}
+              </button>
+              {showSubscribe && (
+                <div className="mt-4 max-w-md animate-fade-in-up">
+                  <SubscribeForm />
+                </div>
+              )}
+            </div>
           </div>
         </section>
 
         {/* Blog Posts */}
-        <section className="py-16 px-6">
+        <section className="pt-8 pb-16 px-6">
           <div className="max-w-4xl mx-auto">
             <div className="space-y-8">
               {posts.map((post, index) => (
@@ -89,25 +108,6 @@ export default function Blog() {
               ))}
             </div>
 
-            {/* Subscribe Section */}
-            <AnimatedArticle>
-              <div className="glass rounded-2xl p-8 mt-12">
-                <div className="flex items-start gap-4 mb-5">
-                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-[var(--primary)]/20 flex items-center justify-center">
-                    <svg className="w-5 h-5 text-[var(--primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-[var(--neutral-50)]">Stay updated</h3>
-                    <p className="text-[var(--neutral-400)] text-sm mt-1">
-                      Get notified when I publish new posts. No spam, unsubscribe anytime.
-                    </p>
-                  </div>
-                </div>
-                <SubscribeForm />
-              </div>
-            </AnimatedArticle>
           </div>
         </section>
       </main>
