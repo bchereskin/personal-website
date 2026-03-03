@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic';
 export default async function AdminPage() {
   const supabase = await createSupabaseServer();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect('/admin/login');
+  if (!user || user.email !== process.env.ADMIN_EMAIL) redirect('/admin/login');
 
   const admin = getAdminSupabase();
 

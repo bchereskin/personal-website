@@ -8,7 +8,9 @@ export async function DELETE(
 ) {
   const supabase = await createSupabaseServer();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!user || user.email !== process.env.ADMIN_EMAIL) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
 
   const { id } = await params;
   const { error } = await getAdminSupabase().from('comments').delete().eq('id', id);

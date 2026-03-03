@@ -28,12 +28,13 @@ export async function middleware(request: NextRequest) {
 
   const isAdminRoute = request.nextUrl.pathname.startsWith('/admin');
   const isLoginPage = request.nextUrl.pathname === '/admin/login';
+  const isAdmin = user?.email === process.env.ADMIN_EMAIL;
 
-  if (isAdminRoute && !isLoginPage && !user) {
+  if (isAdminRoute && !isLoginPage && !isAdmin) {
     return NextResponse.redirect(new URL('/admin/login', request.url));
   }
 
-  if (isLoginPage && user) {
+  if (isLoginPage && isAdmin) {
     return NextResponse.redirect(new URL('/admin', request.url));
   }
 
