@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
 
   const { data, error } = await getSupabase()
     .from('comments')
-    .select('id, name, body, created_at')
+    .select('id, name, body, created_at, parent_id')
     .eq('slug', slug)
     .order('created_at', { ascending: true });
 
@@ -24,7 +24,15 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
-  const { slug, name, email, body: commentBody, honeypot } = body;
+  const {
+    slug,
+    name,
+    email,
+    body: commentBody,
+    honeypot,
+    parent_id,
+    notify_replies,
+  } = body;
 
   if (honeypot) {
     return NextResponse.json({ ok: true });
@@ -47,10 +55,30 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid email' }, { status: 400 });
   }
 
+  if (parent_id) {
+    const { data: parentComment } = await getSupabase()
+      .from('comments')
+      .select('id')
+      .eq('id', parent_id)
+      .eq('slug', slug)
+      .single();
+
+    if (!parentComment) {
+      return NextResponse.json({ error: 'Parent comment not found' }, { status: 400 });
+    }
+  }
+
   const { data, error } = await getSupabase()
     .from('comments')
-    .insert({ slug, name, email, body: commentBody })
-    .select('id, name, body, created_at')
+    .insert({
+      slug,
+      name,
+      email,
+      body: commentBody,
+      parent_id: parent_id || null,
+      notify_replies: !!notify_replies,
+    })
+    .select('id, name, body, created_at, parent_id')
     .single();
 
   if (error) {
@@ -58,6 +86,8 @@ export async function POST(request: NextRequest) {
   }
 
   const post = getPostBySlug(slug);
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://brettchereskin.com';
+
   const { error: emailError } = await new Resend(process.env.RESEND_API_KEY).emails.send({
     from: 'comments@brettchereskin.com',
     to: process.env.CONTACT_EMAIL!,
@@ -65,10 +95,10 @@ export async function POST(request: NextRequest) {
     subject: `[Comment] ${post!.title} — ${name}`,
     html: `
       <div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;">
-        <h2 style="color:#7d9a78;margin-bottom:4px;">New comment from ${name}</h2>
+        <h2 style="color:#7d9a78;margin-bottom:4px;">New ${parent_id ? 'reply' : 'comment'} from ${name}</h2>
         <p style="color:#888;font-size:14px;margin-top:0;">${new Date().toLocaleString()}</p>
         <hr style="border:none;border-top:1px solid #333;margin:16px 0;" />
-        <p><strong>Post:</strong> <a href="https://brettchereskin.com/blog/${slug}">${post!.title}</a></p>
+        <p><strong>Post:</strong> <a href="${siteUrl}/blog/${slug}">${post!.title}</a></p>
         <p><strong>Email:</strong> <a href="mailto:${email}">${email}</a></p>
         <hr style="border:none;border-top:1px solid #333;margin:16px 0;" />
         <p style="white-space:pre-wrap;">${commentBody}</p>
@@ -82,5 +112,56 @@ export async function POST(request: NextRequest) {
     console.error('Comment notification email failed:', emailError);
   }
 
+  if (parent_id) {
+    sendReplyNotification(parent_id, name, commentBody, slug, post!.title, email).catch(
+      (err) => console.error('Reply notification failed:', err)
+    );
+  }
+
   return NextResponse.json(data, { status: 201 });
+}
+
+async function sendReplyNotification(
+  parentId: number,
+  replyAuthor: string,
+  replyBody: string,
+  slug: string,
+  postTitle: string,
+  replyEmail: string,
+) {
+  const { data: parent } = await getSupabase()
+    .from('comments')
+    .select('email, name, notify_replies, unsubscribe_token')
+    .eq('id', parentId)
+    .single();
+
+  if (!parent || !parent.notify_replies || parent.email === replyEmail) return;
+
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://brettchereskin.com';
+  const unsubscribeUrl = `${siteUrl}/api/unsubscribe?token=${parent.unsubscribe_token}`;
+
+  await new Resend(process.env.RESEND_API_KEY).emails.send({
+    from: 'comments@brettchereskin.com',
+    to: parent.email,
+    subject: `${replyAuthor} replied to your comment on "${postTitle}"`,
+    html: `
+      <div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;">
+        <h2 style="color:#7d9a78;margin-bottom:8px;">New reply to your comment</h2>
+        <p style="color:#ccc;line-height:1.6;">
+          Hi ${parent.name}, <strong>${replyAuthor}</strong> replied to your comment on
+          <a href="${siteUrl}/blog/${slug}" style="color:#7d9a78;">${postTitle}</a>.
+        </p>
+        <div style="background:#242220;border-left:3px solid #7d9a78;padding:12px 16px;margin:16px 0;border-radius:4px;">
+          <p style="color:#f5f2ed;white-space:pre-wrap;margin:0;">${replyBody}</p>
+        </div>
+        <a href="${siteUrl}/blog/${slug}" style="display:inline-block;background:#7d9a78;color:#1a1816;padding:8px 20px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;">
+          View the conversation
+        </a>
+        <hr style="border:none;border-top:1px solid #333;margin:24px 0 16px;" />
+        <p style="font-size:12px;color:#888;">
+          <a href="${unsubscribeUrl}" style="color:#888;">Unsubscribe from reply notifications</a>
+        </p>
+      </div>
+    `,
+  });
 }
