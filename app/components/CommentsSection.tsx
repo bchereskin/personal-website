@@ -3,6 +3,38 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { Comment } from '@/app/lib/types';
 
+const EDIT_TOKENS_KEY = 'comment_edit_tokens';
+const EDIT_WINDOW_MS = 15 * 60 * 1000;
+
+function getEditTokens(): Record<number, string> {
+  try {
+    return JSON.parse(localStorage.getItem(EDIT_TOKENS_KEY) || '{}');
+  } catch {
+    return {};
+  }
+}
+
+function saveEditToken(commentId: number, token: string) {
+  const tokens = getEditTokens();
+  tokens[commentId] = token;
+  localStorage.setItem(EDIT_TOKENS_KEY, JSON.stringify(tokens));
+}
+
+function isEditable(comment: Comment): boolean {
+  const tokens = getEditTokens();
+  if (!tokens[comment.id]) return false;
+  const created = new Date(comment.created_at).getTime();
+  return Date.now() - created < EDIT_WINDOW_MS;
+}
+
+function timeRemaining(createdAt: string): string {
+  const elapsed = Date.now() - new Date(createdAt).getTime();
+  const remaining = EDIT_WINDOW_MS - elapsed;
+  if (remaining <= 0) return '';
+  const mins = Math.ceil(remaining / 60000);
+  return `${mins}m left to edit`;
+}
+
 function formatCommentDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString('en-US', {
     year: 'numeric',
@@ -60,6 +92,9 @@ function ReplyForm({
       }
 
       const newComment = await res.json();
+      if (newComment.edit_token) {
+        saveEditToken(newComment.id, newComment.edit_token);
+      }
       onSubmitted(newComment);
     } catch {
       setError('Something went wrong.');
@@ -143,13 +178,21 @@ function CommentItem({
   replies,
   slug,
   onNewReply,
+  onEdit,
+  editable,
 }: {
   comment: Comment;
   replies: Comment[];
   slug: string;
   onNewReply: (comment: Comment) => void;
+  onEdit: (id: number, newBody: string) => Promise<boolean>;
+  editable: boolean;
 }) {
   const [showReplyForm, setShowReplyForm] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [editBody, setEditBody] = useState(comment.body);
+  const [saving, setSaving] = useState(false);
+  const [editError, setEditError] = useState('');
 
   const initials = comment.name
     .split(' ')
@@ -157,6 +200,22 @@ function CommentItem({
     .join('')
     .toUpperCase()
     .slice(0, 2);
+
+  async function handleSave() {
+    if (!editBody.trim() || editBody === comment.body) {
+      setEditing(false);
+      return;
+    }
+    setSaving(true);
+    setEditError('');
+    const success = await onEdit(comment.id, editBody);
+    setSaving(false);
+    if (success) {
+      setEditing(false);
+    } else {
+      setEditError('Failed to save. Edit window may have expired.');
+    }
+  }
 
   return (
     <div className="py-6 border-b border-[var(--neutral-700)] last:border-0">
@@ -168,18 +227,62 @@ function CommentItem({
           <div className="flex items-baseline gap-2 flex-wrap mb-1">
             <span className="font-semibold text-[var(--neutral-100)]">{comment.name}</span>
             <span className="text-xs text-[var(--neutral-400)]">{formatCommentDate(comment.created_at)}</span>
+            {editable && !editing && (
+              <span className="text-xs text-[var(--neutral-500)]">{timeRemaining(comment.created_at)}</span>
+            )}
           </div>
-          <p className="text-[var(--neutral-200)] leading-relaxed whitespace-pre-wrap break-words">{comment.body}</p>
-          <button
-            onClick={() => setShowReplyForm(!showReplyForm)}
-            className="mt-2 text-xs text-[var(--neutral-500)] hover:text-[var(--primary)] transition-colors"
-          >
-            Reply
-          </button>
+
+          {editing ? (
+            <div className="mt-2">
+              <textarea
+                value={editBody}
+                onChange={(e) => setEditBody(e.target.value)}
+                maxLength={2000}
+                rows={3}
+                className="w-full bg-[var(--neutral-800)] border border-[var(--neutral-600)] rounded-lg px-4 py-3 text-[var(--neutral-100)] placeholder-[var(--neutral-500)] focus:outline-none focus:border-[var(--primary)] transition-colors text-sm resize-y"
+              />
+              {editError && <p className="text-xs text-[var(--accent)] mt-1">{editError}</p>}
+              <div className="flex gap-2 mt-2">
+                <button
+                  onClick={handleSave}
+                  disabled={saving || !editBody.trim()}
+                  className="px-3 py-1.5 rounded-md bg-[var(--primary)] text-[var(--background)] text-xs font-semibold hover:bg-[var(--primary-light)] disabled:opacity-50 transition-colors"
+                >
+                  {saving ? 'Saving…' : 'Save'}
+                </button>
+                <button
+                  onClick={() => { setEditing(false); setEditBody(comment.body); setEditError(''); }}
+                  disabled={saving}
+                  className="px-3 py-1.5 rounded-md bg-[var(--neutral-700)] text-[var(--neutral-300)] text-xs hover:bg-[var(--neutral-600)] transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div>
+              <p className="text-[var(--neutral-200)] leading-relaxed whitespace-pre-wrap break-words">{comment.body}</p>
+              <div className="flex gap-3 mt-2">
+                {editable && (
+                  <button
+                    onClick={() => setEditing(true)}
+                    className="text-xs text-[var(--neutral-500)] hover:text-[var(--primary)] transition-colors"
+                  >
+                    Edit
+                  </button>
+                )}
+                <button
+                  onClick={() => setShowReplyForm(!showReplyForm)}
+                  className="text-xs text-[var(--neutral-500)] hover:text-[var(--primary)] transition-colors"
+                >
+                  Reply
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Replies */}
       {replies.length > 0 && (
         <div className="mt-4 ml-14 border-l-2 border-[var(--neutral-700)] pl-4 space-y-4">
           {replies.map((reply) => {
@@ -208,7 +311,6 @@ function CommentItem({
         </div>
       )}
 
-      {/* Reply form */}
       {showReplyForm && (
         <ReplyForm
           slug={slug}
@@ -230,12 +332,18 @@ export default function CommentsSection({ slug }: { slug: string }) {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
+  const [, setTick] = useState(0);
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [body, setBody] = useState('');
   const [notifyReplies, setNotifyReplies] = useState(false);
   const [honeypot, setHoneypot] = useState('');
+
+  useEffect(() => {
+    const interval = setInterval(() => setTick((t) => t + 1), 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   const fetchComments = useCallback(async () => {
     try {
@@ -254,8 +362,7 @@ export default function CommentsSection({ slug }: { slug: string }) {
   }, [fetchComments]);
 
   const topLevelComments = comments.filter((c) => !c.parent_id);
-  const getReplies = (parentId: number) =>
-    comments.filter((c) => c.parent_id === parentId);
+  const getReplies = (parentId: number) => comments.filter((c) => c.parent_id === parentId);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -266,14 +373,7 @@ export default function CommentsSection({ slug }: { slug: string }) {
       const res = await fetch('/api/comments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          slug,
-          name,
-          email,
-          body,
-          honeypot,
-          notify_replies: notifyReplies,
-        }),
+        body: JSON.stringify({ slug, name, email, body, honeypot, notify_replies: notifyReplies }),
       });
 
       if (!res.ok) {
@@ -284,7 +384,11 @@ export default function CommentsSection({ slug }: { slug: string }) {
 
       const newComment = await res.json();
       if (newComment.id) {
-        setComments((prev) => [...prev, newComment]);
+        if (newComment.edit_token) {
+          saveEditToken(newComment.id, newComment.edit_token);
+        }
+        const { edit_token: _token, ...commentWithoutToken } = newComment;
+        setComments((prev) => [...prev, commentWithoutToken]);
       }
       setName('');
       setEmail('');
@@ -301,6 +405,29 @@ export default function CommentsSection({ slug }: { slug: string }) {
 
   function handleNewReply(reply: Comment) {
     setComments((prev) => [...prev, reply]);
+  }
+
+  async function handleEdit(commentId: number, newBody: string): Promise<boolean> {
+    const tokens = getEditTokens();
+    const edit_token = tokens[commentId];
+    if (!edit_token) return false;
+
+    try {
+      const res = await fetch('/api/comments', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: commentId, edit_token, body: newBody }),
+      });
+
+      if (res.ok) {
+        const updated = await res.json();
+        setComments((prev) =>
+          prev.map((c) => (c.id === commentId ? { ...c, body: updated.body } : c))
+        );
+        return true;
+      }
+    } catch {}
+    return false;
   }
 
   return (
@@ -320,6 +447,8 @@ export default function CommentsSection({ slug }: { slug: string }) {
               replies={getReplies(c.id)}
               slug={slug}
               onNewReply={handleNewReply}
+              onEdit={handleEdit}
+              editable={isEditable(c)}
             />
           ))}
         </div>
