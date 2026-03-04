@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { getSupabase } from '@/app/lib/supabase';
 import { getPostBySlug } from '@/app/blog/posts';
+import { escapeHtml, sanitizeInput } from '@/app/lib/sanitize';
 
 export async function GET(request: NextRequest) {
   const slug = request.nextUrl.searchParams.get('slug');
@@ -55,6 +56,14 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid email' }, { status: 400 });
   }
 
+  const cleanName = sanitizeInput(name);
+  const cleanEmail = sanitizeInput(email);
+  const cleanBody = sanitizeInput(commentBody);
+
+  if (!cleanName || !cleanEmail || !cleanBody) {
+    return NextResponse.json({ error: 'All fields are required' }, { status: 400 });
+  }
+
   if (parent_id) {
     const { data: parentComment } = await getSupabase()
       .from('comments')
@@ -72,9 +81,9 @@ export async function POST(request: NextRequest) {
     .from('comments')
     .insert({
       slug,
-      name,
-      email,
-      body: commentBody,
+      name: cleanName,
+      email: cleanEmail,
+      body: cleanBody,
       parent_id: parent_id || null,
       notify_replies: !!notify_replies,
     })
@@ -91,17 +100,17 @@ export async function POST(request: NextRequest) {
   const { error: emailError } = await new Resend(process.env.RESEND_API_KEY).emails.send({
     from: 'comments@brettchereskin.com',
     to: process.env.CONTACT_EMAIL!,
-    replyTo: email,
-    subject: `[Comment] ${post!.title} — ${name}`,
+    replyTo: cleanEmail,
+    subject: `[Comment] ${post!.title} — ${cleanName}`,
     html: `
       <div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;">
-        <h2 style="color:#7d9a78;margin-bottom:4px;">New ${parent_id ? 'reply' : 'comment'} from ${name}</h2>
+        <h2 style="color:#7d9a78;margin-bottom:4px;">New ${parent_id ? 'reply' : 'comment'} from ${escapeHtml(cleanName)}</h2>
         <p style="color:#888;font-size:14px;margin-top:0;">${new Date().toLocaleString()}</p>
         <hr style="border:none;border-top:1px solid #333;margin:16px 0;" />
-        <p><strong>Post:</strong> <a href="${siteUrl}/blog/${slug}">${post!.title}</a></p>
-        <p><strong>Email:</strong> <a href="mailto:${email}">${email}</a></p>
+        <p><strong>Post:</strong> <a href="${siteUrl}/blog/${slug}">${escapeHtml(post!.title)}</a></p>
+        <p><strong>Email:</strong> <a href="mailto:${escapeHtml(cleanEmail)}">${escapeHtml(cleanEmail)}</a></p>
         <hr style="border:none;border-top:1px solid #333;margin:16px 0;" />
-        <p style="white-space:pre-wrap;">${commentBody}</p>
+        <p style="white-space:pre-wrap;">${escapeHtml(cleanBody)}</p>
         <hr style="border:none;border-top:1px solid #333;margin:16px 0;" />
         <p style="font-size:12px;color:#888;">Sent via brettchereskin.com</p>
       </div>
@@ -113,7 +122,7 @@ export async function POST(request: NextRequest) {
   }
 
   if (parent_id) {
-    sendReplyNotification(parent_id, name, commentBody, slug, post!.title, email).catch(
+    sendReplyNotification(parent_id, cleanName, cleanBody, slug, post!.title, cleanEmail).catch(
       (err) => console.error('Reply notification failed:', err)
     );
   }
@@ -131,6 +140,11 @@ export async function PUT(request: NextRequest) {
   }
 
   if (typeof newBody !== 'string' || newBody.length > 2000 || !newBody.trim()) {
+    return NextResponse.json({ error: 'Invalid comment body' }, { status: 400 });
+  }
+
+  const cleanNewBody = sanitizeInput(newBody);
+  if (!cleanNewBody) {
     return NextResponse.json({ error: 'Invalid comment body' }, { status: 400 });
   }
 
@@ -155,7 +169,7 @@ export async function PUT(request: NextRequest) {
 
   const { data: updated, error: updateError } = await getSupabase()
     .from('comments')
-    .update({ body: newBody.trim() })
+    .update({ body: cleanNewBody })
     .eq('id', id)
     .select('id, name, body, created_at')
     .single();
@@ -194,11 +208,11 @@ async function sendReplyNotification(
       <div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;">
         <h2 style="color:#7d9a78;margin-bottom:8px;">New reply to your comment</h2>
         <p style="color:#ccc;line-height:1.6;">
-          Hi ${parent.name}, <strong>${replyAuthor}</strong> replied to your comment on
-          <a href="${siteUrl}/blog/${slug}" style="color:#7d9a78;">${postTitle}</a>.
+          Hi ${escapeHtml(parent.name)}, <strong>${escapeHtml(replyAuthor)}</strong> replied to your comment on
+          <a href="${siteUrl}/blog/${slug}" style="color:#7d9a78;">${escapeHtml(postTitle)}</a>.
         </p>
         <div style="background:#242220;border-left:3px solid #7d9a78;padding:12px 16px;margin:16px 0;border-radius:4px;">
-          <p style="color:#f5f2ed;white-space:pre-wrap;margin:0;">${replyBody}</p>
+          <p style="color:#f5f2ed;white-space:pre-wrap;margin:0;">${escapeHtml(replyBody)}</p>
         </div>
         <a href="${siteUrl}/blog/${slug}" style="display:inline-block;background:#7d9a78;color:#1a1816;padding:8px 20px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;">
           View the conversation
