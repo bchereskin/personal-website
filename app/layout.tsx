@@ -33,6 +33,43 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     creator: '@BChereskin',
   },
+  alternates: {
+    types: {
+      'application/rss+xml': '/feed.xml',
+    },
+  },
+};
+
+const personSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: 'Brett Chereskin',
+  jobTitle: 'Chief Operating Officer',
+  worksFor: {
+    '@type': 'Organization',
+    name: 'dub',
+    url: 'https://dub.co',
+  },
+  alumniOf: [
+    {
+      '@type': 'CollegeOrUniversity',
+      name: 'United States Military Academy at West Point',
+    },
+  ],
+  url: 'https://www.brettchereskin.com',
+  sameAs: [
+    'https://www.linkedin.com/in/brett-chereskin/',
+    'https://x.com/BChereskin',
+  ],
+  description: 'COO at dub. West Point graduate and Army veteran building the systems and teams that scale ambitious companies.',
+};
+
+const websiteSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: 'Brett Chereskin',
+  url: 'https://www.brettchereskin.com',
+  author: { '@type': 'Person', name: 'Brett Chereskin' },
 };
 
 export default function RootLayout({
@@ -42,6 +79,16 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(personSchema) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
+        />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

@@ -27,12 +27,20 @@ export async function generateMetadata({
   return {
     title: post.title,
     description: post.excerpt,
+    authors: [{ name: 'Brett Chereskin', url: 'https://www.brettchereskin.com' }],
     openGraph: {
       title: post.title,
       description: post.excerpt,
       type: 'article',
       publishedTime: post.date,
+      authors: ['Brett Chereskin'],
       url: `https://www.brettchereskin.com/blog/${post.slug}`,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: post.title,
+      description: post.excerpt,
+      creator: '@BChereskin',
     },
   };
 }
@@ -108,8 +116,34 @@ export default async function BlogPost({
   const blocks = parseContent(post.content);
   const firstParaIndex = blocks.findIndex(b => b.type === 'p');
 
+  const articleSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: post.title,
+    description: post.excerpt,
+    datePublished: post.date,
+    author: {
+      '@type': 'Person',
+      name: 'Brett Chereskin',
+      url: 'https://www.brettchereskin.com',
+      jobTitle: 'Chief Operating Officer',
+      worksFor: { '@type': 'Organization', name: 'dub' },
+    },
+    publisher: {
+      '@type': 'Person',
+      name: 'Brett Chereskin',
+      url: 'https://www.brettchereskin.com',
+    },
+    mainEntityOfPage: `https://www.brettchereskin.com/blog/${post.slug}`,
+    articleSection: post.category,
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
+      />
       <Navigation />
       <main className="min-h-screen bg-[var(--background)]">
 
