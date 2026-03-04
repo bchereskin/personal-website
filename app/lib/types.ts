@@ -6,4 +6,6 @@ export interface Comment {
   body: string;
   created_at: string;
   edit_token?: string;
+  parent_id?: number | null;
+  notify_replies?: boolean;
 }

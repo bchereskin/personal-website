@@ -1,9 +1,11 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import Navigation from '@/app/components/Navigation';
 import Footer from '@/app/components/Footer';
+import SubscribeForm from '@/app/components/SubscribeForm';
 import { posts, formatDate } from './posts';
 import { useScrollAnimation } from '@/app/hooks/useScrollAnimation';
 
@@ -27,6 +29,8 @@ function AnimatedArticle({
 }
 
 export default function Blog() {
+  const [showSubscribe, setShowSubscribe] = useState(false);
+
   return (
     <>
       <Navigation />
@@ -54,11 +58,27 @@ export default function Blog() {
             <p className="text-xl text-[var(--neutral-400)] animate-fade-in-up delay-200">
               Thoughts on leadership, operations, and building great companies.
             </p>
+            <div className="mt-5 animate-fade-in-up delay-300">
+              <button
+                onClick={() => setShowSubscribe(!showSubscribe)}
+                className="inline-flex items-center gap-2 text-sm font-medium text-[var(--neutral-400)] hover:text-[var(--primary)] transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+                {showSubscribe ? 'Hide' : 'Subscribe for updates'}
+              </button>
+              {showSubscribe && (
+                <div className="mt-4 max-w-md animate-fade-in-up">
+                  <SubscribeForm />
+                </div>
+              )}
+            </div>
           </div>
         </section>
 
         {/* Blog Posts */}
-        <section className="py-16 px-6">
+        <section className="pt-8 pb-16 px-6">
           <div className="max-w-4xl mx-auto">
             <div className="space-y-8">
               {posts.map((post, index) => (
@@ -87,6 +107,7 @@ export default function Blog() {
                 </AnimatedArticle>
               ))}
             </div>
+
           </div>
         </section>
       </main>
