@@ -14,7 +14,7 @@ export const posts: BlogPost[] = [
     title: 'AI Closed the Technical Gap. It Opened a Judgment Gap.',
     excerpt: 'I shipped five features in a week using AI. Then I asked it to audit what I built — and it found a hole I never would have caught on my own. The technical gap is closing. What is opening in its place matters more.',
     date: '2026-03-03',
-    readTime: '5 min read',
+    readTime: '6 min read',
     category: 'AI & Building',
     content: `
 I shipped five features for this website in a single week. Comment replies. Subscriptions. Comment editing. A mobile fix. A full content refresh across every blog post. Each one went from idea to live in hours. Working, tested, deployed.
@@ -35,11 +35,17 @@ But the vulnerability itself is not the point. The point is that I built it, tes
 
 ## The Judgment Gap
 
-Here is what I mean. When building was slow, there was built-in time for reflection. You waited for a developer. You reviewed their work. QA happened naturally because the process was slow enough to include it. That friction was annoying, but it served a purpose — it forced a second look.
+The gap is not just about speed. It is about who is building now.
 
-When you can ship in hours, all of that disappears. Not because you are being reckless. Because the speed itself creates a bias toward building. The next feature. The next improvement. Security, quality, edge cases — those do not feel like progress. They feel like slowing down.
+A year ago, if you wanted a website with user authentication and a database, you hired a developer — someone who had learned through years of practice that authentication and authorization are different things, that databases need access policies, that "it works" and "it is secure" are not the same statement. That knowledge was hard-won. It came from breaking things and fixing them over time.
 
-The result is what I would call judgment debt. You accumulate assumptions that have never been tested. You build on foundations that have never been examined. And unlike technical debt, which you can see in messy code, judgment debt is invisible until something breaks.
+Now, people who have never written a line of code are shipping full applications. I am one of them. And the AI tools are good enough that everything works on the surface. But underneath, there are best practices and failure modes that you do not know to ask about — because you have never been burned by them before.
+
+This is not unique to software. Think about financial modeling. AI can now build a sophisticated DCF model or Monte Carlo simulation for someone who has never taken an accounting class. The spreadsheet will look professional. The formulas will be technically correct. But if you have never built a model from scratch, you might not question the discount rate assumptions, or notice that the revenue projections ignore seasonality, or understand why sensitivity analysis matters. The output looks like expertise, but the judgment behind it is missing.
+
+The same pattern is emerging everywhere AI is lowering the barrier to entry. The tools can execute at an expert level, but they cannot replace the instinct for knowing what to question. That instinct comes from experience — and right now, millions of people are skipping straight to the output without it.
+
+[CALLOUT] The judgment gap is not just about moving fast. It is about entire new populations of builders entering domains without the foundational knowledge to evaluate what they are creating. The tools close the skill gap. They do not close the wisdom gap.
 
 ## The Part That Matters
 
@@ -59,9 +65,9 @@ When was the last time you asked it to challenge what you built?
 
 Not test it. Not check that it works. Actually challenge it. Look at it from the perspective of someone trying to find the cracks. The tools make this easy. You do not need to be a security expert or a QA engineer. You need to be willing to ask "what did I miss?" and honest enough to act on the answer.
 
-The technical gap is closing. That is exciting and real. But the judgment gap is opening right alongside it, and nobody is talking about it yet. The leaders who thrive in this new world will not just be the ones who build the fastest. They will be the ones who know when to stop and ask the hard questions.
+The technical gap is closing. That is exciting and real. But the judgment gap is opening right alongside it — and it is not just affecting developers. It is affecting anyone who uses AI to operate in a domain where they lack deep experience. The leaders who thrive in this new world will not just be the ones who build the fastest. They will be the ones who know when to stop and ask the hard questions.
 
-I am curious — have you hit a moment like this? A time when the speed of AI let you build something impressive, and then you realized you had missed something important? Drop it in the comments. And if you want to follow along as I keep building and breaking things in public, subscribe for updates or reach out through the contact page.
+I am curious — have you hit a moment like this? Whether it is code, financial models, marketing strategy, or anything else — a time when AI helped you build something impressive, and then you realized you had missed something important? Drop it in the comments. And if you want to follow along as I keep building and breaking things in public, subscribe for updates or reach out through the contact page.
     `,
   },
   {
