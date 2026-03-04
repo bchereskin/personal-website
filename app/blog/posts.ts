@@ -10,6 +10,67 @@ export interface BlogPost {
 
 export const posts: BlogPost[] = [
   {
+    slug: 'i-asked-ai-to-hack-my-website',
+    title: 'AI Closed the Technical Gap. It Opened a Judgment Gap.',
+    excerpt: 'I shipped five features in a week using AI. Then I asked it to audit what I built — and it found a hole I never would have caught on my own. The technical gap is closing. What is opening in its place matters more.',
+    date: '2026-03-03',
+    readTime: '6 min read',
+    category: 'AI & Building',
+    content: `
+I shipped five features for this website in a single week. Comment replies. Subscriptions. Comment editing. A mobile fix. A full content refresh across every blog post. Each one went from idea to live in hours. Working, tested, deployed.
+
+If you have been following this blog, you know the pattern by now. AI tools have collapsed the distance between wanting something and having it. The technical gap — the one that used to sit between a leader's vision and a working product — is closing fast.
+
+But something happened this week that made me realize there is a new gap opening. And it might be more dangerous than the one that is closing.
+
+## What the Audit Found
+
+After that building sprint, I did something I had never done before. I asked Claude to run a security audit on everything I had built. Not a checklist — an actual adversarial review. Look at my code the way an attacker would.
+
+It found a real vulnerability. My admin dashboard — where I can see every contact form submission and every comment — was checking whether someone was logged in, but not whether they were actually me. The fix was straightforward, and I caught it within hours of building the features, long before the site had any real traffic or user data at risk.
+
+But the vulnerability itself is not the point. The point is that I built it, tested it, watched it work perfectly, and moved on to the next feature — never once thinking to ask whether it was actually secure. The speed felt like validation. Everything worked, so everything must be fine.
+
+[CALLOUT] AI tools are closing the technical gap at an extraordinary pace. But they are simultaneously opening a judgment gap — the distance between what you can build and what you can evaluate. That gap is where the real risk lives.
+
+## The Judgment Gap
+
+The gap is not just about speed. It is about who is building now.
+
+A year ago, if you wanted a website with user authentication and a database, you hired a developer — someone who had learned through years of practice that authentication and authorization are different things, that databases need access policies, that "it works" and "it is secure" are not the same statement. That knowledge was hard-won. It came from breaking things and fixing them over time.
+
+Now, people who have never written a line of code are shipping full applications. I am one of them. And the AI tools are good enough that everything works on the surface. But underneath, there are best practices and failure modes that you do not know to ask about — because you have never been burned by them before.
+
+This is not unique to software. Think about financial modeling. AI can now build a sophisticated DCF model or Monte Carlo simulation for someone who has never taken an accounting class. The spreadsheet will look professional. The formulas will be technically correct. But if you have never built a model from scratch, you might not question the discount rate assumptions, or notice that the revenue projections ignore seasonality, or understand why sensitivity analysis matters. The output looks like expertise, but the judgment behind it is missing.
+
+The same pattern is emerging everywhere AI is lowering the barrier to entry. The tools can execute at an expert level, but they cannot replace the instinct for knowing what to question. That instinct comes from experience — and right now, millions of people are skipping straight to the output without it.
+
+[CALLOUT] The judgment gap is not just about moving fast. It is about entire new populations of builders entering domains without the foundational knowledge to evaluate what they are creating. The tools close the skill gap. They do not close the wisdom gap.
+
+## The Part That Matters
+
+Here is the good news: the same tools that create this gap can close it.
+
+I asked the same AI that helped me build these features to try to break them. It found the vulnerability, explained why it mattered, and walked me through the fix. The entire audit — reviewing every route, every permission, every database policy — took about an hour. The building sprint took a week.
+
+That hour was more valuable than the week. Because the week created capability, but the hour created trust. Trust that what I built actually works the way I think it does.
+
+[CALLOUT] Speed is a multiplier, not a direction. It amplifies whatever you are already doing — including your blind spots. The unlock is not just building with AI. It is building and auditing with AI.
+
+## The Question Worth Asking
+
+If you have been building with AI — shipping fast, stacking features, feeling the momentum — I want to ask you one thing.
+
+When was the last time you asked it to challenge what you built?
+
+Not test it. Not check that it works. Actually challenge it. Look at it from the perspective of someone trying to find the cracks. The tools make this easy. You do not need to be a security expert or a QA engineer. You need to be willing to ask "what did I miss?" and honest enough to act on the answer.
+
+The technical gap is closing. That is exciting and real. But the judgment gap is opening right alongside it — and it is not just affecting developers. It is affecting anyone who uses AI to operate in a domain where they lack deep experience. The leaders who thrive in this new world will not just be the ones who build the fastest. They will be the ones who know when to stop and ask the hard questions.
+
+I am curious — have you hit a moment like this? Whether it is code, financial models, marketing strategy, or anything else — a time when AI helped you build something impressive, and then you realized you had missed something important? Drop it in the comments. And if you want to follow along as I keep building and breaking things in public, subscribe for updates or reach out through the contact page.
+    `,
+  },
+  {
     slug: 'from-static-site-to-product',
     title: 'I Turned My Website Into a Product in One Day. Here\'s What That Means.',
     excerpt: 'A contact form that logs leads to a database. A comment section for readers. A private admin dashboard. All built without writing code — and what it reveals about the new economics of building.',
