@@ -10,6 +10,67 @@ export interface BlogPost {
 
 export const posts: BlogPost[] = [
   {
+    slug: 'i-built-a-hosting-platform-for-a-friend',
+    title: 'I Built My Friend a Personalized AI Guide. It Took Thirty Minutes.',
+    excerpt: 'I built a personalized Claude quick-start guide for a friend, hosted it on my website, and then turned the whole thing into a database-backed content platform with admin controls — all in a single session. The speed of iteration is getting absurd.',
+    date: '2026-03-08',
+    readTime: '5 min read',
+    category: 'AI & Building',
+    content: `
+My friend Mike runs a company. Smart guy, strong operator, moves fast once he has a framework. He had been using ChatGPT regularly — summarizing documents, drafting emails, brainstorming strategy. But he kept hitting the same wall. Every conversation started from zero. He could not build on previous context, could not get the tool deep enough into his actual work to make it stick. He was getting value, but not traction.
+
+We got talking about it, and I introduced him to Claude — specifically Cowork, Anthropic's collaborative mode. The difference was immediate. Instead of one-off prompts, Mike could work alongside Claude on sustained projects — building context over a session, iterating on real deliverables, getting output that actually mapped to his workflow. That was the breakthrough.
+
+But then I had an idea. Rather than just pointing Mike at the tool, what if I built him a personalized quick-start guide? Something tailored to his role, his industry, his actual use cases. Not "here is what a large language model is" — more like "here is what to do Monday morning."
+
+I sat down with Claude Code and built it. The guide came together fast. But the moment that made me pause was the question that came next: how do I get this to Mike in a way that actually feels right?
+
+## Ship It, Then Improve It
+
+I could have emailed a PDF. Instead, Claude suggested hosting it as a standalone HTML page on my website — a clean, styled page at a unique URL that only Mike would have. Ten minutes later, it was live. His name on it, organized by the use cases we discussed, styled to match the rest of my site.
+
+His response was immediate. He could not believe something that personalized and professional had materialized in the time it normally takes to draft an email.
+
+[CALLOUT] The gap between "I want to help someone" and "here is a polished, personalized resource built for you" used to be measured in days. Now it is measured in minutes.
+
+## From Static File to Platform
+
+The page worked fine as a static file. But my brain started doing what operator brains do — asking the next question. How many times has Mike visited? What if I want to host guides for other people? What if I need to take one down? What if I want to manage all of this from my admin dashboard?
+
+Each of those questions used to be a feature request. A ticket in a backlog. Something that might get built in Q2.
+
+Instead, I described what I wanted to Claude Code and we built it in the same session. The static file moved into a Supabase database — each page stored as a row with its content, a URL slug, a visit counter, and an active/inactive flag. A dynamic route handler serves pages from the database, tracks visits with an atomic counter, and returns a 404 if something has been dehosted. The admin dashboard picked up a new tab where I can see every shared page, its visit count, last access time, and toggle it on or off with one click.
+
+That is not a file on a server anymore. That is a content hosting platform — and it went from idea to deployed in under an hour.
+
+## What Compounds from Here
+
+Right now it hosts one guide for one person. But the infrastructure does not care about that. The same system can host onboarding documents, advisory playbooks, or reference materials for any team I work with. Each gets its own URL, visit tracking, and kill switch.
+
+The roadmap is already taking shape: secure client logins to access personalized resources, a file-sharing workspace for documents and tools, an admin content studio to draft and deploy pages without touching code. Each feature is a single session away — not because the engineering is trivial, but because the iteration loop has gotten so tight that describing a capability and having it live are practically the same step.
+
+[CALLOUT] The most underestimated advantage of building with AI is the compounding. Every feature creates the foundation for three more. The iteration speed is not linear. It is exponential.
+
+## Mike's Reaction Is the Point
+
+When Mike opened that link — a professionally designed guide with his name on it, organized around his specific use cases, hosted on a real website — it blew his mind. Not because the technology was impressive in the abstract. Because he expected a shared doc and got a personalized portal.
+
+That gap between expectation and delivery is where the opportunity lives. Think about what it means for client onboarding, advisory work, or any situation where you are helping someone get up to speed. Personalized, professional, hosted resources in minutes — that is a real competitive advantage in any business where trust and first impressions matter.
+
+And speed does not mean cutting corners. After building the system, I ran a full security audit — the same practice I wrote about in my last post. It surfaced real issues: content security policies for hosted pages, input validation on admin endpoints, rate limiting, proper database access controls. Every finding got fixed in the same session.
+
+[CALLOUT] Speed without rigor is a liability. Speed with rigor is a superpower. The discipline is in making the audit non-negotiable.
+
+## What Are You Putting Off?
+
+What is the thing you have been meaning to create for someone? The onboarding guide. The training resource. The client welcome package. The thing that sits in your head as "I should really put that together someday" but never makes it past a bullet point in your notes.
+
+Someday is about thirty minutes away.
+
+Drop it in the comments — whether it is a resource you want to build, an idea for your clients, or a question about how any of this works. And if you want to dig into what building with AI could look like for your company, reach out through the contact page. That is exactly the kind of conversation I enjoy most.
+    `,
+  },
+  {
     slug: 'i-asked-ai-to-hack-my-website',
     title: 'AI Closed the Technical Gap. It Opened a Judgment Gap.',
     excerpt: 'I shipped five features in a week using AI. Then I asked it to audit what I built — and it found a hole I never would have caught on my own. The technical gap is closing. What is opening in its place matters more.',
