@@ -2,10 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { getSupabase } from '@/app/lib/supabase';
 import { escapeHtml, sanitizeInput } from '@/app/lib/sanitize';
+import { rateLimit } from '@/app/lib/rate-limit';
 
 const SUBJECTS = ['General Inquiry', 'Business Inquiry', 'Advisory', 'Speaking', 'Other'];
 
 export async function POST(request: NextRequest) {
+  const limited = rateLimit(request, { maxRequests: 5, windowMs: 3600_000 });
+  if (limited) return limited;
+
   const body = await request.json();
   const { name, email, subject, message, honeypot } = body;
 

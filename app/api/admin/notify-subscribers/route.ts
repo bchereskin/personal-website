@@ -7,7 +7,9 @@ import { getPostBySlug } from '@/app/blog/posts';
 export async function POST(request: NextRequest) {
   const supabase = await createSupabaseServer();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!user || user.email !== process.env.ADMIN_EMAIL) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
 
   const { slug } = await request.json();
   const post = getPostBySlug(slug);
