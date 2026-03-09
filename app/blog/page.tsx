@@ -5,28 +5,10 @@ import Link from 'next/link';
 import Image from 'next/image';
 import Navigation from '@/app/components/Navigation';
 import Footer from '@/app/components/Footer';
+import MotionSection from '@/app/components/MotionSection';
 import SubscribeForm from '@/app/components/SubscribeForm';
 import { posts, formatDate } from './posts';
-import { useScrollAnimation } from '@/app/hooks/useScrollAnimation';
-
-function AnimatedArticle({
-  children,
-  delay = ''
-}: {
-  children: React.ReactNode;
-  delay?: string;
-}) {
-  const { ref, isVisible } = useScrollAnimation(0.1);
-
-  return (
-    <article
-      ref={ref}
-      className={`${isVisible ? `animate-fade-in-up ${delay}` : 'opacity-0'}`}
-    >
-      {children}
-    </article>
-  );
-}
+import { motion } from 'motion/react';
 
 export default function Blog() {
   const [showSubscribe, setShowSubscribe] = useState(false);
@@ -49,16 +31,36 @@ export default function Blog() {
           </div>
 
           <div className="max-w-4xl mx-auto relative z-10">
-            <p className="text-[var(--primary)] font-medium tracking-widest uppercase mb-3 animate-fade-in-up">
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="text-[var(--primary)] font-medium tracking-widest uppercase mb-3"
+            >
               Insights
-            </p>
-            <h1 className="text-5xl md:text-6xl font-bold text-[var(--neutral-50)] mb-4 animate-fade-in-up delay-100">
+            </motion.p>
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+              className="text-5xl md:text-6xl font-bold text-[var(--neutral-50)] mb-4"
+            >
               Blog
-            </h1>
-            <p className="text-xl text-[var(--neutral-400)] animate-fade-in-up delay-200">
+            </motion.h1>
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="text-xl text-[var(--neutral-400)]"
+            >
               Thoughts on leadership, operations, and building great companies.
-            </p>
-            <div className="mt-5 animate-fade-in-up delay-300">
+            </motion.p>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              className="mt-5"
+            >
               <button
                 onClick={() => setShowSubscribe(!showSubscribe)}
                 className="inline-flex items-center gap-2 text-sm font-medium text-[var(--neutral-400)] hover:text-[var(--primary)] transition-colors"
@@ -69,11 +71,16 @@ export default function Blog() {
                 {showSubscribe ? 'Hide' : 'Subscribe for updates'}
               </button>
               {showSubscribe && (
-                <div className="mt-4 max-w-md animate-fade-in-up">
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  transition={{ duration: 0.3 }}
+                  className="mt-4 max-w-md"
+                >
                   <SubscribeForm />
-                </div>
+                </motion.div>
               )}
-            </div>
+            </motion.div>
           </div>
         </section>
 
@@ -82,9 +89,13 @@ export default function Blog() {
           <div className="max-w-4xl mx-auto">
             <div className="space-y-8">
               {posts.map((post, index) => (
-                <AnimatedArticle key={post.slug} delay={`delay-${(index + 1) * 100}`}>
+                <MotionSection key={post.slug} delay={index * 0.1}>
                   <Link href={`/blog/${post.slug}`} className="block group">
-                    <div className="bg-[var(--card-bg)] rounded-2xl p-8 border border-[var(--neutral-700)] hover:border-[var(--neutral-600)] transition-all hover-lift">
+                    <motion.div
+                      whileHover={{ y: -4, boxShadow: '0 20px 40px -12px rgba(0, 0, 0, 0.4)' }}
+                      transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                      className="bg-[var(--card-bg)] rounded-2xl p-8 border border-[var(--neutral-700)] hover:border-[var(--neutral-600)] transition-colors"
+                    >
                       <div className="flex items-center gap-4 text-sm text-[var(--neutral-500)] mb-4">
                         <span className="bg-[var(--primary)]/20 text-[var(--primary)] px-3 py-1 rounded-full font-medium">
                           {post.category}
@@ -102,12 +113,11 @@ export default function Blog() {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
                         </svg>
                       </span>
-                    </div>
+                    </motion.div>
                   </Link>
-                </AnimatedArticle>
+                </MotionSection>
               ))}
             </div>
-
           </div>
         </section>
       </main>

@@ -3,17 +3,9 @@
 import { useState } from 'react';
 import Navigation from '@/app/components/Navigation';
 import Footer from '@/app/components/Footer';
+import MotionSection from '@/app/components/MotionSection';
 import Image from 'next/image';
-import { useScrollAnimation } from '@/app/hooks/useScrollAnimation';
-
-function AnimatedCard({ children, delay = '' }: { children: React.ReactNode; delay?: string }) {
-  const { ref, isVisible } = useScrollAnimation(0.1);
-  return (
-    <div ref={ref} className={`${isVisible ? `animate-fade-in-up ${delay}` : 'opacity-0'}`}>
-      {children}
-    </div>
-  );
-}
+import { motion } from 'motion/react';
 
 const SUBJECTS = ['General Inquiry', 'Business Inquiry', 'Advisory', 'Speaking', 'Other'];
 
@@ -71,22 +63,37 @@ export default function Contact() {
             <div className="absolute inset-0 bg-gradient-to-b from-[var(--background)] via-transparent to-[var(--background)]" />
           </div>
           <div className="max-w-4xl mx-auto relative z-10">
-            <p className="text-[var(--primary)] font-medium tracking-widest uppercase mb-3 animate-fade-in-up">
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="text-[var(--primary)] font-medium tracking-widest uppercase mb-3"
+            >
               Get in Touch
-            </p>
-            <h1 className="text-5xl md:text-6xl font-bold text-[var(--neutral-50)] mb-4 animate-fade-in-up delay-100">
+            </motion.p>
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+              className="text-5xl md:text-6xl font-bold text-[var(--neutral-50)] mb-4"
+            >
               Let&apos;s Connect
-            </h1>
-            <p className="text-xl text-[var(--neutral-400)] animate-fade-in-up delay-200">
+            </motion.h1>
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="text-xl text-[var(--neutral-400)]"
+            >
               Interested in consulting, advisory work, or just want to chat? Send me a message below.
-            </p>
+            </motion.p>
           </div>
         </section>
 
         {/* Contact Form */}
         <section className="px-6 pb-20">
           <div className="max-w-2xl mx-auto">
-            <AnimatedCard delay="delay-100">
+            <MotionSection delay={0.1}>
               <div className="glass rounded-2xl p-6 md:p-8">
                 {submitted ? (
                   <div className="text-center py-8">
@@ -200,7 +207,7 @@ export default function Contact() {
                   </form>
                 )}
               </div>
-            </AnimatedCard>
+            </MotionSection>
           </div>
         </section>
       </main>
