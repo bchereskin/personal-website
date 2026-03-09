@@ -91,10 +91,8 @@ export default function Blog() {
               {posts.map((post, index) => (
                 <MotionSection key={post.slug} delay={index * 0.1}>
                   <Link href={`/blog/${post.slug}`} className="block group">
-                    <motion.div
-                      whileHover={{ y: -4, boxShadow: '0 20px 40px -12px rgba(0, 0, 0, 0.4)' }}
-                      transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-                      className="bg-[var(--card-bg)] rounded-2xl p-8 border border-[var(--neutral-700)] hover:border-[var(--neutral-600)] transition-colors"
+                    <div
+                      className="bg-[var(--card-bg)] rounded-2xl p-8 border border-[var(--neutral-700)] hover:border-[var(--neutral-600)] transition-colors hover-lift"
                     >
                       <div className="flex items-center gap-4 text-sm text-[var(--neutral-500)] mb-4">
                         <span className="bg-[var(--primary)]/20 text-[var(--primary)] px-3 py-1 rounded-full font-medium">
@@ -113,7 +111,7 @@ export default function Blog() {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
                         </svg>
                       </span>
-                    </motion.div>
+                    </div>
                   </Link>
                 </MotionSection>
               ))}

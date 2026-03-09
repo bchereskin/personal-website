@@ -1,6 +1,3 @@
-'use client';
-
-import { motion } from 'motion/react';
 import type { ReactNode } from 'react';
 
 export default function MovingBorder({
@@ -14,16 +11,11 @@ export default function MovingBorder({
 }) {
   return (
     <div className={`relative overflow-hidden rounded-lg p-[1px] ${className}`}>
-      <motion.div
+      <div
         className="absolute inset-[-100%]"
         style={{
           background: `conic-gradient(from 0deg, transparent 0%, var(--primary) 10%, var(--accent) 20%, transparent 30%)`,
-        }}
-        animate={{ rotate: 360 }}
-        transition={{
-          duration,
-          repeat: Infinity,
-          ease: 'linear',
+          animation: `spin-border ${duration}s linear infinite`,
         }}
       />
       <div className="relative z-10 rounded-[7px] bg-[var(--background)]">

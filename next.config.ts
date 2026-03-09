@@ -12,7 +12,7 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
-        source: '/(.*)',
+        source: '/((?!shared/).*)',
         headers: [
           {
             key: 'Content-Security-Policy',

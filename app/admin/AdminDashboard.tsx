@@ -23,6 +23,16 @@ interface Comment {
   created_at: string;
 }
 
+interface SharedPage {
+  id: string;
+  slug: string;
+  title: string;
+  created_at: string;
+  visit_count: number;
+  last_visited_at: string | null;
+  is_active: boolean;
+}
+
 function formatDate(str: string) {
   return new Date(str).toLocaleDateString('en-US', {
     month: 'short', day: 'numeric', year: 'numeric',
@@ -41,21 +51,26 @@ function StatCard({ label, value }: { label: string; value: number }) {
 export default function AdminDashboard({
   contacts: initialContacts,
   comments: initialComments,
+  sharedPages: initialSharedPages,
   userEmail,
 }: {
   contacts: Contact[];
   comments: Comment[];
+  sharedPages: SharedPage[];
   userEmail: string;
 }) {
   const router = useRouter();
-  const [tab, setTab] = useState<'contacts' | 'comments' | 'notify'>('contacts');
+  const [tab, setTab] = useState<'contacts' | 'comments' | 'notify' | 'shared'>('contacts');
   const [contacts, setContacts] = useState(initialContacts);
   const [comments, setComments] = useState(initialComments);
+  const [sharedPages, setSharedPages] = useState(initialSharedPages);
   const [deleting, setDeleting] = useState<number | null>(null);
   const [expanded, setExpanded] = useState<number | null>(null);
   const [notifySlug, setNotifySlug] = useState(posts[0]?.slug || '');
   const [notifying, setNotifying] = useState(false);
   const [notifyResult, setNotifyResult] = useState<string | null>(null);
+  const [toggling, setToggling] = useState<string | null>(null);
+  const [copied, setCopied] = useState<string | null>(null);
 
   async function handleLogout() {
     const supabase = createSupabaseBrowser();
@@ -101,6 +116,30 @@ export default function AdminDashboard({
     }
   }
 
+  async function toggleSharedPage(id: string, currentActive: boolean) {
+    setToggling(id);
+    const res = await fetch(`/api/admin/shared-pages/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ is_active: !currentActive }),
+    });
+    if (res.ok) {
+      setSharedPages((prev) =>
+        prev.map((p) => (p.id === id ? { ...p, is_active: !currentActive } : p))
+      );
+    }
+    setToggling(null);
+  }
+
+  function copyLink(slug: string) {
+    navigator.clipboard.writeText(`https://www.brettchereskin.com/shared/${slug}`);
+    setCopied(slug);
+    setTimeout(() => setCopied(null), 2000);
+  }
+
+  const activePages = sharedPages.filter((p) => p.is_active);
+  const totalVisits = sharedPages.reduce((sum, p) => sum + p.visit_count, 0);
+
   const tabClass = (active: boolean) =>
     `px-5 py-2 rounded-lg text-sm font-medium transition-colors ${
       active
@@ -140,23 +179,20 @@ export default function AdminDashboard({
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
           <StatCard label="Total contacts" value={contacts.length} />
           <StatCard label="Total comments" value={comments.length} />
-          <StatCard
-            label="This month (contacts)"
-            value={contacts.filter((c) => new Date(c.created_at).getMonth() === new Date().getMonth()).length}
-          />
-          <StatCard
-            label="This month (comments)"
-            value={comments.filter((c) => new Date(c.created_at).getMonth() === new Date().getMonth()).length}
-          />
+          <StatCard label="Active shared pages" value={activePages.length} />
+          <StatCard label="Total page visits" value={totalVisits} />
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-2 mb-6">
+        <div className="flex gap-2 mb-6 flex-wrap">
           <button className={tabClass(tab === 'contacts')} onClick={() => setTab('contacts')}>
             Contacts ({contacts.length})
           </button>
           <button className={tabClass(tab === 'comments')} onClick={() => setTab('comments')}>
             Comments ({comments.length})
+          </button>
+          <button className={tabClass(tab === 'shared')} onClick={() => setTab('shared')}>
+            Shared Pages ({sharedPages.length})
           </button>
           <button className={tabClass(tab === 'notify')} onClick={() => setTab('notify')}>
             Notify Subscribers
@@ -271,6 +307,81 @@ export default function AdminDashboard({
                           >
                             {deleting === c.id ? '…' : 'Delete'}
                           </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Shared Pages table */}
+        {tab === 'shared' && (
+          <div className="bg-[var(--card-bg)] border border-[var(--neutral-700)] rounded-2xl overflow-hidden">
+            {sharedPages.length === 0 ? (
+              <p className="text-[var(--neutral-500)] text-sm p-8 text-center">No shared pages yet.</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-[var(--neutral-700)]">
+                      <th className="text-left px-5 py-3 text-[var(--neutral-400)] font-medium">Title</th>
+                      <th className="text-left px-5 py-3 text-[var(--neutral-400)] font-medium">Created</th>
+                      <th className="text-left px-5 py-3 text-[var(--neutral-400)] font-medium">Visits</th>
+                      <th className="text-left px-5 py-3 text-[var(--neutral-400)] font-medium">Last Visited</th>
+                      <th className="text-left px-5 py-3 text-[var(--neutral-400)] font-medium">Status</th>
+                      <th className="px-5 py-3 text-[var(--neutral-400)] font-medium text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {sharedPages.map((p) => (
+                      <tr key={p.id} className="border-b border-[var(--neutral-700)] last:border-0 hover:bg-[var(--neutral-800)]">
+                        <td className="px-5 py-4 text-[var(--neutral-100)] font-medium">{p.title}</td>
+                        <td className="px-5 py-4 text-[var(--neutral-500)]">{formatDate(p.created_at)}</td>
+                        <td className="px-5 py-4 text-[var(--neutral-300)]">{p.visit_count}</td>
+                        <td className="px-5 py-4 text-[var(--neutral-500)]">
+                          {p.last_visited_at ? formatDate(p.last_visited_at) : '—'}
+                        </td>
+                        <td className="px-5 py-4">
+                          <span className={`text-xs px-2 py-1 rounded-full ${
+                            p.is_active
+                              ? 'bg-[var(--primary)]/10 text-[var(--primary)]'
+                              : 'bg-[var(--accent)]/10 text-[var(--accent)]'
+                          }`}>
+                            {p.is_active ? 'Active' : 'Dehosted'}
+                          </span>
+                        </td>
+                        <td className="px-5 py-4 text-right">
+                          <div className="flex items-center justify-end gap-3">
+                            <button
+                              onClick={() => copyLink(p.slug)}
+                              className="text-xs text-[var(--neutral-400)] hover:text-[var(--primary)] transition-colors"
+                            >
+                              {copied === p.slug ? 'Copied!' : 'Copy link'}
+                            </button>
+                            {p.is_active && (
+                              <a
+                                href={`/shared/${p.slug}`}
+                                target="_blank"
+                                className="text-xs text-[var(--neutral-400)] hover:text-[var(--primary)] transition-colors"
+                              >
+                                View
+                              </a>
+                            )}
+                            <button
+                              onClick={() => toggleSharedPage(p.id, p.is_active)}
+                              disabled={toggling === p.id}
+                              className={`text-xs transition-colors disabled:opacity-40 ${
+                                p.is_active
+                                  ? 'text-[var(--neutral-500)] hover:text-[var(--accent)]'
+                                  : 'text-[var(--neutral-500)] hover:text-[var(--primary)]'
+                              }`}
+                            >
+                              {toggling === p.id ? '…' : p.is_active ? 'Dehost' : 'Rehost'}
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}
