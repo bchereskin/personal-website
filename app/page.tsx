@@ -172,9 +172,7 @@ export default function Home() {
                 <motion.div
                   key={card.title}
                   variants={fadeInUp}
-                  whileHover={{ y: -6, boxShadow: '0 20px 40px -12px rgba(0, 0, 0, 0.4)' }}
-                  transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-                  className="group bg-[var(--card-bg)] rounded-2xl p-8 hover:bg-[var(--card-bg-hover)] transition-colors border border-[var(--neutral-700)] h-full cursor-default"
+                  className="group bg-[var(--card-bg)] rounded-2xl p-8 hover:bg-[var(--card-bg-hover)] transition-colors border border-[var(--neutral-700)] h-full cursor-default hover-lift"
                 >
                   <div
                     className="w-14 h-14 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform"
@@ -251,9 +249,7 @@ export default function Home() {
             >
               <motion.div
                 variants={fadeInUp}
-                whileHover={{ scale: 1.02 }}
-                transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-                className="relative rounded-2xl overflow-hidden group h-80"
+                className="relative rounded-2xl overflow-hidden group h-80 hover-scale"
               >
                 <Image
                   src="https://images.unsplash.com/photo-1563013544-824ae1b704d3?q=80&w=2070"
@@ -277,9 +273,7 @@ export default function Home() {
 
               <motion.div
                 variants={fadeInUp}
-                whileHover={{ scale: 1.02 }}
-                transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-                className="relative rounded-2xl overflow-hidden group h-80"
+                className="relative rounded-2xl overflow-hidden group h-80 hover-scale"
               >
                 <Image
                   src="/kingair.jpg"
@@ -299,9 +293,7 @@ export default function Home() {
 
               <motion.div
                 variants={fadeInUp}
-                whileHover={{ scale: 1.02 }}
-                transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-                className="relative rounded-2xl overflow-hidden group h-80"
+                className="relative rounded-2xl overflow-hidden group h-80 hover-scale"
               >
                 <Image
                   src="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?q=80&w=2070"

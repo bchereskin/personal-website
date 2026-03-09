@@ -12,7 +12,7 @@ export default async function AdminPage() {
 
   const admin = getAdminSupabase();
 
-  const [{ data: contacts }, { data: comments }] = await Promise.all([
+  const [{ data: contacts }, { data: comments }, { data: sharedPages }] = await Promise.all([
     admin
       .from('contacts')
       .select('id, name, email, subject, message, created_at')
@@ -21,12 +21,17 @@ export default async function AdminPage() {
       .from('comments')
       .select('id, slug, name, email, body, created_at')
       .order('created_at', { ascending: false }),
+    admin
+      .from('shared_pages')
+      .select('id, slug, title, created_at, visit_count, last_visited_at, is_active')
+      .order('created_at', { ascending: false }),
   ]);
 
   return (
     <AdminDashboard
       contacts={contacts ?? []}
       comments={comments ?? []}
+      sharedPages={sharedPages ?? []}
       userEmail={user.email ?? ''}
     />
   );
