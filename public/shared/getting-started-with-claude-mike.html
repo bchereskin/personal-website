@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Getting Started with Claude — A Guide for Mike</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #FAFAF8;
+            --text: #1a1a1a;
+            --muted: #555;
+            --accent: #D4622B;
+            --accent-light: #FFF3EC;
+            --card-bg: #fff;
+            --border: #e4e0d8;
+            --code-bg: #F5F3EF;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container {
+            max-width: 680px;
+            margin: 0 auto;
+            padding: 40px 24px 80px;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            padding: 48px 0 40px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 40px;
+        }
+
+        .header-label {
+            font-size: 12px;
+            letter-spacing: 2.5px;
+            text-transform: uppercase;
+            color: var(--accent);
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .header h1 {
+            font-family: 'DM Serif Display', serif;
+            font-size: clamp(28px, 6vw, 42px);
+            font-weight: 400;
+            line-height: 1.2;
+            margin-bottom: 16px;
+            color: var(--text);
+        }
+
+        .header p {
+            font-size: 16px;
+            color: var(--muted);
+            max-width: 480px;
+            margin: 0 auto;
+        }
+
+        /* Sections */
+        .section {
+            margin-bottom: 48px;
+        }
+
+        .section-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--accent);
+            color: #fff;
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        h2 {
+            font-family: 'DM Serif Display', serif;
+            font-size: clamp(22px, 4vw, 28px);
+            font-weight: 400;
+            line-height: 1.3;
+            margin-bottom: 16px;
+        }
+
+        p {
+            margin-bottom: 16px;
+            font-size: 16px;
+            color: var(--text);
+        }
+
+        /* Links */
+        a {
+            color: var(--accent);
+            text-decoration: underline;
+            text-decoration-color: rgba(212, 98, 43, 0.3);
+            text-underline-offset: 3px;
+            transition: text-decoration-color 0.2s;
+        }
+
+        a:hover {
+            text-decoration-color: var(--accent);
+        }
+
+        /* Callout cards */
+        .callout {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            margin: 20px 0;
+        }
+
+        .callout-accent {
+            border-left: 4px solid var(--accent);
+            background: var(--accent-light);
+        }
+
+        .callout h3 {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 15px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            color: var(--accent);
+        }
+
+        .callout p {
+            margin-bottom: 8px;
+            font-size: 15px;
+        }
+
+        .callout p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Code / path styling */
+        code {
+            background: var(--code-bg);
+            padding: 2px 7px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            color: #8B5E3C;
+        }
+
+        /* Folder tree */
+        .folder-tree {
+            background: #1C1917;
+            color: #E7E5E4;
+            border-radius: 12px;
+            padding: 24px 28px;
+            font-family: 'SF Mono', 'Fira Code', 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.9;
+            overflow-x: auto;
+            margin: 20px 0;
+            white-space: pre;
+        }
+
+        .folder-tree .folder {
+            color: #FBBF24;
+        }
+
+        .folder-tree .file {
+            color: #86EFAC;
+        }
+
+        .folder-tree .comment {
+            color: #78716C;
+            font-style: italic;
+        }
+
+        /* Steps list */
+        .steps {
+            counter-reset: step;
+            list-style: none;
+            padding: 0;
+            margin: 20px 0;
+        }
+
+        .steps li {
+            counter-increment: step;
+            padding: 12px 0 12px 48px;
+            position: relative;
+            font-size: 15px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .steps li:last-child {
+            border-bottom: none;
+        }
+
+        .steps li::before {
+            content: counter(step);
+            position: absolute;
+            left: 0;
+            top: 12px;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--code-bg);
+            color: var(--accent);
+            font-weight: 700;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Divider */
+        .divider {
+            height: 1px;
+            background: var(--border);
+            margin: 48px 0;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding-top: 32px;
+            border-top: 1px solid var(--border);
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        /* Responsive tweaks */
+        @media (max-width: 480px) {
+            .container { padding: 24px 18px 60px; }
+            .header { padding: 32px 0 28px; }
+            .folder-tree { padding: 18px 16px; font-size: 11.5px; }
+            .callout { padding: 18px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+
+        <div class="header">
+            <div class="header-label">From Brett</div>
+            <h1>Your Guide to Getting Started with Claude</h1>
+            <p>Everything you need to turn Claude into the operating system for your teacher placement agency. Bookmark this and work through it section by section.</p>
+        </div>
+
+        <!-- SECTION 1: The Blog -->
+        <div class="section">
+            <div class="section-number">1</div>
+            <h2>Start Here — My Blog</h2>
+            <p>Mike, I've been writing about all of this on my new site. I'm documenting my whole journey of using AI tools to build things — without a traditional coding background. The core idea is that <strong>clear thinking and plain-language direction</strong> are the real skills you need, not knowing how to code.</p>
+            <p>Check out the site and especially the first blog post — it'll give you the foundation for everything else I'm about to walk you through here:</p>
+            <div class="callout callout-accent">
+                <h3>Brett's Site</h3>
+                <p><strong>Website:</strong> <a href="https://brettchereskin.com" target="_blank">brettchereskin.com</a></p>
+                <p><strong>Blog:</strong> <a href="https://brettchereskin.com/blog" target="_blank">brettchereskin.com/blog</a></p>
+                <p><strong>First Post:</strong> <a href="https://www.brettchereskin.com/blog/non-technical-execs-ai-revolution" target="_blank">Non-Technical Execs &amp; the AI Revolution</a></p>
+            </div>
+            <p>Read that first, then come back here. Everything below builds on the mindset I lay out in that post.</p>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- SECTION 2: Context Files -->
+        <div class="section">
+            <div class="section-number">2</div>
+            <h2>Context Files — Teaching Claude Who You Are</h2>
+            <p>Right now, every time you open Claude, it starts from zero. It doesn't know your business, your clients, your processes, or your preferences. You end up re-explaining everything. Context files fix this.</p>
+            <p>A <strong>context file</strong> is just a plain text or markdown file (.md) that you write once, drop into a folder, and Claude reads at the start of every session. Think of it like an onboarding doc for a new employee — except this employee reads it in 2 seconds and never forgets it.</p>
+
+            <div class="callout">
+                <h3>What to Put in Your Context File</h3>
+                <p><strong>About the business:</strong> You run a teacher placement agency on Long Island that places teachers with school districts that are over capacity. Include your service area, the types of teachers you place, the districts you work with, your pricing model, and your key differentiators.</p>
+                <p><strong>Your processes:</strong> How do you source teachers? What's your intake process with districts? What does your sales cycle look like? What are the pain points?</p>
+                <p><strong>Your voice and preferences:</strong> How do you like things written? Formal or casual? How do you communicate with district administrators vs. teachers?</p>
+                <p><strong>Current priorities:</strong> What are you focused on this quarter? Expanding to new districts? Filling specific roles? Improving retention?</p>
+            </div>
+
+            <p>To create one, you can literally just open a conversation with Claude and say: <em>"Interview me about my business so you can write a context file for me."</em> Claude will ask you questions, and at the end, it'll produce a clean markdown file you can save. You edit it, tighten it up, and drop it in your working folder.</p>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- SECTION 3: Cowork & The Desktop App -->
+        <div class="section">
+            <div class="section-number">3</div>
+            <h2>Why You Need the Desktop App (and What "Cowork" Is)</h2>
+            <p>You're probably used to ChatGPT or using Claude in a browser tab at claude.ai. That's fine for quick questions, but it has a big limitation: <strong>the web app can't touch files on your computer.</strong> Every conversation starts from scratch, and you're constantly uploading documents and copy-pasting context back and forth. It's like having a smart consultant who you have to re-brief from zero every single meeting.</p>
+
+            <p>The <strong>Claude Desktop app</strong> changes this. Download it from <a href="https://claude.ai/download" target="_blank">claude.ai/download</a> (Mac for now, Windows coming). When you open it, you'll see three tabs at the top: <strong>Chat</strong>, <strong>Cowork</strong>, and <strong>Code</strong>.</p>
+
+            <div class="callout">
+                <h3>Chat vs. Cowork vs. Code</h3>
+                <p><strong>Chat</strong> — Same as the web app. Back-and-forth conversation. Good for quick questions, brainstorming, and drafting. No file system access.</p>
+                <p><strong>Cowork</strong> — This is the game-changer. You point Claude at a folder on your computer, and it can read everything inside — your context files, your documents, your data. It can also <em>create and edit files</em> directly in that folder. Instead of a back-and-forth chat, you describe an outcome ("build me a competitive analysis spreadsheet from these district profiles"), and Claude goes and does it. You can literally walk away and come back to finished work: formatted documents, spreadsheets with working formulas, organized files. It's like leaving a task for a coworker, not chatting with a bot.</p>
+                <p><strong>Code</strong> — Terminal-based, for developers. Ignore this one for now.</p>
+            </div>
+
+            <div class="callout callout-accent">
+                <h3>Why This Matters vs. ChatGPT</h3>
+                <p>ChatGPT can't access your files, can't write documents to your computer, and doesn't have Cowork's autonomous task execution. You're always the middleman — uploading, downloading, copy-pasting. With Cowork, Claude works <em>inside</em> your file system. It reads your context files automatically so it already knows who you are and how you work before you say a word. It creates real deliverables (Excel files, Word docs, presentations) and saves them right to your folder. That's the difference between having a chatbot and having a digital employee.</p>
+            </div>
+
+            <p>Cowork uses more of your usage allowance than regular chat (because it's doing more complex work), so keep that in mind. For quick questions, use Chat. For real work — building documents, processing files, running research tasks — use Cowork.</p>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- SECTION 4: The Cowork Operating System -->
+        <div class="section">
+            <div class="section-number">4</div>
+            <h2>Build a "Claude Operating System" for Your Business</h2>
+            <p>Here's where it gets powerful. Instead of one generic context file, you build a <strong>folder structure</strong> where each subfolder represents a different function of your business — and each one has its own context file tailored to that role.</p>
+            <p>When you open Claude's <strong>Cowork</strong> mode (in the Claude Desktop app), you point it at a folder and it reads everything inside. So if you point it at your "Sales" folder, it already knows your pitch, your target districts, your objection handling — before you type a single word.</p>
+
+            <div class="folder-tree">
+<span class="folder">📁 Mikes-Agency/</span>
+├── <span class="file">CLAUDE.md</span> <span class="comment">← master context: your business overview</span>
+├── <span class="folder">📁 Sales/</span>
+│   ├── <span class="file">CLAUDE.md</span> <span class="comment">← sales process, district outreach, pitch notes</span>
+│   ├── <span class="file">target-districts.md</span>
+│   └── <span class="file">objection-handling.md</span>
+├── <span class="folder">📁 Recruiting/</span>
+│   ├── <span class="file">CLAUDE.md</span> <span class="comment">← teacher sourcing, screening criteria, pipelines</span>
+│   ├── <span class="file">job-descriptions/</span>
+│   └── <span class="file">interview-templates/</span>
+├── <span class="folder">📁 Operations/</span>
+│   ├── <span class="file">CLAUDE.md</span> <span class="comment">← placement logistics, compliance, scheduling</span>
+│   └── <span class="file">district-requirements/</span>
+├── <span class="folder">📁 Finance/</span>
+│   ├── <span class="file">CLAUDE.md</span> <span class="comment">← billing, margins, contracts, invoicing</span>
+│   └── <span class="file">rate-cards.md</span>
+├── <span class="folder">📁 Marketing/</span>
+│   ├── <span class="file">CLAUDE.md</span> <span class="comment">← brand voice, content strategy, outreach</span>
+│   └── <span class="file">case-studies/</span>
+└── <span class="folder">📁 Research/</span>
+    ├── <span class="file">CLAUDE.md</span> <span class="comment">← competitive intel, district analysis frameworks</span>
+    └── <span class="file">market-data/</span>
+            </div>
+
+            <p>The beauty of this is that each "department" of your business gets its own specialized Claude. When you're doing sales work, you open the Sales folder. When you're working on recruiting, you open Recruiting. Claude becomes a different expert depending on which folder you're working in.</p>
+            <p>You don't need to build all of this on day one. Start with one folder — maybe Sales or Recruiting — write one context file, and see how much better Claude's output gets. Then build out from there.</p>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- SECTION 5: MCPs and Notion -->
+        <div class="section">
+            <div class="section-number">5</div>
+            <h2>MCPs — Connecting Claude to Your Tools (Starting with Notion)</h2>
+            <p><strong>MCP</strong> stands for <strong>Model Context Protocol</strong>. In plain English: it's how you give Claude the ability to actually read and write inside the tools you already use — like Notion, Google Drive, Gmail, Slack, and more. Instead of copy-pasting information between Claude and your apps, Claude can go get the information itself.</p>
+            <p>Since you already use Notion, this is the perfect place to start. Once Notion is connected via MCP, you can say things like:</p>
+            <div class="callout">
+                <h3>What You Can Do Once Notion is Connected</h3>
+                <p>"Search my Notion for all open teacher placements this month"</p>
+                <p>"Create a new page in my Districts database for Smithtown UFSD with these details..."</p>
+                <p>"Pull up my meeting notes from last week's call with Commack schools"</p>
+                <p>"Update the status on the Riverhead placement to 'Interview Scheduled'"</p>
+                <p>Claude reads and writes directly in your Notion workspace. No copy-pasting.</p>
+            </div>
+
+            <h3 style="font-size: 18px; margin: 24px 0 12px;">How to Set It Up</h3>
+            <p>There are two ways, depending on where you want to use it:</p>
+
+            <div class="callout">
+                <h3>Option A: Claude.ai or Claude Desktop (Easiest)</h3>
+                <ol class="steps">
+                    <li>Go to <a href="https://claude.ai" target="_blank">claude.ai</a> and sign in (you'll need at least a Pro plan — $20/mo)</li>
+                    <li>Click on the <strong>tools icon</strong> (looks like puzzle pieces or connectors) in the bottom of the chat window</li>
+                    <li>Find <strong>"Notion"</strong> in the connectors list and click <strong>Connect</strong></li>
+                    <li>You'll be prompted to authorize Claude to access your Notion workspace — click through the OAuth flow and select which workspace pages to share</li>
+                    <li>That's it. Start a new conversation and ask Claude something about your Notion workspace to test it</li>
+                </ol>
+            </div>
+
+            <div class="callout">
+                <h3>Option B: Claude Code (More Power, Terminal-Based)</h3>
+                <ol class="steps">
+                    <li>Open your terminal and type: <code>claude mcp add notion --url https://mcp.notion.com/mcp</code></li>
+                    <li>Run <code>/mcp</code> inside Claude Code and follow the OAuth authentication flow</li>
+                    <li>Verify connection by asking Claude to list a page from your workspace</li>
+                </ol>
+            </div>
+
+            <p>Option A is the move for you right now. It takes about 2 minutes and you don't need to touch a terminal.</p>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- SECTION 6: Specific Use Cases -->
+        <div class="section">
+            <div class="section-number">6</div>
+            <h2>How This Applies to Your Agency Specifically</h2>
+            <p>Let me get concrete about how you can use Claude for the teacher placement business:</p>
+
+            <div class="callout">
+                <h3>Sales & Business Development</h3>
+                <p>Draft personalized outreach emails to district superintendents and HR directors. Claude can tailor each message based on what you know about that district's enrollment numbers, staffing challenges, and budget cycles. You feed it your pitch framework in the context file, and it produces targeted outreach that sounds like you wrote it.</p>
+            </div>
+
+            <div class="callout">
+                <h3>Teacher Recruiting & Screening</h3>
+                <p>Write job descriptions tailored to specific subject areas and district requirements. Create screening questionnaires. Draft offer letters. Build an onboarding checklist for new placements. If you have your requirements documented in Notion, Claude can pull them directly and generate materials that match.</p>
+            </div>
+
+            <div class="callout">
+                <h3>District Relationship Management</h3>
+                <p>Generate status reports for districts showing active placements, pipeline candidates, and upcoming needs. Draft follow-up communications after site visits. Build quarterly business review decks. Claude can pull data from your Notion databases and turn it into polished deliverables.</p>
+            </div>
+
+            <div class="callout">
+                <h3>Operations & Compliance</h3>
+                <p>Track certification requirements by district. Generate compliance checklists for new teacher placements. Draft contract amendments. Build SOPs for your internal processes. The more of your operational knowledge you put into context files, the more Claude can handle autonomously.</p>
+            </div>
+
+            <div class="callout">
+                <h3>Financial Analysis</h3>
+                <p>Analyze placement margins by district, subject area, and contract type. Model different pricing scenarios. Generate invoicing summaries. Build financial reports that you can share with stakeholders. If you connect your financial data via MCP (like a Google Sheets connector), Claude can crunch numbers in real time.</p>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- SECTION 7: Connect Everything -->
+        <div class="section">
+            <div class="section-number">7</div>
+            <h2>Connect as Much Data as Possible</h2>
+            <p>Here's the real unlock: <strong>the more data Claude can access, the smarter and more useful it becomes.</strong> Notion is your first MCP connection, but don't stop there. Think about connecting:</p>
+
+            <div class="callout callout-accent">
+                <h3>Priority Connections</h3>
+                <p><strong>Financials:</strong> Connect Google Sheets or your accounting tools so Claude can analyze revenue, margins, and billing data without you manually pulling reports.</p>
+                <p><strong>Knowledge Bases:</strong> Your Notion workspace is already a great start. Make sure your SOPs, district profiles, teacher databases, and process documentation are all in there and well-organized. The cleaner your Notion, the better Claude performs.</p>
+                <p><strong>Communications:</strong> Connect Gmail and/or Google Calendar. Claude can draft emails, find past communications with specific districts, and check your availability — all from one conversation. Slack too, if you use it with your team.</p>
+                <p><strong>Google Drive:</strong> If you have contracts, proposals, or reports stored in Drive, connecting it lets Claude reference those documents without you uploading them each time.</p>
+            </div>
+
+            <p>Each new connection gives Claude more context about your business, which means less explaining from you and better output. The goal is to get to a place where you can say "draft a proposal for Brentwood UFSD for 12 substitute teachers for Q4" and Claude already knows your pricing, your template format, the district's specific requirements, and your past history with them — because it can access all of that data across your connected tools.</p>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- SECTION 8: Skills, Plugins & Research -->
+        <div class="section">
+            <div class="section-number">8</div>
+            <h2>Skills, Plugins & Your First Real Exercise</h2>
+            <p><strong>Skills</strong> are like reusable instruction sets that teach Claude how to do specific tasks your way. Think of them as SOPs that Claude follows. They live in your folder structure and get invoked automatically when relevant. For example, you could create a skill called "district-outreach" that tells Claude exactly how to research a district, what data points to pull, and how to format the outreach email.</p>
+            <p><strong>Plugins</strong> are pre-packaged bundles of skills, commands, and MCP connections that other people have built and shared. You can install them in Claude Code with one command. There are plugins for everything from deep research to Notion workflows to financial analysis.</p>
+
+            <div class="callout callout-accent">
+                <h3>Your First Exercise: Competitive Analysis & District Deep Dives</h3>
+                <p>This is the perfect starting project to get your hands dirty. Here's what I'd do:</p>
+                <p><strong>Step 1 — Build your Research context file.</strong> In your Research folder, create a CLAUDE.md that tells Claude about your business, your current territory on Long Island, the districts you serve, your key competitors (other teacher placement agencies), and what information you care about: district enrollment trends, budget data, staffing ratios, contract expiration dates, etc.</p>
+                <p><strong>Step 2 — Ask Claude to do a competitive landscape analysis.</strong> Claude can search publicly available information — state education department data, district budget documents, board meeting minutes, news articles — and compile a competitive analysis of other agencies operating in your space on Long Island. Who else is placing teachers? What districts are they in? What are they charging?</p>
+                <p><strong>Step 3 — Map expansion opportunities.</strong> Have Claude pull public enrollment data from NYSED (New York State Education Department), identify Long Island districts that are over capacity or growing, cross-reference which ones you don't currently serve, and build a prioritized target list based on size, growth rate, and proximity to your current clients.</p>
+                <p><strong>Step 4 — Save everything back to Notion.</strong> Once you have the Notion MCP connected, Claude can create pages for each target district, populate them with the research data, and build a database you can track and update over time.</p>
+                <p>This single exercise will teach you how to use context files, how to leverage Claude's web research capabilities (called "Deep Research" on claude.ai), and how MCPs work in practice. And you'll end up with an actual strategic asset for your business.</p>
+            </div>
+
+            <p>For the deep research specifically, Claude has a built-in "Deep Research" feature you can use right from claude.ai — just ask it to do a deep dive and it'll spend several minutes autonomously searching, reading, and synthesizing information from across the web. It's incredibly powerful for this kind of publicly-available-data research.</p>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Quick Start -->
+        <div class="section">
+            <div class="section-number" style="background: #1a1a1a;">→</div>
+            <h2>Your First 30 Minutes</h2>
+            <ol class="steps">
+                <li><strong>Sign up for Claude Pro</strong> at <a href="https://claude.ai" target="_blank">claude.ai</a> ($20/month) — or go Max ($100/mo) if you want more capacity</li>
+                <li><strong>Connect Notion</strong> via the connectors menu in Claude — test it by asking Claude about your workspace</li>
+                <li><strong>Download Claude Desktop</strong> from <a href="https://claude.ai/download" target="_blank">claude.ai/download</a> to get access to Cowork mode</li>
+                <li><strong>Create your first context file</strong> — start a chat and say "Interview me about my business so you can write a context file for me"</li>
+                <li><strong>Try your first research task</strong> — ask Claude to do a competitive analysis of teacher placement agencies on Long Island using publicly available information</li>
+                <li><strong>Read my blog</strong> at <a href="https://brettchereskin.com/blog" target="_blank">brettchereskin.com/blog</a> for more on the mindset behind all of this</li>
+            </ol>
+        </div>
+
+        <div class="footer">
+            <p>Questions? Text me. This stuff is easier than it looks once you start.<br>
+            — Brett</p>
+        </div>
+
+    </div>
+</body>
+</html>
