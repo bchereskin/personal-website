@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { getSupabase } from '@/app/lib/supabase';
+import { rateLimit } from '@/app/lib/rate-limit';
 
 export async function POST(request: NextRequest) {
+  const limited = rateLimit(request, { maxRequests: 5, windowMs: 3600_000 });
+  if (limited) return limited;
+
   const { email, honeypot } = await request.json();
 
   if (honeypot) {
@@ -35,7 +39,8 @@ export async function POST(request: NextRequest) {
     .single();
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error('Subscribe insert failed:', error.message);
+    return NextResponse.json({ error: 'Failed to subscribe' }, { status: 500 });
   }
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://brettchereskin.com';

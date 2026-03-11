@@ -3,6 +3,7 @@ import { Resend } from 'resend';
 import { getSupabase } from '@/app/lib/supabase';
 import { postExistsBySlug, getPostBySlug } from '@/app/blog/posts';
 import { escapeHtml, sanitizeInput } from '@/app/lib/sanitize';
+import { rateLimit } from '@/app/lib/rate-limit';
 
 export async function GET(request: NextRequest) {
   const slug = request.nextUrl.searchParams.get('slug');
@@ -17,13 +18,17 @@ export async function GET(request: NextRequest) {
     .order('created_at', { ascending: true });
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error('Comments fetch failed:', error.message);
+    return NextResponse.json({ error: 'Failed to load comments' }, { status: 500 });
   }
 
   return NextResponse.json(data);
 }
 
 export async function POST(request: NextRequest) {
+  const limited = rateLimit(request, { maxRequests: 10, windowMs: 3600_000 });
+  if (limited) return limited;
+
   const body = await request.json();
   const {
     slug,
@@ -91,7 +96,8 @@ export async function POST(request: NextRequest) {
     .single();
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error('Comment insert failed:', error.message);
+    return NextResponse.json({ error: 'Failed to post comment' }, { status: 500 });
   }
 
   const post = await getPostBySlug(slug);
@@ -175,7 +181,8 @@ export async function PUT(request: NextRequest) {
     .single();
 
   if (updateError) {
-    return NextResponse.json({ error: updateError.message }, { status: 500 });
+    console.error('Comment update failed:', updateError.message);
+    return NextResponse.json({ error: 'Failed to update comment' }, { status: 500 });
   }
 
   return NextResponse.json(updated);
