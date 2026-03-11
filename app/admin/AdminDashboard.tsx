@@ -4,7 +4,6 @@ import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { createSupabaseBrowser } from '@/app/lib/supabase-browser';
 import { BlogContentRenderer } from '@/app/components/BlogRenderer';
-import SharedPageRichEditor from './SharedPageRichEditor';
 import { extractBodyContent, reconstructHtml } from './html-utils';
 
 interface Contact {
@@ -146,7 +145,7 @@ export default function AdminDashboard({
   const [saveResult, setSaveResult] = useState<string | null>(null);
 
   const [sharedEditor, setSharedEditor] = useState<SharedPageEditorState | null>(null);
-  const [sharedEditorMode, setSharedEditorMode] = useState<'visual' | 'source' | 'preview'>('visual');
+  const [sharedEditorMode, setSharedEditorMode] = useState<'edit' | 'preview'>('edit');
   const [sharedBodyContent, setSharedBodyContent] = useState('');
   const sharedHtmlWrapper = useRef({ headWrapper: '', tailWrapper: '' });
   const [sharedSaving, setSharedSaving] = useState(false);
@@ -333,7 +332,7 @@ export default function AdminDashboard({
       setSharedBodyContent('');
       setSharedEditor({ ...emptySharedEditor });
     }
-    setSharedEditorMode('visual');
+    setSharedEditorMode('edit');
     setSharedSaveResult(null);
   }
 
@@ -426,7 +425,7 @@ export default function AdminDashboard({
             </button>
             <div className="flex items-center gap-3">
               <div className="flex border border-[var(--neutral-600)] rounded-lg overflow-hidden">
-                {(['visual', 'source', 'preview'] as const).map((mode) => (
+                {(['edit', 'preview'] as const).map((mode) => (
                   <button
                     key={mode}
                     onClick={() => setSharedEditorMode(mode)}
@@ -436,7 +435,7 @@ export default function AdminDashboard({
                         : 'text-[var(--neutral-400)] hover:text-[var(--neutral-100)]'
                     }`}
                   >
-                    {mode === 'visual' ? 'Visual' : mode === 'source' ? 'HTML Source' : 'Preview'}
+                    {mode === 'edit' ? 'Edit' : 'Preview'}
                   </button>
                 ))}
               </div>
@@ -527,26 +526,33 @@ export default function AdminDashboard({
                 </div>
               </div>
 
-              <div className="lg:col-span-2">
-                {sharedEditorMode === 'visual' ? (
-                  <SharedPageRichEditor
-                    content={sharedBodyContent}
-                    onChange={setSharedBodyContent}
+              <div className="lg:col-span-2 space-y-4">
+                <div>
+                  <label className="block text-sm text-[var(--neutral-400)] mb-1">Body HTML</label>
+                  <div className="text-xs text-[var(--neutral-500)] mb-2">
+                    Editing the body content only. The document head, styles, and fonts are preserved automatically.
+                  </div>
+                  <textarea
+                    value={sharedBodyContent}
+                    onChange={(e) => setSharedBodyContent(e.target.value)}
+                    rows={20}
+                    className="w-full bg-[var(--neutral-800)] border border-[var(--neutral-600)] rounded-lg px-4 py-3 text-[var(--neutral-100)] text-sm font-mono leading-relaxed focus:outline-none focus:border-[var(--primary)] resize-y"
                   />
-                ) : (
-                  <>
-                    <label className="block text-sm text-[var(--neutral-400)] mb-1">Body HTML</label>
-                    <div className="text-xs text-[var(--neutral-500)] mb-2">
-                      Editing the body content only. The document head, styles, and fonts are preserved automatically.
-                    </div>
-                    <textarea
-                      value={sharedBodyContent}
-                      onChange={(e) => setSharedBodyContent(e.target.value)}
-                      rows={30}
-                      className="w-full bg-[var(--neutral-800)] border border-[var(--neutral-600)] rounded-lg px-4 py-3 text-[var(--neutral-100)] text-sm font-mono leading-relaxed focus:outline-none focus:border-[var(--primary)] resize-y"
-                    />
-                  </>
-                )}
+                </div>
+                <div>
+                  <label className="block text-sm text-[var(--neutral-400)] mb-2">Live Preview</label>
+                  <iframe
+                    srcDoc={
+                      sharedHtmlWrapper.current.headWrapper
+                        ? reconstructHtml(sharedHtmlWrapper.current.headWrapper, sharedBodyContent, sharedHtmlWrapper.current.tailWrapper)
+                        : sharedBodyContent
+                    }
+                    sandbox="allow-same-origin"
+                    className="w-full border border-[var(--neutral-700)] rounded-xl bg-white"
+                    style={{ height: '50vh' }}
+                    title="Live preview"
+                  />
+                </div>
               </div>
             </div>
           )}
