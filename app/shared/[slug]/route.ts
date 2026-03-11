@@ -16,7 +16,7 @@ export async function GET(
 
   const { data, error } = await getSupabase()
     .from('shared_pages')
-    .select('html_content')
+    .select('html_content, title, recipient_name')
     .eq('slug', slug)
     .eq('is_active', true)
     .single();
@@ -31,7 +31,26 @@ export async function GET(
       if (rpcError) console.error('Visit increment failed:', rpcError.message);
     });
 
-  return new NextResponse(data.html_content, {
+  const ogTags = [
+    `<meta property="og:title" content="${(data.title || 'Shared Page').replace(/"/g, '&quot;')}" />`,
+    `<meta property="og:image" content="https://www.brettchereskin.com/api/og/shared/${slug}" />`,
+    `<meta property="og:type" content="article" />`,
+    `<meta property="og:url" content="https://www.brettchereskin.com/shared/${slug}" />`,
+    `<meta name="twitter:card" content="summary_large_image" />`,
+    `<meta name="twitter:title" content="${(data.title || 'Shared Page').replace(/"/g, '&quot;')}" />`,
+    `<meta name="twitter:image" content="https://www.brettchereskin.com/api/og/shared/${slug}" />`,
+  ].join('\n    ');
+
+  let html = data.html_content;
+  if (html.includes('<head>')) {
+    html = html.replace('<head>', `<head>\n    ${ogTags}`);
+  } else if (html.includes('<html')) {
+    html = html.replace(/<html[^>]*>/, `$&\n  <head>\n    ${ogTags}\n  </head>`);
+  } else {
+    html = `<head>\n    ${ogTags}\n  </head>\n${html}`;
+  }
+
+  return new NextResponse(html, {
     headers: {
       'Content-Type': 'text/html; charset=utf-8',
       'Content-Security-Policy': "default-src 'none'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; frame-ancestors 'none'",
