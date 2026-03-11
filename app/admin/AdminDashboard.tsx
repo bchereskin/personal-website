@@ -1,9 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { createSupabaseBrowser } from '@/app/lib/supabase-browser';
 import { BlogContentRenderer } from '@/app/components/BlogRenderer';
+import SharedPageRichEditor from './SharedPageRichEditor';
+import { extractBodyContent, reconstructHtml } from './html-utils';
 
 interface Contact {
   id: number;
@@ -144,7 +146,9 @@ export default function AdminDashboard({
   const [saveResult, setSaveResult] = useState<string | null>(null);
 
   const [sharedEditor, setSharedEditor] = useState<SharedPageEditorState | null>(null);
-  const [sharedPreview, setSharedPreview] = useState(false);
+  const [sharedEditorMode, setSharedEditorMode] = useState<'visual' | 'source' | 'preview'>('visual');
+  const [sharedBodyContent, setSharedBodyContent] = useState('');
+  const sharedHtmlWrapper = useRef({ headWrapper: '', tailWrapper: '' });
   const [sharedSaving, setSharedSaving] = useState(false);
   const [sharedSaveResult, setSharedSaveResult] = useState<string | null>(null);
 
@@ -312,6 +316,9 @@ export default function AdminDashboard({
 
   function openSharedEditor(page?: SharedPage) {
     if (page) {
+      const { headWrapper, bodyContent, tailWrapper } = extractBodyContent(page.html_content);
+      sharedHtmlWrapper.current = { headWrapper, tailWrapper };
+      setSharedBodyContent(bodyContent);
       setSharedEditor({
         id: page.id,
         slug: page.slug,
@@ -322,9 +329,11 @@ export default function AdminDashboard({
         recipient_type: page.recipient_type || '',
       });
     } else {
+      sharedHtmlWrapper.current = { headWrapper: '', tailWrapper: '' };
+      setSharedBodyContent('');
       setSharedEditor({ ...emptySharedEditor });
     }
-    setSharedPreview(false);
+    setSharedEditorMode('visual');
     setSharedSaveResult(null);
   }
 
@@ -334,10 +343,14 @@ export default function AdminDashboard({
     setSharedSaveResult(null);
 
     try {
+      const fullHtml = sharedHtmlWrapper.current.headWrapper
+        ? reconstructHtml(sharedHtmlWrapper.current.headWrapper, sharedBodyContent, sharedHtmlWrapper.current.tailWrapper)
+        : sharedBodyContent;
+
       const payload = {
         slug: sharedEditor.slug,
         title: sharedEditor.title,
-        html_content: sharedEditor.html_content,
+        html_content: fullHtml,
         is_active: sharedEditor.is_active,
         recipient_name: sharedEditor.recipient_name || null,
         recipient_type: sharedEditor.recipient_type || null,
@@ -412,15 +425,24 @@ export default function AdminDashboard({
               ← Back to dashboard
             </button>
             <div className="flex items-center gap-3">
-              <button
-                onClick={() => setSharedPreview(!sharedPreview)}
-                className="px-4 py-2 rounded-lg text-sm font-medium border border-[var(--neutral-600)] text-[var(--neutral-300)] hover:text-[var(--neutral-100)] transition-colors"
-              >
-                {sharedPreview ? 'Edit' : 'Preview'}
-              </button>
+              <div className="flex border border-[var(--neutral-600)] rounded-lg overflow-hidden">
+                {(['visual', 'source', 'preview'] as const).map((mode) => (
+                  <button
+                    key={mode}
+                    onClick={() => setSharedEditorMode(mode)}
+                    className={`px-3 py-1.5 text-xs font-medium transition-colors ${
+                      sharedEditorMode === mode
+                        ? 'bg-[var(--neutral-600)] text-[var(--neutral-100)]'
+                        : 'text-[var(--neutral-400)] hover:text-[var(--neutral-100)]'
+                    }`}
+                  >
+                    {mode === 'visual' ? 'Visual' : mode === 'source' ? 'HTML Source' : 'Preview'}
+                  </button>
+                ))}
+              </div>
               <button
                 onClick={saveSharedPage}
-                disabled={sharedSaving || !sharedEditor.title || !sharedEditor.slug || !sharedEditor.html_content}
+                disabled={sharedSaving || !sharedEditor.title || !sharedEditor.slug}
                 className="px-5 py-2 rounded-lg bg-[var(--primary)] text-[var(--background)] font-semibold text-sm hover:bg-[var(--primary-light)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {sharedSaving ? 'Saving…' : sharedEditor.id ? 'Update Page' : 'Create Page'}
@@ -436,10 +458,14 @@ export default function AdminDashboard({
             </div>
           )}
 
-          {sharedPreview ? (
+          {sharedEditorMode === 'preview' ? (
             <div className="bg-[var(--card-bg)] border border-[var(--neutral-700)] rounded-2xl p-4 overflow-hidden">
               <iframe
-                srcDoc={sharedEditor.html_content}
+                srcDoc={
+                  sharedHtmlWrapper.current.headWrapper
+                    ? reconstructHtml(sharedHtmlWrapper.current.headWrapper, sharedBodyContent, sharedHtmlWrapper.current.tailWrapper)
+                    : sharedBodyContent
+                }
                 sandbox="allow-same-origin"
                 className="w-full border border-[var(--neutral-700)] rounded-xl bg-white"
                 style={{ height: '80vh' }}
@@ -502,16 +528,25 @@ export default function AdminDashboard({
               </div>
 
               <div className="lg:col-span-2">
-                <label className="block text-sm text-[var(--neutral-400)] mb-1">HTML Content</label>
-                <div className="text-xs text-[var(--neutral-500)] mb-2">
-                  Full HTML document with inline styles. Use Preview to see how it renders.
-                </div>
-                <textarea
-                  value={sharedEditor.html_content}
-                  onChange={(e) => setSharedEditor({ ...sharedEditor, html_content: e.target.value })}
-                  rows={30}
-                  className="w-full bg-[var(--neutral-800)] border border-[var(--neutral-600)] rounded-lg px-4 py-3 text-[var(--neutral-100)] text-sm font-mono leading-relaxed focus:outline-none focus:border-[var(--primary)] resize-y"
-                />
+                {sharedEditorMode === 'visual' ? (
+                  <SharedPageRichEditor
+                    content={sharedBodyContent}
+                    onChange={setSharedBodyContent}
+                  />
+                ) : (
+                  <>
+                    <label className="block text-sm text-[var(--neutral-400)] mb-1">Body HTML</label>
+                    <div className="text-xs text-[var(--neutral-500)] mb-2">
+                      Editing the body content only. The document head, styles, and fonts are preserved automatically.
+                    </div>
+                    <textarea
+                      value={sharedBodyContent}
+                      onChange={(e) => setSharedBodyContent(e.target.value)}
+                      rows={30}
+                      className="w-full bg-[var(--neutral-800)] border border-[var(--neutral-600)] rounded-lg px-4 py-3 text-[var(--neutral-100)] text-sm font-mono leading-relaxed focus:outline-none focus:border-[var(--primary)] resize-y"
+                    />
+                  </>
+                )}
               </div>
             </div>
           )}
