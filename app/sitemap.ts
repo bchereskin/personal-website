@@ -1,9 +1,13 @@
 import type { MetadataRoute } from 'next';
-import { posts } from './blog/posts';
+import { getPublishedPosts } from './blog/posts';
+
+export const dynamic = 'force-dynamic';
 
 const BASE_URL = 'https://www.brettchereskin.com';
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const posts = await getPublishedPosts();
+
   const blogPosts = posts.map((post) => ({
     url: `${BASE_URL}/blog/${post.slug}`,
     lastModified: new Date(post.date),

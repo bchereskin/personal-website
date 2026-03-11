@@ -1,8 +1,12 @@
-import { posts } from '../blog/posts';
+import { getPublishedPosts } from '../blog/posts';
+
+export const dynamic = 'force-dynamic';
 
 const BASE_URL = 'https://www.brettchereskin.com';
 
 export async function GET() {
+  const posts = await getPublishedPosts();
+
   const items = posts
     .map(
       (post) => `

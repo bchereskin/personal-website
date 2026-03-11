@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const { slug } = await request.json();
-  const post = getPostBySlug(slug);
+  const post = await getPostBySlug(slug);
   if (!post) return NextResponse.json({ error: 'Invalid slug' }, { status: 400 });
 
   const admin = getAdminSupabase();
