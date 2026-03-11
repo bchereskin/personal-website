@@ -18,6 +18,7 @@ export async function GET(
     .from('shared_pages')
     .select('html_content')
     .eq('slug', slug)
+    .eq('is_active', true)
     .single();
 
   if (error || !data) {

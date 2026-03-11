@@ -3,6 +3,7 @@ import { createSupabaseServer } from '@/app/lib/supabase-server';
 import { getAdminSupabase } from '@/app/lib/supabase-admin';
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const SLUG_PATTERN = /^[a-z0-9][a-z0-9-]*[a-z0-9]$/;
 const VALID_TYPES = ['person', 'project', 'business'];
 
 async function requireAdmin() {
@@ -40,6 +41,10 @@ export async function PATCH(
 
   if (Object.keys(updates).length === 0) {
     return NextResponse.json({ error: 'No valid fields to update' }, { status: 400 });
+  }
+
+  if (updates.slug !== undefined && !SLUG_PATTERN.test(updates.slug as string)) {
+    return NextResponse.json({ error: 'Invalid slug format' }, { status: 400 });
   }
 
   if (updates.recipient_type && !VALID_TYPES.includes(updates.recipient_type as string)) {
