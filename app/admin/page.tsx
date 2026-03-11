@@ -23,7 +23,7 @@ export default async function AdminPage() {
       .order('created_at', { ascending: false }),
     admin
       .from('shared_pages')
-      .select('id, slug, title, created_at, visit_count, last_visited_at, is_active')
+      .select('id, slug, title, html_content, created_at, visit_count, last_visited_at, is_active, recipient_name, recipient_type')
       .order('created_at', { ascending: false }),
     admin
       .from('blog_posts')

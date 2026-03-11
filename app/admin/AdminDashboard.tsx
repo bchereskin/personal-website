@@ -27,10 +27,23 @@ interface SharedPage {
   id: string;
   slug: string;
   title: string;
+  html_content: string;
   created_at: string;
   visit_count: number;
   last_visited_at: string | null;
   is_active: boolean;
+  recipient_name: string | null;
+  recipient_type: 'person' | 'project' | 'business' | null;
+}
+
+interface SharedPageEditorState {
+  id?: string;
+  slug: string;
+  title: string;
+  html_content: string;
+  is_active: boolean;
+  recipient_name: string;
+  recipient_type: 'person' | 'project' | 'business' | '';
 }
 
 interface BlogPostRow {
@@ -87,6 +100,15 @@ const emptyEditor: EditorState = {
   is_published: false,
 };
 
+const emptySharedEditor: SharedPageEditorState = {
+  slug: '',
+  title: '',
+  html_content: '',
+  is_active: true,
+  recipient_name: '',
+  recipient_type: '',
+};
+
 export default function AdminDashboard({
   contacts: initialContacts,
   comments: initialComments,
@@ -120,6 +142,11 @@ export default function AdminDashboard({
   const [showPreview, setShowPreview] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveResult, setSaveResult] = useState<string | null>(null);
+
+  const [sharedEditor, setSharedEditor] = useState<SharedPageEditorState | null>(null);
+  const [sharedPreview, setSharedPreview] = useState(false);
+  const [sharedSaving, setSharedSaving] = useState(false);
+  const [sharedSaveResult, setSharedSaveResult] = useState<string | null>(null);
 
   async function handleLogout() {
     const supabase = createSupabaseBrowser();
@@ -283,6 +310,84 @@ export default function AdminDashboard({
     setTimeout(() => setCopied(null), 2000);
   }
 
+  function openSharedEditor(page?: SharedPage) {
+    if (page) {
+      setSharedEditor({
+        id: page.id,
+        slug: page.slug,
+        title: page.title,
+        html_content: page.html_content,
+        is_active: page.is_active,
+        recipient_name: page.recipient_name || '',
+        recipient_type: page.recipient_type || '',
+      });
+    } else {
+      setSharedEditor({ ...emptySharedEditor });
+    }
+    setSharedPreview(false);
+    setSharedSaveResult(null);
+  }
+
+  async function saveSharedPage() {
+    if (!sharedEditor) return;
+    setSharedSaving(true);
+    setSharedSaveResult(null);
+
+    try {
+      const payload = {
+        slug: sharedEditor.slug,
+        title: sharedEditor.title,
+        html_content: sharedEditor.html_content,
+        is_active: sharedEditor.is_active,
+        recipient_name: sharedEditor.recipient_name || null,
+        recipient_type: sharedEditor.recipient_type || null,
+      };
+
+      let res: Response;
+      if (sharedEditor.id) {
+        res = await fetch(`/api/admin/shared-pages/${sharedEditor.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+      } else {
+        res = await fetch('/api/admin/shared-pages', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+      }
+
+      if (res.ok) {
+        const data = await res.json();
+        if (sharedEditor.id) {
+          setSharedPages((prev) => prev.map((p) => (p.id === data.id ? data : p)));
+        } else {
+          setSharedPages((prev) => [data, ...prev]);
+        }
+        setSharedSaveResult('Saved!');
+        setTimeout(() => {
+          setSharedEditor(null);
+          setSharedSaveResult(null);
+        }, 1000);
+      } else {
+        const err = await res.json();
+        setSharedSaveResult(err.error || 'Failed to save');
+      }
+    } catch {
+      setSharedSaveResult('Failed to save');
+    } finally {
+      setSharedSaving(false);
+    }
+  }
+
+  async function deleteSharedPage(id: string) {
+    setDeleting(id);
+    const res = await fetch(`/api/admin/shared-pages/${id}`, { method: 'DELETE' });
+    if (res.ok) setSharedPages((prev) => prev.filter((p) => p.id !== id));
+    setDeleting(null);
+  }
+
   const activePages = sharedPages.filter((p) => p.is_active);
   const totalVisits = sharedPages.reduce((sum, p) => sum + p.visit_count, 0);
   const publishedPosts = blogPosts.filter((p) => p.is_published);
@@ -294,6 +399,126 @@ export default function AdminDashboard({
         ? 'bg-[var(--primary)] text-[var(--background)]'
         : 'text-[var(--neutral-400)] hover:text-[var(--neutral-100)]'
     }`;
+
+  if (sharedEditor) {
+    return (
+      <div className="min-h-screen bg-[var(--background)]">
+        <header className="border-b border-[var(--neutral-700)] px-6 py-4">
+          <div className="max-w-6xl mx-auto flex items-center justify-between">
+            <button
+              onClick={() => setSharedEditor(null)}
+              className="text-sm text-[var(--neutral-400)] hover:text-[var(--neutral-100)] transition-colors"
+            >
+              ← Back to dashboard
+            </button>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setSharedPreview(!sharedPreview)}
+                className="px-4 py-2 rounded-lg text-sm font-medium border border-[var(--neutral-600)] text-[var(--neutral-300)] hover:text-[var(--neutral-100)] transition-colors"
+              >
+                {sharedPreview ? 'Edit' : 'Preview'}
+              </button>
+              <button
+                onClick={saveSharedPage}
+                disabled={sharedSaving || !sharedEditor.title || !sharedEditor.slug || !sharedEditor.html_content}
+                className="px-5 py-2 rounded-lg bg-[var(--primary)] text-[var(--background)] font-semibold text-sm hover:bg-[var(--primary-light)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {sharedSaving ? 'Saving…' : sharedEditor.id ? 'Update Page' : 'Create Page'}
+              </button>
+            </div>
+          </div>
+        </header>
+
+        <main className="max-w-6xl mx-auto px-6 py-8">
+          {sharedSaveResult && (
+            <div className={`mb-4 text-sm ${sharedSaveResult === 'Saved!' ? 'text-[var(--primary)]' : 'text-[var(--accent)]'}`}>
+              {sharedSaveResult}
+            </div>
+          )}
+
+          {sharedPreview ? (
+            <div className="bg-[var(--card-bg)] border border-[var(--neutral-700)] rounded-2xl p-4 overflow-hidden">
+              <iframe
+                srcDoc={sharedEditor.html_content}
+                sandbox="allow-same-origin"
+                className="w-full border border-[var(--neutral-700)] rounded-xl bg-white"
+                style={{ height: '80vh' }}
+                title="Page preview"
+              />
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm text-[var(--neutral-400)] mb-1">Title</label>
+                  <input
+                    value={sharedEditor.title}
+                    onChange={(e) => setSharedEditor({ ...sharedEditor, title: e.target.value })}
+                    className="w-full bg-[var(--neutral-800)] border border-[var(--neutral-600)] rounded-lg px-4 py-2.5 text-[var(--neutral-100)] text-sm focus:outline-none focus:border-[var(--primary)]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm text-[var(--neutral-400)] mb-1">Slug</label>
+                  <input
+                    value={sharedEditor.slug}
+                    onChange={(e) => setSharedEditor({ ...sharedEditor, slug: e.target.value })}
+                    className="w-full bg-[var(--neutral-800)] border border-[var(--neutral-600)] rounded-lg px-4 py-2.5 text-[var(--neutral-100)] text-sm focus:outline-none focus:border-[var(--primary)]"
+                    placeholder="my-page-slug"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm text-[var(--neutral-400)] mb-1">Recipient Name</label>
+                  <input
+                    value={sharedEditor.recipient_name}
+                    onChange={(e) => setSharedEditor({ ...sharedEditor, recipient_name: e.target.value })}
+                    className="w-full bg-[var(--neutral-800)] border border-[var(--neutral-600)] rounded-lg px-4 py-2.5 text-[var(--neutral-100)] text-sm focus:outline-none focus:border-[var(--primary)]"
+                    placeholder="e.g. Michael Camhi"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm text-[var(--neutral-400)] mb-1">Recipient Type</label>
+                  <select
+                    value={sharedEditor.recipient_type}
+                    onChange={(e) => setSharedEditor({ ...sharedEditor, recipient_type: e.target.value as SharedPageEditorState['recipient_type'] })}
+                    className="w-full bg-[var(--neutral-800)] border border-[var(--neutral-600)] rounded-lg px-4 py-2.5 text-[var(--neutral-100)] text-sm focus:outline-none focus:border-[var(--primary)]"
+                  >
+                    <option value="">None</option>
+                    <option value="person">Person</option>
+                    <option value="project">Project</option>
+                    <option value="business">Business</option>
+                  </select>
+                </div>
+                <div className="flex items-center gap-3 pt-2">
+                  <label className="flex items-center gap-2 text-sm text-[var(--neutral-300)] cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={sharedEditor.is_active}
+                      onChange={(e) => setSharedEditor({ ...sharedEditor, is_active: e.target.checked })}
+                      className="rounded border-[var(--neutral-600)]"
+                    />
+                    Active (publicly accessible)
+                  </label>
+                </div>
+              </div>
+
+              <div className="lg:col-span-2">
+                <label className="block text-sm text-[var(--neutral-400)] mb-1">HTML Content</label>
+                <div className="text-xs text-[var(--neutral-500)] mb-2">
+                  Full HTML document with inline styles. Use Preview to see how it renders.
+                </div>
+                <textarea
+                  value={sharedEditor.html_content}
+                  onChange={(e) => setSharedEditor({ ...sharedEditor, html_content: e.target.value })}
+                  rows={30}
+                  className="w-full bg-[var(--neutral-800)] border border-[var(--neutral-600)] rounded-lg px-4 py-3 text-[var(--neutral-100)] text-sm font-mono leading-relaxed focus:outline-none focus:border-[var(--primary)] resize-y"
+                />
+              </div>
+            </div>
+          )}
+        </main>
+      </div>
+    );
+  }
 
   if (editor) {
     return (
@@ -508,32 +733,26 @@ export default function AdminDashboard({
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b border-[var(--neutral-700)]">
-                        <th className="text-left px-5 py-3 text-[var(--neutral-400)] font-medium">Title</th>
-                        <th className="text-left px-5 py-3 text-[var(--neutral-400)] font-medium">Date</th>
-                        <th className="text-left px-5 py-3 text-[var(--neutral-400)] font-medium">Category</th>
-                        <th className="text-left px-5 py-3 text-[var(--neutral-400)] font-medium">Views</th>
-                        <th className="text-left px-5 py-3 text-[var(--neutral-400)] font-medium">Last Viewed</th>
-                        <th className="text-left px-5 py-3 text-[var(--neutral-400)] font-medium">Comments</th>
-                        <th className="text-left px-5 py-3 text-[var(--neutral-400)] font-medium">Status</th>
-                        <th className="px-5 py-3 text-[var(--neutral-400)] font-medium text-right">Actions</th>
+                        <th className="text-left px-4 py-3 text-[var(--neutral-400)] font-medium">Post</th>
+                        <th className="text-left px-4 py-3 text-[var(--neutral-400)] font-medium">Stats</th>
+                        <th className="text-left px-4 py-3 text-[var(--neutral-400)] font-medium">Status</th>
+                        <th className="px-4 py-3 text-[var(--neutral-400)] font-medium text-right">Actions</th>
                       </tr>
                     </thead>
                     <tbody>
                       {blogPosts.map((p) => (
                         <tr key={p.id} className="border-b border-[var(--neutral-700)] last:border-0 hover:bg-[var(--neutral-800)]">
-                          <td className="px-5 py-4 text-[var(--neutral-100)] font-medium max-w-xs">
-                            <p className="truncate">{p.title}</p>
+                          <td className="px-4 py-3 min-w-0 max-w-sm">
+                            <p className="text-[var(--neutral-100)] font-medium truncate">{p.title}</p>
+                            <p className="text-xs text-[var(--neutral-500)] mt-0.5">
+                              {formatDate(p.date)} · <span className="text-[var(--primary)]">{p.category}</span>
+                            </p>
                           </td>
-                          <td className="px-5 py-4 text-[var(--neutral-500)]">{formatDate(p.date)}</td>
-                          <td className="px-5 py-4">
-                            <span className="bg-[var(--primary)]/10 text-[var(--primary)] text-xs px-2 py-1 rounded-full">{p.category}</span>
+                          <td className="px-4 py-3">
+                            <p className="text-[var(--neutral-300)]">{p.visit_count} views</p>
+                            <p className="text-xs text-[var(--neutral-500)] mt-0.5">{commentCountMap[p.slug] || 0} comments</p>
                           </td>
-                          <td className="px-5 py-4 text-[var(--neutral-300)]">{p.visit_count}</td>
-                          <td className="px-5 py-4 text-[var(--neutral-500)]">
-                            {p.last_visited_at ? formatDate(p.last_visited_at) : '—'}
-                          </td>
-                          <td className="px-5 py-4 text-[var(--neutral-300)]">{commentCountMap[p.slug] || 0}</td>
-                          <td className="px-5 py-4">
+                          <td className="px-4 py-3">
                             <span className={`text-xs px-2 py-1 rounded-full ${
                               p.is_published
                                 ? 'bg-[var(--primary)]/10 text-[var(--primary)]'
@@ -542,7 +761,7 @@ export default function AdminDashboard({
                               {p.is_published ? 'Published' : 'Draft'}
                             </span>
                           </td>
-                          <td className="px-5 py-4 text-right">
+                          <td className="px-4 py-3 text-right">
                             <div className="flex items-center justify-end gap-3">
                               <a href={`/blog/${p.slug}`} target="_blank" className="text-xs text-[var(--neutral-400)] hover:text-[var(--primary)] transition-colors">View</a>
                               <button onClick={() => openEditor(p)} className="text-xs text-[var(--neutral-400)] hover:text-[var(--primary)] transition-colors">Edit</button>
@@ -660,49 +879,79 @@ export default function AdminDashboard({
         )}
 
         {tab === 'shared' && (
-          <div className="bg-[var(--card-bg)] border border-[var(--neutral-700)] rounded-2xl overflow-hidden">
-            {sharedPages.length === 0 ? (
-              <p className="text-[var(--neutral-500)] text-sm p-8 text-center">No shared pages yet.</p>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-[var(--neutral-700)]">
-                      <th className="text-left px-5 py-3 text-[var(--neutral-400)] font-medium">Title</th>
-                      <th className="text-left px-5 py-3 text-[var(--neutral-400)] font-medium">Created</th>
-                      <th className="text-left px-5 py-3 text-[var(--neutral-400)] font-medium">Visits</th>
-                      <th className="text-left px-5 py-3 text-[var(--neutral-400)] font-medium">Last Visited</th>
-                      <th className="text-left px-5 py-3 text-[var(--neutral-400)] font-medium">Status</th>
-                      <th className="px-5 py-3 text-[var(--neutral-400)] font-medium text-right">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {sharedPages.map((p) => (
-                      <tr key={p.id} className="border-b border-[var(--neutral-700)] last:border-0 hover:bg-[var(--neutral-800)]">
-                        <td className="px-5 py-4 text-[var(--neutral-100)] font-medium">{p.title}</td>
-                        <td className="px-5 py-4 text-[var(--neutral-500)]">{formatDate(p.created_at)}</td>
-                        <td className="px-5 py-4 text-[var(--neutral-300)]">{p.visit_count}</td>
-                        <td className="px-5 py-4 text-[var(--neutral-500)]">{p.last_visited_at ? formatDate(p.last_visited_at) : '—'}</td>
-                        <td className="px-5 py-4">
-                          <span className={`text-xs px-2 py-1 rounded-full ${p.is_active ? 'bg-[var(--primary)]/10 text-[var(--primary)]' : 'bg-[var(--accent)]/10 text-[var(--accent)]'}`}>
-                            {p.is_active ? 'Active' : 'Dehosted'}
-                          </span>
-                        </td>
-                        <td className="px-5 py-4 text-right">
-                          <div className="flex items-center justify-end gap-3">
-                            <button onClick={() => copyLink(p.slug)} className="text-xs text-[var(--neutral-400)] hover:text-[var(--primary)] transition-colors">{copied === p.slug ? 'Copied!' : 'Copy link'}</button>
-                            {p.is_active && <a href={`/shared/${p.slug}`} target="_blank" className="text-xs text-[var(--neutral-400)] hover:text-[var(--primary)] transition-colors">View</a>}
-                            <button onClick={() => toggleSharedPage(p.id, p.is_active)} disabled={toggling === p.id} className={`text-xs transition-colors disabled:opacity-40 ${p.is_active ? 'text-[var(--neutral-500)] hover:text-[var(--accent)]' : 'text-[var(--neutral-500)] hover:text-[var(--primary)]'}`}>
-                              {toggling === p.id ? '…' : p.is_active ? 'Dehost' : 'Rehost'}
-                            </button>
-                          </div>
-                        </td>
+          <div>
+            <div className="flex justify-end mb-4">
+              <button
+                onClick={() => openSharedEditor()}
+                className="px-5 py-2.5 rounded-lg bg-[var(--primary)] text-[var(--background)] font-semibold text-sm hover:bg-[var(--primary-light)] transition-colors"
+              >
+                + New Page
+              </button>
+            </div>
+            <div className="bg-[var(--card-bg)] border border-[var(--neutral-700)] rounded-2xl overflow-hidden">
+              {sharedPages.length === 0 ? (
+                <p className="text-[var(--neutral-500)] text-sm p-8 text-center">No shared pages yet.</p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-[var(--neutral-700)]">
+                        <th className="text-left px-4 py-3 text-[var(--neutral-400)] font-medium">Page</th>
+                        <th className="text-left px-4 py-3 text-[var(--neutral-400)] font-medium">Recipient</th>
+                        <th className="text-left px-4 py-3 text-[var(--neutral-400)] font-medium">Visits</th>
+                        <th className="text-left px-4 py-3 text-[var(--neutral-400)] font-medium">Status</th>
+                        <th className="px-4 py-3 text-[var(--neutral-400)] font-medium text-right">Actions</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
+                    </thead>
+                    <tbody>
+                      {sharedPages.map((p) => (
+                        <tr key={p.id} className="border-b border-[var(--neutral-700)] last:border-0 hover:bg-[var(--neutral-800)]">
+                          <td className="px-4 py-3 min-w-0">
+                            <p className="text-[var(--neutral-100)] font-medium truncate">{p.title}</p>
+                            <p className="text-xs text-[var(--neutral-500)] mt-0.5">{formatDate(p.created_at)}</p>
+                          </td>
+                          <td className="px-4 py-3">
+                            {p.recipient_name ? (
+                              <div>
+                                <p className="text-[var(--neutral-200)] text-sm">{p.recipient_name}</p>
+                                {p.recipient_type && (
+                                  <span className="text-xs text-[var(--neutral-500)] capitalize">{p.recipient_type}</span>
+                                )}
+                              </div>
+                            ) : (
+                              <span className="text-[var(--neutral-600)]">—</span>
+                            )}
+                          </td>
+                          <td className="px-4 py-3 text-[var(--neutral-300)]">{p.visit_count}</td>
+                          <td className="px-4 py-3">
+                            <span className={`text-xs px-2 py-1 rounded-full ${p.is_active ? 'bg-[var(--primary)]/10 text-[var(--primary)]' : 'bg-[var(--accent)]/10 text-[var(--accent)]'}`}>
+                              {p.is_active ? 'Active' : 'Dehosted'}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-right">
+                            <div className="flex items-center justify-end gap-3">
+                              <button onClick={() => copyLink(p.slug)} className="text-xs text-[var(--neutral-400)] hover:text-[var(--primary)] transition-colors">{copied === p.slug ? 'Copied!' : 'Copy link'}</button>
+                              {p.is_active && <a href={`/shared/${p.slug}`} target="_blank" className="text-xs text-[var(--neutral-400)] hover:text-[var(--primary)] transition-colors">View</a>}
+                              <button onClick={() => openSharedEditor(p)} className="text-xs text-[var(--neutral-400)] hover:text-[var(--primary)] transition-colors">Edit</button>
+                              <button onClick={() => toggleSharedPage(p.id, p.is_active)} disabled={toggling === p.id} className={`text-xs transition-colors disabled:opacity-40 ${p.is_active ? 'text-[var(--neutral-500)] hover:text-[var(--accent)]' : 'text-[var(--neutral-500)] hover:text-[var(--primary)]'}`}>
+                                {toggling === p.id ? '…' : p.is_active ? 'Dehost' : 'Rehost'}
+                              </button>
+                              <button
+                                onClick={() => deleteSharedPage(p.id)}
+                                disabled={deleting === p.id}
+                                className="text-xs text-[var(--neutral-500)] hover:text-[var(--accent)] transition-colors disabled:opacity-40"
+                              >
+                                {deleting === p.id ? '…' : 'Delete'}
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
           </div>
         )}
 
