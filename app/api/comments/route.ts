@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
+import { timingSafeEqual } from 'crypto';
 import { getSupabase } from '@/app/lib/supabase';
 import { postExistsBySlug, getPostBySlug } from '@/app/blog/posts';
 import { escapeHtml, sanitizeInput } from '@/app/lib/sanitize';
@@ -164,7 +165,9 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ error: 'Comment not found' }, { status: 404 });
   }
 
-  if (comment.edit_token !== edit_token) {
+  const a = Buffer.from(comment.edit_token);
+  const b = Buffer.from(edit_token);
+  if (a.length !== b.length || !timingSafeEqual(a, b)) {
     return NextResponse.json({ error: 'Invalid token' }, { status: 403 });
   }
 
