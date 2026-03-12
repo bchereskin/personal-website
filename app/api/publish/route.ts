@@ -160,7 +160,7 @@ export async function PUT(request: NextRequest) {
   const filtered: Record<string, unknown> = {};
 
   for (const key of allowed) {
-    if (key in body && key !== 'slug') {
+    if (key in body) {
       const val = body[key];
       if (key === 'is_active') {
         if (typeof val !== 'boolean') {
