@@ -18,13 +18,19 @@ export async function GET(
     return new NextResponse('Not found', { status: 404 });
   }
 
-  admin.rpc('increment_shared_page_visits', { page_slug: slug }).then(() => {});
+  admin.rpc('increment_shared_page_visits', { page_slug: slug }).catch((err) => {
+    console.error('Visit increment failed:', err);
+  });
 
   return new NextResponse(data.html_content, {
     headers: {
       'Content-Type': 'text/html; charset=utf-8',
+      'Content-Security-Policy': "default-src 'self'; script-src 'none'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https:; frame-ancestors 'none'",
+      'X-Content-Type-Options': 'nosniff',
+      'X-Frame-Options': 'DENY',
       'X-Robots-Tag': 'noindex, nofollow',
       'Cache-Control': 'no-store',
+      'Referrer-Policy': 'no-referrer',
     },
   });
 }
