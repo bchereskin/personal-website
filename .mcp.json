@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "publish": {
+      "command": "npx",
+      "args": ["tsx", "mcp-server/publish-server.ts"],
+      "env": {
+        "PUBLISH_API_KEY": "",
+        "SITE_URL": "https://www.brettchereskin.com"
+      }
+    }
+  }
+}
