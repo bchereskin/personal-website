@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { getSupabase } from '@/app/lib/supabase';
-import { getPostBySlug } from '@/app/blog/posts';
+import { postExistsBySlug, getPostBySlug } from '@/app/blog/posts';
 import { escapeHtml, sanitizeInput } from '@/app/lib/sanitize';
+import { rateLimit } from '@/app/lib/rate-limit';
 
 export async function GET(request: NextRequest) {
   const slug = request.nextUrl.searchParams.get('slug');
@@ -17,13 +18,17 @@ export async function GET(request: NextRequest) {
     .order('created_at', { ascending: true });
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error('Comments fetch failed:', error.message);
+    return NextResponse.json({ error: 'Failed to load comments' }, { status: 500 });
   }
 
   return NextResponse.json(data);
 }
 
 export async function POST(request: NextRequest) {
+  const limited = rateLimit(request, { maxRequests: 10, windowMs: 3600_000 });
+  if (limited) return limited;
+
   const body = await request.json();
   const {
     slug,
@@ -43,7 +48,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'All fields are required' }, { status: 400 });
   }
 
-  if (!getPostBySlug(slug)) {
+  if (!(await postExistsBySlug(slug))) {
     return NextResponse.json({ error: 'Invalid slug' }, { status: 400 });
   }
 
@@ -91,10 +96,11 @@ export async function POST(request: NextRequest) {
     .single();
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error('Comment insert failed:', error.message);
+    return NextResponse.json({ error: 'Failed to post comment' }, { status: 500 });
   }
 
-  const post = getPostBySlug(slug);
+  const post = await getPostBySlug(slug);
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://brettchereskin.com';
 
   const { error: emailError } = await new Resend(process.env.RESEND_API_KEY).emails.send({
@@ -175,7 +181,8 @@ export async function PUT(request: NextRequest) {
     .single();
 
   if (updateError) {
-    return NextResponse.json({ error: updateError.message }, { status: 500 });
+    console.error('Comment update failed:', updateError.message);
+    return NextResponse.json({ error: 'Failed to update comment' }, { status: 500 });
   }
 
   return NextResponse.json(updated);
