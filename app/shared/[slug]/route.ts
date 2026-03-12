@@ -18,8 +18,8 @@ export async function GET(
     return new NextResponse('Not found', { status: 404 });
   }
 
-  admin.rpc('increment_shared_page_visits', { page_slug: slug }).catch((err) => {
-    console.error('Visit increment failed:', err);
+  admin.rpc('increment_shared_page_visits', { page_slug: slug }).then(({ error: rpcError }) => {
+    if (rpcError) console.error('Visit increment failed:', rpcError);
   });
 
   return new NextResponse(data.html_content, {
