@@ -19,6 +19,14 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'thenest.concentrix.com',
       },
+      {
+        protocol: 'https',
+        hostname: 'logo.clearbit.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'upload.wikimedia.org',
+      },
     ],
   },
   async headers() {
@@ -32,7 +40,7 @@ const nextConfig: NextConfig = {
               "default-src 'self'",
               "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com",
               "style-src 'self' 'unsafe-inline'",
-              "img-src 'self' data: https://images.unsplash.com https://img.youtube.com https://i.ytimg.com https://thenest.concentrix.com",
+              "img-src 'self' data: https://images.unsplash.com https://img.youtube.com https://i.ytimg.com https://thenest.concentrix.com https://logo.clearbit.com https://upload.wikimedia.org",
               "font-src 'self'",
               "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://va.vercel-scripts.com",
               "frame-ancestors 'none'",

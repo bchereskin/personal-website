@@ -248,16 +248,23 @@ export default function Home() {
               whileInView="visible"
               viewport={{ once: true, amount: 0.2 }}
               variants={staggerContainer}
-              className="flex flex-wrap justify-center items-center gap-10 md:gap-16 mb-10"
+              className="flex flex-wrap justify-center items-center gap-12 md:gap-20 mb-10"
             >
               {[
-                { name: 'dub', label: 'COO & Board Member' },
-                { name: 'Affirm', label: 'Business Operations' },
-                { name: 'U.S. Army', label: '12 Years · Aviator' },
-                { name: 'West Point', label: 'Class of 2006' },
+                { name: 'dub', label: 'COO & Board Member', logo: 'https://logo.clearbit.com/dub.co' },
+                { name: 'Affirm', label: 'Business Operations', logo: 'https://logo.clearbit.com/affirm.com' },
+                { name: 'U.S. Army', label: '12 Years · Aviator', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Military_service_mark_of_the_United_States_Army.png/200px-Military_service_mark_of_the_United_States_Army.png' },
               ].map((org) => (
                 <motion.div key={org.name} variants={fadeInUp} className="text-center">
-                  <p className="text-2xl font-bold text-[var(--neutral-200)] mb-1">{org.name}</p>
+                  <div className="h-12 flex items-center justify-center mb-3">
+                    <Image
+                      src={org.logo}
+                      alt={`${org.name} logo`}
+                      width={48}
+                      height={48}
+                      className="object-contain brightness-0 invert opacity-80 h-10 w-auto"
+                    />
+                  </div>
                   <p className="text-sm text-[var(--neutral-500)]">{org.label}</p>
                 </motion.div>
               ))}

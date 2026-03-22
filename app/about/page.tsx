@@ -209,8 +209,8 @@ export default function About() {
                 <div className="relative rounded-2xl overflow-hidden h-full group">
                   <div className="absolute inset-0">
                     <Image
-                      src="https://images.unsplash.com/photo-1562774053-701939374585?q=80&w=2070"
-                      alt="West Point"
+                      src="/westpoint.jpg"
+                      alt="West Point campus"
                       fill
                       className="object-cover opacity-30 group-hover:opacity-40 transition-opacity"
                     />
@@ -444,35 +444,101 @@ export default function About() {
           </div>
         </section>
 
-        {/* What Drives Me */}
-        <section className="py-20 px-6">
-          <div className="max-w-4xl mx-auto">
+        {/* Life Outside Work */}
+        <section className="py-20 px-6 relative overflow-hidden">
+          <div className="gradient-orb w-96 h-96 bg-[var(--primary)] opacity-10 -left-48 top-20" />
+
+          <div className="max-w-4xl mx-auto relative z-10">
             <MotionSection>
-              <div className="relative rounded-2xl overflow-hidden">
-                <div className="absolute inset-0">
-                  <Image
-                    src="https://images.unsplash.com/photo-1534430480872-3498386e7856?q=80&w=2070"
-                    alt="NYC"
-                    fill
-                    className="object-cover opacity-40"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-r from-[var(--background)] via-[var(--background)]/80 to-transparent" />
-                </div>
-                <div className="relative z-10 p-8 md:p-12 md:w-2/3">
-                  <p className="text-[var(--accent)] font-medium tracking-widest uppercase mb-3">Beyond Work</p>
-                  <h2 className="text-2xl font-bold text-[var(--neutral-50)] mb-4">What Drives Me</h2>
-                  <p className="text-[var(--neutral-300)] text-lg mb-6">
-                    I care about two things outside of my day job: helping service members successfully
-                    transition into the startup ecosystem, and proving that non-technical operators can
-                    build real things with AI.
-                  </p>
-                  <p className="text-[var(--neutral-300)] text-lg">
-                    I put money behind both — investing in veteran founders through Context Ventures,
-                    and writing publicly about building with AI so other operators stop waiting for permission.
-                  </p>
-                </div>
-              </div>
+              <p className="text-[var(--accent)] font-medium tracking-widest uppercase mb-3">Beyond Work</p>
+              <h2 className="text-3xl md:text-4xl font-bold text-[var(--neutral-50)] mb-4">
+                Life Outside Work
+              </h2>
+              <p className="text-[var(--neutral-300)] text-lg mb-12 max-w-2xl">
+                The stuff that actually matters.
+              </p>
             </MotionSection>
+
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.1 }}
+              variants={staggerContainer}
+              className="grid md:grid-cols-2 gap-6"
+            >
+              {/* Lisa */}
+              <motion.div variants={fadeInUp}>
+                <div className="bg-[var(--card-bg)] rounded-2xl p-8 border border-[var(--neutral-700)] h-full">
+                  <div className="w-12 h-12 bg-[var(--accent)]/20 rounded-lg flex items-center justify-center mb-4">
+                    <svg className="w-6 h-6 text-[var(--accent)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-xl font-bold text-[var(--neutral-50)] mb-3">Lisa</h3>
+                  <p className="text-[var(--neutral-300)]">
+                    Married to my wife Lisa for over 13 years. We met when I was stationed in Germany — she&apos;s the reason I survived
+                    the Army years. We go back to Germany as often as we can and love having an international family.
+                  </p>
+                </div>
+              </motion.div>
+
+              {/* Tanuki */}
+              <motion.div variants={fadeInUp}>
+                <div className="bg-[var(--card-bg)] rounded-2xl p-8 border border-[var(--neutral-700)] h-full">
+                  <div className="w-12 h-12 bg-[var(--primary)]/20 rounded-lg flex items-center justify-center mb-4">
+                    <svg className="w-6 h-6 text-[var(--primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905a3.61 3.61 0 01-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />
+                    </svg>
+                  </div>
+                  <h3 className="text-xl font-bold text-[var(--neutral-50)] mb-3">Tanuki</h3>
+                  <p className="text-[var(--neutral-300)]">
+                    Our Pomsky and the best city dog you&apos;ll ever meet. We walk him all over NYC exploring different
+                    neighborhoods — honestly how we discovered most of our favorite spots.
+                  </p>
+                </div>
+              </motion.div>
+
+              {/* Food, Wine & Theatre */}
+              <motion.div variants={fadeInUp}>
+                <div className="bg-[var(--card-bg)] rounded-2xl p-8 border border-[var(--neutral-700)] h-full">
+                  <div className="w-12 h-12 bg-[var(--accent)]/20 rounded-lg flex items-center justify-center mb-4">
+                    <svg className="w-6 h-6 text-[var(--accent)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-xl font-bold text-[var(--neutral-50)] mb-3">Food, Wine & Theatre</h3>
+                  <p className="text-[var(--neutral-300)] mb-4">
+                    We love food, wine, and Broadway. Omakase is our love language, natural wine bars are our
+                    pre-dinner move, and we&apos;re TodayTix Gold members who never miss a lottery.
+                  </p>
+                  <Link
+                    href="/favorites"
+                    className="inline-flex items-center gap-2 text-[var(--accent)] hover:text-[var(--accent-light)] font-medium transition-colors"
+                  >
+                    See our NYC favorites
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                    </svg>
+                  </Link>
+                </div>
+              </motion.div>
+
+              {/* NYC */}
+              <motion.div variants={fadeInUp}>
+                <div className="bg-[var(--card-bg)] rounded-2xl p-8 border border-[var(--neutral-700)] h-full">
+                  <div className="w-12 h-12 bg-[var(--primary)]/20 rounded-lg flex items-center justify-center mb-4">
+                    <svg className="w-6 h-6 text-[var(--primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                  </div>
+                  <h3 className="text-xl font-bold text-[var(--neutral-50)] mb-3">New York City</h3>
+                  <p className="text-[var(--neutral-300)]">
+                    Born and raised on Long Island. After 15 years traveling the world with the military and doing
+                    the startup thing in San Francisco, I finally came back to the city. It was worth the wait.
+                  </p>
+                </div>
+              </motion.div>
+            </motion.div>
           </div>
         </section>
 
