@@ -135,14 +135,14 @@ const categories: Category[] = [
 ];
 
 const shows = [
-  { name: 'All Out', date: 'Dec 2025', note: 'Featuring the band Lawrence — we\'re huge fans. The live energy was unreal.', image: '/shows/allout.png' },
-  { name: 'Hadestown', date: '2025', note: 'We love this show. The music stays with you for days.', image: '/shows/hadestown.jpg' },
-  { name: 'Moulin Rouge!', date: 'Apr 2024', note: 'Our go-to for out-of-town visitors. Took multiple groups. Never gets old.', image: '/shows/moulinrouge.jpg' },
-  { name: 'Cabaret', date: '2024', note: 'The Kit Kat Club experience. Eddie Redmayne was mesmerizing.', image: '/shows/cabaret.jpg' },
-  { name: 'Sunset Blvd.', date: '2024', note: 'Nicole Scherzinger. Unbelievable.', image: '/shows/sunsetblvd.jpg' },
-  { name: 'Shucked', date: '2023', note: 'Way funnier than it has any right to be. We still quote it.', image: '/shows/shucked.jpg' },
-  { name: 'The Lion King', date: 'Apr 2024', note: 'A classic for a reason.', image: '/shows/lionking.jpg' },
-  { name: 'Chicago', date: 'May 2024', image: '/shows/chicago.jpg' },
+  { name: 'All Out', date: 'Dec 2025', note: 'Featuring the band Lawrence — we\'re huge fans. The live energy was unreal.' },
+  { name: 'Hadestown', date: '2025', note: 'We love this show. The music stays with you for days.' },
+  { name: 'Moulin Rouge!', date: 'Apr 2024', note: 'Our go-to for out-of-town visitors. Took multiple groups. Never gets old.' },
+  { name: 'Cabaret', date: '2024', note: 'The Kit Kat Club experience. Eddie Redmayne was mesmerizing.' },
+  { name: 'Sunset Blvd.', date: '2024', note: 'Nicole Scherzinger. Unbelievable.' },
+  { name: 'Shucked', date: '2023', note: 'Way funnier than it has any right to be. We still quote it.' },
+  { name: 'The Lion King', date: 'Apr 2024', note: 'A classic for a reason.' },
+  { name: 'Chicago', date: 'May 2024' },
 ];
 
 function SpotCard({ spot, accent, border }: { spot: Spot; accent: string; border: string }) {
@@ -312,28 +312,16 @@ export default function Favorites() {
             >
               {shows.map((show) => (
                 <motion.div key={show.name} variants={fadeIn}>
-                  <div className="bg-white rounded-2xl overflow-hidden border border-amber-200/50 hover:shadow-xl hover:scale-[1.02] transition-all h-full">
-                    <div className="relative h-32 w-full">
-                      <Image
-                        src={show.image}
-                        alt={show.name}
-                        fill
-                        className="object-cover"
-                        sizes="(max-width: 768px) 100vw, 33vw"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent" />
+                  <div className="bg-white rounded-xl p-4 border border-amber-200/50 hover:shadow-lg hover:scale-[1.02] transition-all h-full">
+                    <div className="flex items-start justify-between mb-1">
+                      <h3 className="font-bold text-gray-900 text-sm">{show.name}</h3>
+                      <span className="text-xs text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full font-medium flex-shrink-0 ml-2">
+                        {show.date}
+                      </span>
                     </div>
-                    <div className="p-4 pt-1">
-                      <div className="flex items-start justify-between mb-1">
-                        <h3 className="font-bold text-gray-900">{show.name}</h3>
-                        <span className="text-xs text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full font-medium flex-shrink-0 ml-2">
-                          {show.date}
-                        </span>
-                      </div>
-                      {show.note && (
-                        <p className="text-sm text-gray-500 italic">&ldquo;{show.note}&rdquo;</p>
-                      )}
-                    </div>
+                    {show.note && (
+                      <p className="text-xs text-gray-500 italic leading-relaxed">&ldquo;{show.note}&rdquo;</p>
+                    )}
                   </div>
                 </motion.div>
               ))}
