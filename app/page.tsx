@@ -251,9 +251,9 @@ export default function Home() {
               className="flex flex-wrap justify-center items-center gap-12 md:gap-20 mb-10"
             >
               {[
-                { name: 'dub', label: 'COO & Board Member', logo: 'https://logo.clearbit.com/dub.co' },
-                { name: 'Affirm', label: 'Business Operations', logo: 'https://logo.clearbit.com/affirm.com' },
-                { name: 'U.S. Army', label: '12 Years · Aviator', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Military_service_mark_of_the_United_States_Army.png/200px-Military_service_mark_of_the_United_States_Army.png' },
+                { name: 'dub', label: 'COO & Board Member', logo: '/logos/dub.png' },
+                { name: 'Affirm', label: 'Business Operations', logo: '/logos/affirm.svg' },
+                { name: 'U.S. Army', label: '12 Years · Aviator', logo: '/logos/army.png' },
               ].map((org) => (
                 <motion.div key={org.name} variants={fadeInUp} className="text-center">
                   <div className="h-12 flex items-center justify-center mb-3">
