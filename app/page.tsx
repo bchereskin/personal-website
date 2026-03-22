@@ -31,7 +31,6 @@ export default function Home() {
       <main className="min-h-screen bg-[var(--background)]">
         {/* Hero Section */}
         <section className="relative min-h-screen flex flex-col items-center justify-center px-6 overflow-hidden">
-          {/* Background Image */}
           <div className="absolute inset-0 z-0">
             <Image
               src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2070"
@@ -50,7 +49,7 @@ export default function Home() {
               transition={{ duration: 0.6 }}
               className="text-[var(--primary)] font-medium tracking-widest uppercase mb-4"
             >
-              Operator · Builder · AI Practitioner
+              Operator · Builder · Investor
             </motion.p>
             <motion.h1
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -66,7 +65,7 @@ export default function Home() {
               transition={{ duration: 0.6, delay: 0.8 }}
               className="text-xl md:text-2xl text-[var(--neutral-300)] mb-10 max-w-2xl mx-auto"
             >
-              Operational leader applying military discipline, fintech scale, and emerging AI to help companies run faster and build smarter.
+              I run operations at a fintech, build tools with AI, invest in military founders, and write about all of it. West Point grad. 12-year Army veteran. COO at dub.
             </motion.p>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -91,7 +90,6 @@ export default function Home() {
             </motion.div>
           </div>
 
-          {/* Scroll indicator */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -114,10 +112,10 @@ export default function Home() {
             className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8"
           >
             {[
-              { value: '12+', label: 'Military Leadership' },
+              { value: '12 Years', label: 'Army Aviator' },
               { value: 'COO', label: 'at dub' },
-              { value: 'West Point', label: '2006 Grad' },
-              { value: 'NYC', label: 'Based' },
+              { value: '3 Funds', label: 'LP & Angel' },
+              { value: 'West Point', label: 'Class of 2006' },
             ].map((stat) => (
               <motion.div key={stat.label} variants={fadeInUp} className="text-center">
                 <p className="text-4xl md:text-5xl font-bold gradient-text mb-2">{stat.value}</p>
@@ -127,18 +125,18 @@ export default function Home() {
           </motion.div>
         </section>
 
-        {/* What I Do Section */}
+        {/* What I'm Building Section */}
         <section className="py-24 px-6 relative overflow-hidden">
           <div className="gradient-orb w-[500px] h-[500px] bg-[var(--primary)] opacity-10 -bottom-64 -left-64" />
 
           <div className="max-w-6xl mx-auto relative z-10">
             <MotionSection className="text-center mb-16">
-              <p className="text-[var(--accent)] font-medium tracking-widest uppercase mb-3">Expertise</p>
+              <p className="text-[var(--accent)] font-medium tracking-widest uppercase mb-3">The Work</p>
               <h2 className="text-4xl md:text-5xl font-bold text-[var(--neutral-50)] mb-4">
-                What I Do
+                What I&apos;m Building
               </h2>
               <p className="text-lg text-[var(--neutral-400)] max-w-2xl mx-auto">
-                I bring operational leadership and hands-on AI expertise together — helping companies scale faster, build smarter, and unlock what they've been putting off.
+                Three lanes. One thesis: operators who build with AI and invest in people create outsized impact.
               </p>
             </MotionSection>
 
@@ -149,43 +147,88 @@ export default function Home() {
               variants={staggerContainer}
               className="grid md:grid-cols-3 gap-6"
             >
-              {[
-                {
-                  icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />,
-                  iconColor: 'var(--primary)',
-                  title: 'Scale Operations',
-                  description: 'Transform scrappy processes into scalable systems. Build the infrastructure that lets teams move fast without breaking things.',
-                },
-                {
-                  icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />,
-                  iconColor: 'var(--accent)',
-                  title: 'Leverage AI',
-                  description: 'Apply emerging AI tools to compress timelines, unlock capabilities that used to require large teams, and build operational leverage that compounds.',
-                },
-                {
-                  icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />,
-                  iconColor: 'var(--primary)',
-                  title: 'Drive Strategy',
-                  description: 'Turn vision into execution. Bridge the gap between ambitious goals and the daily work that makes them happen.',
-                },
-              ].map((card) => (
-                <motion.div
-                  key={card.title}
-                  variants={fadeInUp}
-                  className="group bg-[var(--card-bg)] rounded-2xl p-8 hover:bg-[var(--card-bg-hover)] transition-colors border border-[var(--neutral-700)] h-full cursor-default hover-lift"
+              <motion.div
+                variants={fadeInUp}
+                className="group bg-[var(--card-bg)] rounded-2xl p-8 hover:bg-[var(--card-bg-hover)] transition-colors border border-[var(--neutral-700)] h-full hover-lift"
+              >
+                <div
+                  className="w-14 h-14 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform"
+                  style={{ backgroundColor: 'color-mix(in srgb, var(--primary) 20%, transparent)' }}
                 >
-                  <div
-                    className="w-14 h-14 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform"
-                    style={{ backgroundColor: `color-mix(in srgb, ${card.iconColor} 20%, transparent)` }}
-                  >
-                    <svg className="w-7 h-7" style={{ color: card.iconColor }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      {card.icon}
-                    </svg>
-                  </div>
-                  <h3 className="text-xl font-bold text-[var(--neutral-100)] mb-3">{card.title}</h3>
-                  <p className="text-[var(--neutral-400)]">{card.description}</p>
-                </motion.div>
-              ))}
+                  <svg className="w-7 h-7 text-[var(--primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-bold text-[var(--neutral-100)] mb-3">Running Operations</h3>
+                <p className="text-[var(--neutral-400)] mb-4">
+                  COO at dub. I run customer operations, finance, HR, and most G&A functions — many of them single-handedly, using AI to do the work of an entire back-office team.
+                </p>
+                <a
+                  href="https://www.youtube.com/watch?v=gn5EUo1ux40"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 text-[var(--primary)] text-sm font-medium hover:opacity-80 transition-opacity"
+                >
+                  Listen: Risk & Reason Podcast
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                  </svg>
+                </a>
+              </motion.div>
+
+              <motion.div
+                variants={fadeInUp}
+                className="group bg-[var(--card-bg)] rounded-2xl p-8 hover:bg-[var(--card-bg-hover)] transition-colors border border-[var(--neutral-700)] h-full hover-lift"
+              >
+                <div
+                  className="w-14 h-14 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform"
+                  style={{ backgroundColor: 'color-mix(in srgb, var(--accent) 20%, transparent)' }}
+                >
+                  <svg className="w-7 h-7 text-[var(--accent)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-bold text-[var(--neutral-100)] mb-3">Building with AI</h3>
+                <p className="text-[var(--neutral-400)] mb-4">
+                  I build real tools with AI and write about what happens. This website, production workflows, tools for friends — shipped, not theorized.
+                </p>
+                <Link
+                  href="/blog"
+                  className="inline-flex items-center gap-2 text-[var(--accent)] text-sm font-medium hover:opacity-80 transition-opacity"
+                >
+                  Read the blog
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                  </svg>
+                </Link>
+              </motion.div>
+
+              <motion.div
+                variants={fadeInUp}
+                className="group bg-[var(--card-bg)] rounded-2xl p-8 hover:bg-[var(--card-bg-hover)] transition-colors border border-[var(--neutral-700)] h-full hover-lift"
+              >
+                <div
+                  className="w-14 h-14 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform"
+                  style={{ backgroundColor: 'color-mix(in srgb, var(--primary) 20%, transparent)' }}
+                >
+                  <svg className="w-7 h-7 text-[var(--primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-bold text-[var(--neutral-100)] mb-3">Investing in Veterans</h3>
+                <p className="text-[var(--neutral-400)] mb-4">
+                  LP in Context Ventures and Stage 2 Capital. Angel investor. I back military founders and help portfolio companies with GTM and operations.
+                </p>
+                <Link
+                  href="/about#investing"
+                  className="inline-flex items-center gap-2 text-[var(--primary)] text-sm font-medium hover:opacity-80 transition-opacity"
+                >
+                  Learn more
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                  </svg>
+                </Link>
+              </motion.div>
             </motion.div>
           </div>
         </section>
@@ -196,7 +239,7 @@ export default function Home() {
             <MotionSection className="text-center mb-16">
               <p className="text-[var(--accent)] font-medium tracking-widest uppercase mb-3">Experience</p>
               <h2 className="text-4xl md:text-5xl font-bold text-[var(--neutral-50)]">
-                Where I've Led
+                Where I&apos;ve Led
               </h2>
             </MotionSection>
 
@@ -216,9 +259,9 @@ export default function Home() {
                       COO at dub
                     </h3>
                     <p className="text-[#bfb3a6] text-lg mb-6 max-w-xl">
-                      Leading operations at a NYC fintech. Building scalable systems,
-                      driving cross-functional execution, and scaling the team through
-                      rapid growth.
+                      I run customer operations, finance, HR, and most G&A functions at a social
+                      investing platform — using AI to single-handedly cover what would normally
+                      require a team.
                     </p>
                     <a
                       href="https://www.dubapp.com"
@@ -267,7 +310,7 @@ export default function Home() {
                     Previous
                   </span>
                   <h3 className="text-xl font-bold text-white">Affirm</h3>
-                  <p className="text-[#94a3b8] text-sm">Business Operations</p>
+                  <p className="text-[#94a3b8] text-sm">Biz Ops & Compliance</p>
                 </div>
               </motion.div>
 
@@ -303,8 +346,8 @@ export default function Home() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[var(--background)] via-[var(--background)]/50 to-transparent" />
                 <div className="absolute bottom-0 left-0 right-0 p-6">
-                  <h3 className="text-xl font-bold text-[var(--neutral-50)]">Startup Advisor</h3>
-                  <p className="text-[var(--neutral-400)] text-sm">Ops · GTM · AI Strategy</p>
+                  <h3 className="text-xl font-bold text-[var(--neutral-50)]">Advisor & Investor</h3>
+                  <p className="text-[var(--neutral-400)] text-sm">Grady AI · Stage 2 Capital · Context Ventures</p>
                 </div>
               </motion.div>
             </motion.div>
@@ -325,10 +368,10 @@ export default function Home() {
 
           <MotionSection className="max-w-4xl mx-auto text-center relative z-10">
             <h2 className="text-4xl md:text-5xl font-bold text-[var(--neutral-50)] mb-4">
-              Let's Work Together
+              Let&apos;s Work Together
             </h2>
             <p className="text-lg text-[var(--neutral-400)] mb-8 max-w-2xl mx-auto">
-              Whether you're scaling operations, exploring how AI fits into your business, or just want to connect—I'd love to hear from you.
+              I advise startups on operations and GTM, invest in military founders, and occasionally help people figure out what to do with AI. If any of that sounds useful — let&apos;s talk.
             </p>
             <Link
               href="/contact"
