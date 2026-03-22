@@ -57,7 +57,6 @@ const categories: Category[] = [
       { name: 'Kawa Omakase' },
       { name: 'Takumi Omakase' },
       { name: 'Sushi Dairo' },
-      { name: 'Omakase 33', note: 'Great for big groups.' },
     ],
   },
   {
