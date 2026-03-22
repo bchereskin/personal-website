@@ -256,13 +256,13 @@ export default function Home() {
                 { name: 'U.S. Army', label: '12 Years · Aviator', logo: '/logos/army.png' },
               ].map((org) => (
                 <motion.div key={org.name} variants={fadeInUp} className="text-center">
-                  <div className="h-12 flex items-center justify-center mb-3">
+                  <div className="h-14 w-14 flex items-center justify-center mb-3 mx-auto rounded-xl bg-[var(--neutral-800)] p-2">
                     <Image
                       src={org.logo}
                       alt={`${org.name} logo`}
                       width={48}
                       height={48}
-                      className="object-contain brightness-0 invert opacity-80 h-10 w-auto"
+                      className="object-contain h-10 w-10"
                     />
                   </div>
                   <p className="text-sm text-[var(--neutral-500)]">{org.label}</p>
