@@ -465,7 +465,7 @@ export default function About() {
                   />
                   <div className="absolute inset-0 bg-gradient-to-r from-[var(--background)] via-[var(--background)]/80 to-transparent" />
                 </div>
-                <div className="relative z-10 p-8 md:p-12 md:w-3/4">
+                <div className="relative z-10 p-8 md:p-12">
                   <p className="text-[var(--accent)] font-medium tracking-widest uppercase mb-3">Beyond Work</p>
                   <h2 className="text-2xl font-bold text-[var(--neutral-50)] mb-5">Life Outside Work</h2>
                   <p className="text-[var(--neutral-300)] text-lg mb-4">
