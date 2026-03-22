@@ -351,7 +351,7 @@ export default function Favorites() {
                 <h3 className="text-xl font-bold text-white mb-3">One More Thing</h3>
                 <p className="text-gray-200 mb-2 max-w-lg mx-auto">
                   If you&apos;re visiting, take the <strong className="text-white">NYC Ferry</strong>. The views of the
-                  bridges — Brooklyn, Manhattan, Williamsburg — are the best free views in the city.
+                  bridges — Brooklyn, Manhattan, Williamsburg — are the best views in the city. Under $3 a ride if you buy a 10-pack.
                   We take every visitor on the East River route. It&apos;s non-negotiable.
                 </p>
                 <p className="text-gray-400 text-sm italic mt-4">
