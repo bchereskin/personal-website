@@ -51,12 +51,12 @@ const categories: Category[] = [
     spots: [
       { name: 'SourAji', note: 'Our absolute go-to. All-you-can-eat omakase and sake — what makes it unique.', visits: '8+' },
       { name: 'Kaki Sushi Omakase', note: 'BYOB sake with no corkage. Great for parties and group celebrations.', visits: '4' },
-      { name: 'HOWOO', note: 'Counter top or dining room, always delivers.', visits: '4' },
-      { name: 'TSUMO', note: 'Intimate omakase that punches above its weight.', visits: '3' },
+      { name: 'TSUMO', note: 'Incredible value — under $60 for a legit omakase.', visits: '3' },
       { name: 'Sushi by M', note: 'Small spot, big flavors.' },
       { name: 'Kissaki Omakase Bowery' },
       { name: 'Kawa Omakase' },
       { name: 'Takumi Omakase' },
+      { name: 'Sushi Dairo' },
       { name: 'Omakase 33', note: 'Great for big groups.' },
     ],
   },
@@ -70,6 +70,7 @@ const categories: Category[] = [
     imageAlt: 'Korean BBQ grill',
     spots: [
       { name: 'NUBIANI', note: 'Best Korean BBQ in the city. Period.', visits: '4' },
+      { name: 'HOWOO', note: 'Counter top or dining room, always delivers.', visits: '4' },
       { name: 'New Wonjo', note: 'Classic K-town BBQ. The late-night move.' },
       { name: 'Miss Korea BBQ' },
       { name: 'Gogi 37' },
