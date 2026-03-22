@@ -125,7 +125,10 @@ export default function About() {
                     <p className="text-[#bfb3a6] max-w-xl">
                       I partner with the CEO to operate the business — sitting on the board of
                       directors and running customer operations, brokerage operations, finance, HR,
-                      and most G&A functions. Many of those I handle single-handedly, powered by AI.
+                      and most G&A functions at a social investing platform. Many of those I handle
+                      single-handedly, powered by AI, operating at the scale of a much larger team.
+                      It&apos;s the proving ground for everything I write about — using AI to do real
+                      operational work, not just talk about it.
                     </p>
                   </div>
                 </div>
@@ -154,7 +157,9 @@ export default function About() {
                     <p className="text-[#94a3b8] max-w-xl">
                       Ran business operations at one of the largest BNPL companies during its
                       hypergrowth phase. Built operational infrastructure that scales under
-                      regulatory pressure — compliance, risk, and cross-functional ops.
+                      regulatory pressure — compliance, risk, and cross-functional ops. Learned
+                      how fast-growing fintechs break and what it takes to hold them together
+                      when the stakes are real.
                     </p>
                   </div>
                 </div>
@@ -177,9 +182,11 @@ export default function About() {
                     <h3 className="text-2xl font-bold text-[var(--neutral-50)]">U.S. Army Officer</h3>
                     <p className="text-[var(--neutral-300)] text-sm mb-3">Fixed-Wing & Rotary-Wing Aviator · UAS Commander · 160th SOAR</p>
                     <p className="text-[var(--neutral-200)] max-w-xl">
-                      12 years as an Army officer and aviator. Commanded a UAS (drone) unit,
-                      then joined the 160th SOAR where I built their first organic large UAS
-                      unit. The leadership foundation that makes everything else work.
+                      12 years as an Army officer and aviator. Started in fixed-wing reconnaissance,
+                      commanded a UAS (drone) unit on the conventional side, then joined the 160th
+                      Special Operations Aviation Regiment where I helped build their first organic
+                      large UAS unit from scratch. The leadership, discipline, and mission planning
+                      from the military is the foundation that makes everything else work.
                     </p>
                   </div>
                 </div>
@@ -445,71 +452,32 @@ export default function About() {
         </section>
 
         {/* Life Outside Work */}
-        <section className="py-20 px-6 relative overflow-hidden">
-          <div className="gradient-orb w-96 h-96 bg-[var(--primary)] opacity-10 -left-48 top-20" />
-
-          <div className="max-w-4xl mx-auto relative z-10">
+        <section className="py-20 px-6">
+          <div className="max-w-4xl mx-auto">
             <MotionSection>
-              <p className="text-[var(--accent)] font-medium tracking-widest uppercase mb-3">Beyond Work</p>
-              <h2 className="text-3xl md:text-4xl font-bold text-[var(--neutral-50)] mb-4">
-                Life Outside Work
-              </h2>
-              <p className="text-[var(--neutral-300)] text-lg mb-12 max-w-2xl">
-                The stuff that actually matters.
-              </p>
-            </MotionSection>
-
-            <motion.div
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, amount: 0.1 }}
-              variants={staggerContainer}
-              className="grid md:grid-cols-2 gap-6"
-            >
-              {/* Lisa */}
-              <motion.div variants={fadeInUp}>
-                <div className="bg-[var(--card-bg)] rounded-2xl p-8 border border-[var(--neutral-700)] h-full">
-                  <div className="w-12 h-12 bg-[var(--accent)]/20 rounded-lg flex items-center justify-center mb-4">
-                    <svg className="w-6 h-6 text-[var(--accent)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                    </svg>
-                  </div>
-                  <h3 className="text-xl font-bold text-[var(--neutral-50)] mb-3">Lisa</h3>
-                  <p className="text-[var(--neutral-300)]">
-                    Married to my wife Lisa for over 13 years. We met when I was stationed in Germany — she&apos;s the reason I survived
-                    the Army years. We go back to Germany as often as we can and love having an international family.
-                  </p>
+              <div className="relative rounded-2xl overflow-hidden">
+                <div className="absolute inset-0">
+                  <Image
+                    src="https://images.unsplash.com/photo-1534430480872-3498386e7856?q=80&w=2070"
+                    alt="NYC"
+                    fill
+                    className="object-cover opacity-40"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-r from-[var(--background)] via-[var(--background)]/80 to-transparent" />
                 </div>
-              </motion.div>
-
-              {/* Tanuki */}
-              <motion.div variants={fadeInUp}>
-                <div className="bg-[var(--card-bg)] rounded-2xl p-8 border border-[var(--neutral-700)] h-full">
-                  <div className="w-12 h-12 bg-[var(--primary)]/20 rounded-lg flex items-center justify-center mb-4">
-                    <svg className="w-6 h-6 text-[var(--primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905a3.61 3.61 0 01-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />
-                    </svg>
-                  </div>
-                  <h3 className="text-xl font-bold text-[var(--neutral-50)] mb-3">Tanuki</h3>
-                  <p className="text-[var(--neutral-300)]">
-                    Our Pomsky and the best city dog you&apos;ll ever meet. We walk him all over NYC exploring different
-                    neighborhoods — honestly how we discovered most of our favorite spots.
+                <div className="relative z-10 p-8 md:p-12 md:w-3/4">
+                  <p className="text-[var(--accent)] font-medium tracking-widest uppercase mb-3">Beyond Work</p>
+                  <h2 className="text-2xl font-bold text-[var(--neutral-50)] mb-5">Life Outside Work</h2>
+                  <p className="text-[var(--neutral-300)] text-lg mb-4">
+                    I&apos;ve been married to my wife Lisa for over 13 years — we met when I was stationed in Germany
+                    and still go back as often as we can. We don&apos;t have human kids, but our Pomsky Tanuki is the
+                    best city dog you&apos;ll ever meet. Most of our favorite NYC spots we discovered walking him
+                    through different neighborhoods.
                   </p>
-                </div>
-              </motion.div>
-
-              {/* Food, Wine & Theatre */}
-              <motion.div variants={fadeInUp}>
-                <div className="bg-[var(--card-bg)] rounded-2xl p-8 border border-[var(--neutral-700)] h-full">
-                  <div className="w-12 h-12 bg-[var(--accent)]/20 rounded-lg flex items-center justify-center mb-4">
-                    <svg className="w-6 h-6 text-[var(--accent)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </div>
-                  <h3 className="text-xl font-bold text-[var(--neutral-50)] mb-3">Food, Wine & Theatre</h3>
-                  <p className="text-[var(--neutral-300)] mb-4">
-                    We love food, wine, and Broadway. Omakase is our love language, natural wine bars are our
-                    pre-dinner move, and we&apos;re TodayTix Gold members who never miss a lottery.
+                  <p className="text-[var(--neutral-300)] text-lg mb-6">
+                    Born and raised on Long Island. After 15 years traveling the world with the military and doing
+                    the startup thing in San Francisco, I finally came back to the city — and we&apos;ve been making up
+                    for lost time. We love food, wine, and Broadway.
                   </p>
                   <Link
                     href="/favorites"
@@ -521,24 +489,8 @@ export default function About() {
                     </svg>
                   </Link>
                 </div>
-              </motion.div>
-
-              {/* NYC */}
-              <motion.div variants={fadeInUp}>
-                <div className="bg-[var(--card-bg)] rounded-2xl p-8 border border-[var(--neutral-700)] h-full">
-                  <div className="w-12 h-12 bg-[var(--primary)]/20 rounded-lg flex items-center justify-center mb-4">
-                    <svg className="w-6 h-6 text-[var(--primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                    </svg>
-                  </div>
-                  <h3 className="text-xl font-bold text-[var(--neutral-50)] mb-3">New York City</h3>
-                  <p className="text-[var(--neutral-300)]">
-                    Born and raised on Long Island. After 15 years traveling the world with the military and doing
-                    the startup thing in San Francisco, I finally came back to the city. It was worth the wait.
-                  </p>
-                </div>
-              </motion.div>
-            </motion.div>
+              </div>
+            </MotionSection>
           </div>
         </section>
 

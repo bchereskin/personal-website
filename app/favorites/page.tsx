@@ -46,12 +46,11 @@ const categories: Category[] = [
     bg: '#fef3c7',
     accent: '#92400e',
     border: '#fbbf24',
-    image: 'https://images.unsplash.com/photo-1579871494447-9811cf80d66c?q=80&w=2070',
-    imageAlt: 'Omakase sushi platter',
+    image: 'https://blog.resy.com/wp-content/uploads/2023/05/Himitsu-1-2000x1125.jpg',
+    imageAlt: 'Omakase sushi experience',
     spots: [
-      { name: 'SourAji', note: 'Our absolute go-to. We\'ve lost count. The sushi bar is the move.', visits: '8+' },
-      { name: 'Omakase Sushi Fan', note: 'The one that started the obsession.', visits: '5' },
-      { name: 'Kaki Sushi Omakase', note: 'Late-night omakase on the LES. Perfect date night.', visits: '4' },
+      { name: 'SourAji', note: 'Our absolute go-to. All-you-can-eat omakase and sake — what makes it unique.', visits: '8+' },
+      { name: 'Kaki Sushi Omakase', note: 'BYOB sake with no corkage. Great for parties and group celebrations.', visits: '4' },
       { name: 'HOWOO', note: 'Counter top or dining room, always delivers.', visits: '4' },
       { name: 'TSUMO', note: 'Intimate omakase that punches above its weight.', visits: '3' },
       { name: 'Sushi by M', note: 'Small spot, big flavors.' },
@@ -135,12 +134,14 @@ const categories: Category[] = [
 ];
 
 const shows = [
-  { name: 'All Out', date: 'Dec 2025', note: 'Featuring the band Lawrence — we\'re huge fans. The live energy was unreal.', image: 'https://images.unsplash.com/photo-1507676184212-d03ab07a01bf?q=80&w=800' },
-  { name: 'Moulin Rouge!', date: 'Apr 2024', note: 'Our go-to for out-of-town visitors. Took multiple groups. Never gets old.', image: 'https://images.unsplash.com/photo-1503095396549-807759245b35?q=80&w=800' },
-  { name: 'Shucked', date: '2023', note: 'Way funnier than it has any right to be. We still quote it.', image: 'https://images.unsplash.com/photo-1507924538820-ede94a04019d?q=80&w=800' },
-  { name: 'Sweeney Todd', date: 'Jan 2024', note: 'Josh Groban era. Incredible.', image: 'https://images.unsplash.com/photo-1460723237483-7a6dc9d0b212?q=80&w=800' },
-  { name: 'The Lion King', date: 'Apr 2024', note: 'A classic for a reason.', image: 'https://images.unsplash.com/photo-1574267432553-4b4628081c31?q=80&w=800' },
-  { name: 'Chicago', date: 'May 2024', image: 'https://images.unsplash.com/photo-1514306191717-452ec28c7814?q=80&w=800' },
+  { name: 'All Out', date: 'Dec 2025', note: 'Featuring the band Lawrence — we\'re huge fans. The live energy was unreal.', image: '/shows/allout.png' },
+  { name: 'Hadestown', date: '2025', note: 'We love this show. The music stays with you for days.', image: '/shows/hadestown.jpg' },
+  { name: 'Moulin Rouge!', date: 'Apr 2024', note: 'Our go-to for out-of-town visitors. Took multiple groups. Never gets old.', image: '/shows/moulinrouge.jpg' },
+  { name: 'Cabaret', date: '2024', note: 'The Kit Kat Club experience. Eddie Redmayne was mesmerizing.', image: '/shows/cabaret.jpg' },
+  { name: 'Sunset Blvd.', date: '2024', note: 'Nicole Scherzinger. Unbelievable.', image: '/shows/sunsetblvd.jpg' },
+  { name: 'Shucked', date: '2023', note: 'Way funnier than it has any right to be. We still quote it.', image: '/shows/shucked.jpg' },
+  { name: 'The Lion King', date: 'Apr 2024', note: 'A classic for a reason.', image: '/shows/lionking.jpg' },
+  { name: 'Chicago', date: 'May 2024', image: '/shows/chicago.jpg' },
 ];
 
 function SpotCard({ spot, accent, border }: { spot: Spot; accent: string; border: string }) {
