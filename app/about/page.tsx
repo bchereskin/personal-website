@@ -124,9 +124,8 @@ export default function About() {
                     <p className="text-[#bfb3a6] text-sm mb-3">New York City</p>
                     <p className="text-[#bfb3a6] max-w-xl">
                       I partner with the CEO to operate the business — sitting on the board of
-                      directors and running customer operations, finance, HR, and most G&A functions
-                      at a social investing platform. Many of those functions I handle single-handedly,
-                      powered by AI, operating at the scale of a much larger team.
+                      directors and running customer operations, brokerage operations, finance, HR,
+                      and most G&A functions. Many of those I handle single-handedly, powered by AI.
                     </p>
                   </div>
                 </div>
@@ -152,10 +151,10 @@ export default function About() {
                     </span>
                     <h3 className="text-2xl font-bold text-white">Business Operations at Affirm</h3>
                     <p className="text-[#94a3b8] text-sm mb-3">San Francisco Bay Area</p>
-                    <p className="text-[#94a3b8]">
+                    <p className="text-[#94a3b8] max-w-xl">
                       Ran business operations at one of the largest BNPL companies during its
-                      hypergrowth phase. Learned how to build operational infrastructure that
-                      scales without breaking under regulatory pressure.
+                      hypergrowth phase. Built operational infrastructure that scales under
+                      regulatory pressure — compliance, risk, and cross-functional ops.
                     </p>
                   </div>
                 </div>
@@ -176,15 +175,11 @@ export default function About() {
                       12 Years
                     </span>
                     <h3 className="text-2xl font-bold text-[var(--neutral-50)]">U.S. Army Officer</h3>
-                    <p className="text-[var(--neutral-400)] text-sm mb-3">Fixed-Wing & Rotary-Wing Aviator · UAS Commander · 160th SOAR</p>
-                    <p className="text-[var(--neutral-300)] max-w-xl mb-4">
-                      12 years as an Army officer. Fixed-wing and rotary-wing aviator. Commanded
-                      a UAS (drone) unit on the conventional side, then joined the 160th Special
-                      Operations Aviation Regiment where I helped build their first organic large
-                      UAS unit. The leadership foundation that makes everything else work.
-                    </p>
-                    <p className="text-[var(--neutral-500)] text-sm">
-                      Fort Huachuca, AZ · Hohenfels, Germany · Wiesbaden, Germany · Fort Rucker, AL
+                    <p className="text-[var(--neutral-300)] text-sm mb-3">Fixed-Wing & Rotary-Wing Aviator · UAS Commander · 160th SOAR</p>
+                    <p className="text-[var(--neutral-200)] max-w-xl">
+                      12 years as an Army officer and aviator. Commanded a UAS (drone) unit,
+                      then joined the 160th SOAR where I built their first organic large UAS
+                      unit. The leadership foundation that makes everything else work.
                     </p>
                   </div>
                 </div>
@@ -214,7 +209,7 @@ export default function About() {
                 <div className="relative rounded-2xl overflow-hidden h-full group">
                   <div className="absolute inset-0">
                     <Image
-                      src="https://images.unsplash.com/photo-1541339907198-e08756dedf3f?q=80&w=2070"
+                      src="https://images.unsplash.com/photo-1562774053-701939374585?q=80&w=2070"
                       alt="West Point"
                       fill
                       className="object-cover opacity-30 group-hover:opacity-40 transition-opacity"

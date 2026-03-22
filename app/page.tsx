@@ -233,153 +233,48 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Experience Section */}
-        <section className="py-24 px-6 relative">
-          <div className="max-w-6xl mx-auto">
-            <MotionSection className="text-center mb-16">
+        {/* Experience Logo Bar */}
+        <section className="py-20 px-6 border-t border-[var(--neutral-700)]">
+          <div className="max-w-4xl mx-auto">
+            <MotionSection className="text-center mb-12">
               <p className="text-[var(--accent)] font-medium tracking-widest uppercase mb-3">Experience</p>
-              <h2 className="text-4xl md:text-5xl font-bold text-[var(--neutral-50)]">
+              <h2 className="text-3xl md:text-4xl font-bold text-[var(--neutral-50)]">
                 Where I&apos;ve Led
               </h2>
             </MotionSection>
 
-            {/* Featured Experience - dub */}
-            <MotionSection className="mb-8">
-              <div className="relative rounded-3xl overflow-hidden group" style={{ background: 'linear-gradient(135deg, #121110 0%, #1a1918 100%)' }}>
-                <div className="absolute inset-0 opacity-30">
-                  <div className="absolute top-0 right-0 w-96 h-96 bg-[#f08752] rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2" />
-                  <div className="absolute bottom-0 left-1/3 w-64 h-64 bg-[#e07139] rounded-full blur-[100px] translate-y-1/2" />
-                </div>
-                <div className="relative z-10 p-8 md:p-12 md:flex md:items-center md:justify-between">
-                  <div className="md:w-2/3">
-                    <span className="inline-block px-3 py-1 bg-[#f08752] text-[#121110] text-sm font-semibold rounded-full mb-4">
-                      Current
-                    </span>
-                    <h3 className="text-3xl md:text-4xl font-bold text-[#f5f2ed] mb-3">
-                      COO at dub
-                    </h3>
-                    <p className="text-[#bfb3a6] text-lg mb-6 max-w-xl">
-                      I run customer operations, finance, HR, and most G&A functions at a social
-                      investing platform — using AI to single-handedly cover what would normally
-                      require a team.
-                    </p>
-                    <a
-                      href="https://www.dubapp.com"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 text-[#f08752] font-medium hover:text-[#ffd2b4] transition-colors"
-                    >
-                      Visit dub
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                      </svg>
-                    </a>
-                  </div>
-                  <div className="hidden md:block text-8xl font-bold text-[#f08752]/20">
-                    dub
-                  </div>
-                </div>
-              </div>
-            </MotionSection>
-
-            {/* Other Experience */}
             <motion.div
               initial="hidden"
               whileInView="visible"
-              viewport={{ once: true, amount: 0.1 }}
+              viewport={{ once: true, amount: 0.2 }}
               variants={staggerContainer}
-              className="grid md:grid-cols-3 gap-6"
+              className="flex flex-wrap justify-center items-center gap-10 md:gap-16 mb-10"
             >
-              <motion.div
-                variants={fadeInUp}
-                className="relative rounded-2xl overflow-hidden group h-80 hover-scale"
-              >
-                <Image
-                  src="https://images.unsplash.com/photo-1563013544-824ae1b704d3?q=80&w=2070"
-                  alt="Digital payments"
-                  fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#13131f] via-[#13131f]/70 to-[#1a1a2e]/40" />
-                <div className="absolute inset-0 opacity-30">
-                  <div className="absolute top-0 right-0 w-48 h-48 bg-[#6366f1] rounded-full blur-[80px]" />
-                  <div className="absolute bottom-0 left-0 w-32 h-32 bg-[#8b5cf6] rounded-full blur-[60px]" />
-                </div>
-                <div className="absolute bottom-0 left-0 right-0 p-6 z-10">
-                  <span className="inline-block px-2 py-1 bg-[#6366f1]/30 text-[#a5b4fc] text-xs font-medium rounded mb-2">
-                    Previous
-                  </span>
-                  <h3 className="text-xl font-bold text-white">Affirm</h3>
-                  <p className="text-[#94a3b8] text-sm">Biz Ops & Compliance</p>
-                </div>
-              </motion.div>
-
-              <motion.div
-                variants={fadeInUp}
-                className="relative rounded-2xl overflow-hidden group h-80 hover-scale"
-              >
-                <Image
-                  src="/kingair.jpg"
-                  alt="King Air aircraft"
-                  fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-[var(--background)] via-[var(--background)]/60 to-transparent" />
-                <div className="absolute bottom-0 left-0 right-0 p-6">
-                  <span className="inline-block px-2 py-1 bg-[var(--accent)]/20 text-[var(--accent)] text-xs font-medium rounded mb-2">
-                    12 Years
-                  </span>
-                  <h3 className="text-xl font-bold text-[var(--neutral-50)]">U.S. Army</h3>
-                  <p className="text-[var(--neutral-400)] text-sm">Aviator · Manned & Unmanned · Leadership</p>
-                </div>
-              </motion.div>
-
-              <motion.div
-                variants={fadeInUp}
-                className="relative rounded-2xl overflow-hidden group h-80 hover-scale"
-              >
-                <Image
-                  src="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?q=80&w=2070"
-                  alt="Advisory meeting"
-                  fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-[var(--background)] via-[var(--background)]/50 to-transparent" />
-                <div className="absolute bottom-0 left-0 right-0 p-6">
-                  <h3 className="text-xl font-bold text-[var(--neutral-50)]">Advisor & Investor</h3>
-                  <p className="text-[var(--neutral-400)] text-sm">Grady AI · Stage 2 Capital · Context Ventures</p>
-                </div>
-              </motion.div>
+              {[
+                { name: 'dub', label: 'COO & Board Member' },
+                { name: 'Affirm', label: 'Business Operations' },
+                { name: 'U.S. Army', label: '12 Years · Aviator' },
+                { name: 'West Point', label: 'Class of 2006' },
+              ].map((org) => (
+                <motion.div key={org.name} variants={fadeInUp} className="text-center">
+                  <p className="text-2xl font-bold text-[var(--neutral-200)] mb-1">{org.name}</p>
+                  <p className="text-sm text-[var(--neutral-500)]">{org.label}</p>
+                </motion.div>
+              ))}
             </motion.div>
-          </div>
-        </section>
 
-        {/* CTA Section */}
-        <section className="py-24 px-6 relative overflow-hidden">
-          <div className="absolute inset-0">
-            <Image
-              src="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=2070"
-              alt="Collaboration"
-              fill
-              className="object-cover opacity-20"
-            />
-            <div className="absolute inset-0 bg-gradient-to-r from-[var(--background)] via-[var(--background)]/90 to-[var(--background)]" />
+            <MotionSection className="text-center">
+              <Link
+                href="/about"
+                className="inline-flex items-center gap-2 text-[var(--primary)] font-medium hover:opacity-80 transition-opacity"
+              >
+                Read my full story
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                </svg>
+              </Link>
+            </MotionSection>
           </div>
-
-          <MotionSection className="max-w-4xl mx-auto text-center relative z-10">
-            <h2 className="text-4xl md:text-5xl font-bold text-[var(--neutral-50)] mb-4">
-              Let&apos;s Work Together
-            </h2>
-            <p className="text-lg text-[var(--neutral-400)] mb-8 max-w-2xl mx-auto">
-              I advise startups on operations and GTM, invest in military founders, and occasionally help people figure out what to do with AI. If any of that sounds useful — let&apos;s talk.
-            </p>
-            <Link
-              href="/contact"
-              className="inline-block px-8 py-4 bg-[var(--accent)] text-white rounded-lg font-semibold hover:bg-[var(--accent-dark)] transition-all hover-lift"
-            >
-              Get in Touch
-            </Link>
-          </MotionSection>
         </section>
       </main>
       <Footer />
