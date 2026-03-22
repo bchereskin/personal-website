@@ -122,7 +122,7 @@ export default function About() {
                     </span>
                     <h3 className="text-2xl font-bold text-[#f5f2ed]">COO & Board Member at dub</h3>
                     <p className="text-[#bfb3a6] text-sm mb-3">New York City</p>
-                    <p className="text-[#bfb3a6] max-w-xl">
+                    <p className="text-[#bfb3a6]">
                       I partner with the CEO to operate the business — sitting on the board of
                       directors and running customer operations, brokerage operations, finance, HR,
                       and most G&A functions at a social investing platform. Many of those I handle
@@ -154,7 +154,7 @@ export default function About() {
                     </span>
                     <h3 className="text-2xl font-bold text-white">Business Operations at Affirm</h3>
                     <p className="text-[#94a3b8] text-sm mb-3">San Francisco Bay Area</p>
-                    <p className="text-[#94a3b8] max-w-xl">
+                    <p className="text-[#94a3b8]">
                       Ran business operations at one of the largest BNPL companies during its
                       hypergrowth phase. Built operational infrastructure that scales under
                       regulatory pressure — compliance, risk, and cross-functional ops. Learned
@@ -181,7 +181,7 @@ export default function About() {
                     </span>
                     <h3 className="text-2xl font-bold text-[var(--neutral-50)]">U.S. Army Officer</h3>
                     <p className="text-[var(--neutral-300)] text-sm mb-3">Fixed-Wing & Rotary-Wing Aviator · UAS Commander · 160th SOAR</p>
-                    <p className="text-[var(--neutral-200)] max-w-xl">
+                    <p className="text-[var(--neutral-200)]">
                       12 years as an Army officer and aviator. Started in fixed-wing reconnaissance,
                       commanded a UAS (drone) unit on the conventional side, then joined the 160th
                       Special Operations Aviation Regiment where I helped build their first organic
