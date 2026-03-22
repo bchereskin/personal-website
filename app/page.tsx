@@ -109,19 +109,32 @@ export default function Home() {
             whileInView="visible"
             viewport={{ once: true, amount: 0.2 }}
             variants={staggerContainer}
-            className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8"
+            className="max-w-6xl mx-auto"
           >
-            {[
-              { value: '12 Years', label: 'Army Aviator' },
-              { value: 'COO', label: 'at dub' },
-              { value: '3 Funds', label: 'LP & Angel' },
-              { value: 'West Point', label: 'Class of 2006' },
-            ].map((stat) => (
-              <motion.div key={stat.label} variants={fadeInUp} className="text-center">
-                <p className="text-4xl md:text-5xl font-bold gradient-text mb-2">{stat.value}</p>
-                <p className="text-[var(--neutral-400)] text-sm uppercase tracking-wider">{stat.label}</p>
-              </motion.div>
-            ))}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
+              {[
+                { value: '12 Years', label: 'Army Aviator' },
+                { value: 'COO', label: 'at dub' },
+                { value: '3 Funds', label: 'LP & Angel' },
+                { value: 'West Point', label: 'Class of 2006' },
+              ].map((stat) => (
+                <motion.div key={stat.label} variants={fadeInUp} className="text-center">
+                  <p className="text-4xl md:text-5xl font-bold gradient-text mb-2">{stat.value}</p>
+                  <p className="text-[var(--neutral-400)] text-sm uppercase tracking-wider">{stat.label}</p>
+                </motion.div>
+              ))}
+            </div>
+            <motion.div variants={fadeInUp} className="text-center">
+              <Link
+                href="/about"
+                className="inline-flex items-center gap-2 text-[var(--primary)] font-medium hover:opacity-80 transition-opacity"
+              >
+                Read my full story
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                </svg>
+              </Link>
+            </motion.div>
           </motion.div>
         </section>
 
@@ -233,48 +246,6 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Experience Logo Bar */}
-        <section className="py-20 px-6 border-t border-[var(--neutral-700)]">
-          <div className="max-w-4xl mx-auto">
-            <MotionSection className="text-center mb-12">
-              <p className="text-[var(--accent)] font-medium tracking-widest uppercase mb-3">Experience</p>
-              <h2 className="text-3xl md:text-4xl font-bold text-[var(--neutral-50)]">
-                Where I&apos;ve Led
-              </h2>
-            </MotionSection>
-
-            <motion.div
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, amount: 0.2 }}
-              variants={staggerContainer}
-              className="flex flex-wrap justify-center items-center gap-12 md:gap-20 mb-10"
-            >
-              {[
-                { name: 'dub', label: 'COO & Board Member' },
-                { name: 'Affirm', label: 'Business Operations' },
-                { name: 'U.S. Army', label: '12 Years · Aviator' },
-              ].map((org) => (
-                <motion.div key={org.name} variants={fadeInUp} className="text-center">
-                  <p className="text-2xl font-bold text-[var(--neutral-200)] mb-1">{org.name}</p>
-                  <p className="text-sm text-[var(--neutral-500)]">{org.label}</p>
-                </motion.div>
-              ))}
-            </motion.div>
-
-            <MotionSection className="text-center">
-              <Link
-                href="/about"
-                className="inline-flex items-center gap-2 text-[var(--primary)] font-medium hover:opacity-80 transition-opacity"
-              >
-                Read my full story
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                </svg>
-              </Link>
-            </MotionSection>
-          </div>
-        </section>
       </main>
       <Footer />
     </>
