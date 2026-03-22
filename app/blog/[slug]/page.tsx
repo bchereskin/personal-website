@@ -5,7 +5,7 @@ import { notFound } from 'next/navigation';
 import Navigation from '@/app/components/Navigation';
 import Footer from '@/app/components/Footer';
 import CommentsSection from '@/app/components/CommentsSection';
-import SubscribeForm from '@/app/components/SubscribeForm';
+import SubscribeToggle from '@/app/components/SubscribeToggle';
 import { BlogContentRenderer } from '@/app/components/BlogRenderer';
 import { getPostBySlug, formatDate } from '../posts';
 import { getAdminSupabase } from '@/app/lib/supabase-admin';
@@ -122,62 +122,33 @@ export default async function BlogPost({
             <h1 className="text-4xl md:text-5xl font-bold text-[var(--neutral-50)] leading-[1.15] animate-fade-in-up delay-100">
               {post.title}
             </h1>
+
+            <div className="mt-6 animate-fade-in-up delay-200">
+              <SubscribeToggle />
+            </div>
           </div>
         </section>
 
         {/* Content */}
         <section className="px-6 pb-24">
-          <div className="max-w-5xl mx-auto lg:grid lg:grid-cols-[1fr_260px] lg:gap-12">
+          <article className="max-w-3xl mx-auto animate-fade-in-up delay-200 font-serif">
 
-            {/* Main column */}
-            <article className="max-w-3xl animate-fade-in-up delay-200 font-serif">
+            <BlogContentRenderer content={post.content} />
 
-              <BlogContentRenderer content={post.content} />
+            <CommentsSection slug={slug} />
 
-              <div className="mt-14 pt-8 border-t border-[var(--neutral-700)]">
-                <Link
-                  href="/blog"
-                  className="inline-flex items-center gap-2 text-[var(--primary)] hover:opacity-80 transition-opacity text-sm font-sans font-medium"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                  </svg>
-                  Back to all posts
-                </Link>
-              </div>
-
-              {/* Subscribe — mobile only */}
-              <div className="mt-10 rounded-xl bg-[var(--card-bg)] border border-[var(--neutral-700)] p-6 lg:hidden">
-                <div className="flex items-center gap-3 mb-3">
-                  <svg className="w-5 h-5 text-[var(--primary)] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                  </svg>
-                  <h3 className="text-base font-sans font-semibold text-[var(--neutral-100)]">Enjoyed this post?</h3>
-                </div>
-                <p className="text-sm font-sans text-[var(--neutral-400)] mb-4">Get notified when I publish new posts. No spam, unsubscribe anytime.</p>
-                <SubscribeForm />
-              </div>
-
-              <CommentsSection slug={slug} />
-            </article>
-
-            {/* Sidebar — desktop only */}
-            <aside className="hidden lg:block">
-              <div className="sticky top-32">
-                <div className="rounded-xl bg-[var(--card-bg)] border border-[var(--neutral-700)] p-5">
-                  <div className="flex items-center gap-2.5 mb-3">
-                    <svg className="w-4 h-4 text-[var(--primary)] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                    </svg>
-                    <h3 className="text-sm font-sans font-semibold text-[var(--neutral-100)]">Stay updated</h3>
-                  </div>
-                  <p className="text-xs font-sans text-[var(--neutral-400)] mb-4 leading-relaxed">New posts delivered to your inbox. No spam.</p>
-                  <SubscribeForm />
-                </div>
-              </div>
-            </aside>
-
-          </div>
+            <div className="mt-10">
+              <Link
+                href="/blog"
+                className="inline-flex items-center gap-2 text-[var(--primary)] hover:opacity-80 transition-opacity text-sm font-sans font-medium"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+                Back to all posts
+              </Link>
+            </div>
+          </article>
         </section>
 
       </main>
