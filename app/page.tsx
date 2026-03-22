@@ -251,20 +251,12 @@ export default function Home() {
               className="flex flex-wrap justify-center items-center gap-12 md:gap-20 mb-10"
             >
               {[
-                { name: 'dub', label: 'COO & Board Member', logo: '/logos/dub.png' },
-                { name: 'Affirm', label: 'Business Operations', logo: '/logos/affirm.svg' },
-                { name: 'U.S. Army', label: '12 Years · Aviator', logo: '/logos/army.png' },
+                { name: 'dub', label: 'COO & Board Member' },
+                { name: 'Affirm', label: 'Business Operations' },
+                { name: 'U.S. Army', label: '12 Years · Aviator' },
               ].map((org) => (
                 <motion.div key={org.name} variants={fadeInUp} className="text-center">
-                  <div className="h-14 w-14 flex items-center justify-center mb-3 mx-auto rounded-xl bg-[var(--neutral-800)] p-2">
-                    <Image
-                      src={org.logo}
-                      alt={`${org.name} logo`}
-                      width={48}
-                      height={48}
-                      className="object-contain h-10 w-10"
-                    />
-                  </div>
+                  <p className="text-2xl font-bold text-[var(--neutral-200)] mb-1">{org.name}</p>
                   <p className="text-sm text-[var(--neutral-500)]">{org.label}</p>
                 </motion.div>
               ))}
