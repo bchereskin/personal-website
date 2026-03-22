@@ -122,11 +122,13 @@ export default function About() {
                     </span>
                     <h3 className="text-2xl font-bold text-[#f5f2ed]">COO & Board Member at dub</h3>
                     <p className="text-[#bfb3a6] text-sm mb-3">New York City</p>
-                    <p className="text-[#bfb3a6] max-w-xl">
+                    <p className="text-[#bfb3a6]">
                       I partner with the CEO to operate the business — sitting on the board of
-                      directors and running customer operations, finance, HR, and most G&A functions
-                      at a social investing platform. Many of those functions I handle single-handedly,
-                      powered by AI, operating at the scale of a much larger team.
+                      directors and running customer operations, brokerage operations, finance, HR,
+                      and most G&A functions at a social investing platform. Many of those I handle
+                      single-handedly, powered by AI, operating at the scale of a much larger team.
+                      It&apos;s the proving ground for everything I write about — using AI to do real
+                      operational work, not just talk about it.
                     </p>
                   </div>
                 </div>
@@ -154,8 +156,10 @@ export default function About() {
                     <p className="text-[#94a3b8] text-sm mb-3">San Francisco Bay Area</p>
                     <p className="text-[#94a3b8]">
                       Ran business operations at one of the largest BNPL companies during its
-                      hypergrowth phase. Learned how to build operational infrastructure that
-                      scales without breaking under regulatory pressure.
+                      hypergrowth phase. Built operational infrastructure that scales under
+                      regulatory pressure — compliance, risk, and cross-functional ops. Learned
+                      how fast-growing fintechs break and what it takes to hold them together
+                      when the stakes are real.
                     </p>
                   </div>
                 </div>
@@ -176,15 +180,13 @@ export default function About() {
                       12 Years
                     </span>
                     <h3 className="text-2xl font-bold text-[var(--neutral-50)]">U.S. Army Officer</h3>
-                    <p className="text-[var(--neutral-400)] text-sm mb-3">Fixed-Wing & Rotary-Wing Aviator · UAS Commander · 160th SOAR</p>
-                    <p className="text-[var(--neutral-300)] max-w-xl mb-4">
-                      12 years as an Army officer. Fixed-wing and rotary-wing aviator. Commanded
-                      a UAS (drone) unit on the conventional side, then joined the 160th Special
-                      Operations Aviation Regiment where I helped build their first organic large
-                      UAS unit. The leadership foundation that makes everything else work.
-                    </p>
-                    <p className="text-[var(--neutral-500)] text-sm">
-                      Fort Huachuca, AZ · Hohenfels, Germany · Wiesbaden, Germany · Fort Rucker, AL
+                    <p className="text-[var(--neutral-300)] text-sm mb-3">Fixed-Wing & Rotary-Wing Aviator · UAS Commander · 160th SOAR</p>
+                    <p className="text-[var(--neutral-200)]">
+                      12 years as an Army officer and aviator. Started in fixed-wing reconnaissance,
+                      commanded a UAS (drone) unit on the conventional side, then joined the 160th
+                      Special Operations Aviation Regiment where I helped build their first organic
+                      large UAS unit from scratch. The leadership, discipline, and mission planning
+                      from the military is the foundation that makes everything else work.
                     </p>
                   </div>
                 </div>
@@ -214,8 +216,8 @@ export default function About() {
                 <div className="relative rounded-2xl overflow-hidden h-full group">
                   <div className="absolute inset-0">
                     <Image
-                      src="https://images.unsplash.com/photo-1541339907198-e08756dedf3f?q=80&w=2070"
-                      alt="West Point"
+                      src="/westpoint.jpg"
+                      alt="West Point campus"
                       fill
                       className="object-cover opacity-30 group-hover:opacity-40 transition-opacity"
                     />
@@ -449,7 +451,7 @@ export default function About() {
           </div>
         </section>
 
-        {/* What Drives Me */}
+        {/* Life Outside Work */}
         <section className="py-20 px-6">
           <div className="max-w-4xl mx-auto">
             <MotionSection>
@@ -463,18 +465,29 @@ export default function About() {
                   />
                   <div className="absolute inset-0 bg-gradient-to-r from-[var(--background)] via-[var(--background)]/80 to-transparent" />
                 </div>
-                <div className="relative z-10 p-8 md:p-12 md:w-2/3">
+                <div className="relative z-10 p-8 md:p-12">
                   <p className="text-[var(--accent)] font-medium tracking-widest uppercase mb-3">Beyond Work</p>
-                  <h2 className="text-2xl font-bold text-[var(--neutral-50)] mb-4">What Drives Me</h2>
+                  <h2 className="text-2xl font-bold text-[var(--neutral-50)] mb-5">Life Outside Work</h2>
+                  <p className="text-[var(--neutral-300)] text-lg mb-4">
+                    I&apos;ve been married to my wife Lisa for over 13 years — we met when I was stationed in Germany
+                    and still go back as often as we can. We don&apos;t have human kids, but our Pomsky Tanuki is the
+                    best city dog you&apos;ll ever meet. Most of our favorite NYC spots we discovered walking him
+                    through different neighborhoods.
+                  </p>
                   <p className="text-[var(--neutral-300)] text-lg mb-6">
-                    I care about two things outside of my day job: helping service members successfully
-                    transition into the startup ecosystem, and proving that non-technical operators can
-                    build real things with AI.
+                    Born and raised on Long Island. After 15 years traveling the world with the military and doing
+                    the startup thing in San Francisco, I finally came back to the city — and we&apos;ve been making up
+                    for lost time. We love food, wine, and Broadway.
                   </p>
-                  <p className="text-[var(--neutral-300)] text-lg">
-                    I put money behind both — investing in veteran founders through Context Ventures,
-                    and writing publicly about building with AI so other operators stop waiting for permission.
-                  </p>
+                  <Link
+                    href="/favorites"
+                    className="inline-flex items-center gap-2 text-[var(--accent)] hover:text-[var(--accent-light)] font-medium transition-colors"
+                  >
+                    See our NYC favorites
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                    </svg>
+                  </Link>
                 </div>
               </div>
             </MotionSection>
