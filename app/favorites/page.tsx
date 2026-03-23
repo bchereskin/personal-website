@@ -5,9 +5,6 @@ import Footer from '@/app/components/Footer';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'motion/react';
-import dynamic from 'next/dynamic';
-
-const FavoritesMap = dynamic(() => import('./FavoritesMap'), { ssr: false });
 
 const stagger = {
   hidden: {},
@@ -251,24 +248,6 @@ export default function Favorites() {
             >
               🐕 Most of these neighborhoods we discovered walking Tanuki.
             </motion.p>
-          </div>
-        </section>
-
-        {/* Interactive Map */}
-        <section className="py-8 px-6">
-          <div className="max-w-5xl mx-auto">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.2 }}
-              transition={{ duration: 0.5 }}
-            >
-              <div className="text-center mb-6">
-                <h2 className="text-2xl font-black text-gray-900 mb-2">📍 Explore the Map</h2>
-                <p className="text-gray-500 text-sm">Click a dot to see the spot. Filter by category.</p>
-              </div>
-              <FavoritesMap />
-            </motion.div>
           </div>
         </section>
 
