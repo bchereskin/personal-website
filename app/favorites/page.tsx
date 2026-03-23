@@ -147,7 +147,7 @@ const shows = [
   { name: 'Sunset Blvd.', date: '2024', note: 'Nicole Scherzinger. Unbelievable.' },
   { name: 'Shucked', date: '2023', note: 'Way funnier than it has any right to be. We still quote it.' },
   { name: 'The Lion King', date: 'Apr 2024', note: 'A classic for a reason.' },
-  { name: 'Chicago', date: 'May 2024' },
+  { name: 'Chicago', date: 'May 2024', note: 'A classic — and you can often get cheap tickets.' },
 ];
 
 function SpotCard({ spot, accent, border }: { spot: Spot; accent: string; border: string }) {
