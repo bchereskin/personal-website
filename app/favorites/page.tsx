@@ -24,6 +24,7 @@ interface Spot {
   name: string;
   note?: string;
   visits?: string;
+  url?: string;
 }
 
 interface Category {
@@ -49,14 +50,14 @@ const categories: Category[] = [
     image: 'https://blog.resy.com/wp-content/uploads/2023/05/Himitsu-1-2000x1125.jpg',
     imageAlt: 'Omakase sushi experience',
     spots: [
-      { name: 'SourAji', note: 'Our absolute go-to. All-you-can-eat omakase and sake — what makes it unique.', visits: '8+' },
-      { name: 'Kaki Sushi Omakase', note: 'BYOB sake with no corkage. Great for parties and group celebrations.', visits: '4' },
+      { name: 'SourAji', note: 'Our absolute go-to. All-you-can-eat omakase and sake — what makes it unique.', visits: '8+', url: 'https://resy.com/cities/new-york-ny/venues/souraji' },
+      { name: 'Kaki Sushi Omakase', note: 'BYOB sake with no corkage. Great for parties and group celebrations.', visits: '4', url: 'https://resy.com/cities/new-york-ny/venues/kaki' },
       { name: 'TSUMO', note: 'Incredible value — under $60 for a legit omakase.', visits: '3' },
-      { name: 'Sushi by M', note: 'Small spot, big flavors.' },
-      { name: 'Kissaki Omakase Bowery' },
-      { name: 'Kawa Omakase' },
-      { name: 'Takumi Omakase' },
-      { name: 'Sushi Dairo' },
+      { name: 'Sushi by M', note: 'Two locations — one on 5th and a smaller "party room" on 4th. The party room has better vibes, but both are great.', url: 'http://www.sushibym.com' },
+      { name: 'Takumi Omakase', note: 'BYOB and super fun vibe.', url: 'https://takumiomakase.com' },
+      { name: 'Sushi Dairo', note: 'Super small, owned by the chefs. Phone reservations only.', url: 'https://omakasesushidairo.com' },
+      { name: 'Kawa Omakase', note: 'New and up-and-coming.', url: 'https://kawaomakase.com' },
+      { name: 'Kissaki Omakase Bowery', note: 'Not our favorite — pulled off the regular rotation.' },
     ],
   },
   {
@@ -68,12 +69,12 @@ const categories: Category[] = [
     image: 'https://images.unsplash.com/photo-1590301157890-4810ed352733?q=80&w=2070',
     imageAlt: 'Korean BBQ grill',
     spots: [
-      { name: 'NUBIANI', note: 'Best Korean BBQ in the city. Period.', visits: '4' },
-      { name: 'HOWOO', note: 'Counter top or dining room, always delivers.', visits: '4' },
-      { name: 'New Wonjo', note: 'Classic K-town BBQ. The late-night move.' },
-      { name: 'Miss Korea BBQ' },
-      { name: 'Gogi 37' },
-      { name: 'HYUN' },
+      { name: 'HOWOO', note: 'Our favorite KBBQ right now. Premium meats, owned by the Nubiani folks. Great for large groups and upleveled eating.', visits: '4', url: 'https://www.howoo.nyc' },
+      { name: 'NUBIANI', note: 'Love this place but hard to get a resy now. Also has a midtown east location that\'s easier to reserve.', visits: '4', url: 'https://www.nubianinyc.com' },
+      { name: 'Cote', note: 'The Korean steakhouse. Michelin-starred for a reason.', url: 'https://www.cotekoreansteakhouse.com' },
+      { name: 'HYUN', note: 'Pricey but insanely decadent — all-you-can-eat true A5 Wagyu. Once-in-a-lifetime type experience, not a daily event.', url: 'https://www.hyunnyc.com' },
+      { name: 'New Wonjo', note: 'OG spot — one of the oldest in K-town. Try the raw marinated crab! They use charcoal which is nice.', url: 'https://newwonjo.com' },
+      { name: 'Jongro BBQ', note: 'Fun spot with cool vibes — good for large groups and late nights in K-town.', url: 'https://www.jongrobbqny.com' },
     ],
   },
   {
@@ -85,14 +86,19 @@ const categories: Category[] = [
     image: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?q=80&w=2070',
     imageAlt: 'Elegant restaurant dining',
     spots: [
-      { name: 'Noreetuh', note: 'Hawaiian-inspired, incredible wine list. We keep coming back.', visits: '5' },
-      { name: 'Carbone', note: 'Yes, it lives up to the hype.' },
-      { name: 'Torrisi Bar & Restaurant', note: 'The pasta. That\'s it. That\'s the review.', visits: '2' },
-      { name: 'Minetta Tavern' },
-      { name: 'Sinsa', note: 'Valentine\'s Day prix fixe was memorable.' },
-      { name: 'Dirty French' },
-      { name: 'Au Cheval NYC', note: 'The burger. Worth the wait.' },
-      { name: 'Leonetta NYC', note: 'Our large group go-to.' },
+      { name: 'Noreetuh', note: 'Favorite place right now. Celebrated Lisa\'s birthday here. Insane wine list featuring German wines (which Lisa loves). Large format dishes are great.', visits: '5', url: 'https://www.noreetuh.com' },
+      { name: 'Minetta Tavern', note: 'The Red Label Burger is a must-order — my favorite burger in NYC, hands down.', url: 'https://www.minettatavernny.com' },
+      { name: 'Carbone', note: 'Yes, it lives up to the hype.', url: 'https://carbonenewyork.com' },
+      { name: 'Torrisi Bar & Restaurant', note: 'The pasta. That\'s it. That\'s the review.', visits: '2', url: 'https://torrisinyc.com' },
+      { name: 'COQODAQ', note: 'By the Cote group. Amazing brunch and the best Korean fried chicken ever.', url: 'https://www.coqodaq.com' },
+      { name: 'Bangkok Supper Club', note: 'Amazing intense flavors and a very unique cocktail program. Hard to get in — arrive at 5 and grab a bar seat.', url: 'https://www.bangkoksupperclubnyc.com' },
+      { name: 'Thai Diner', note: 'Funky Thai spot — don\'t sleep on their brunch. Best fusion breakfast in the city.', url: 'https://www.thaidiner.com' },
+      { name: 'Mr B Bar', note: 'Local favorite — fresh-from-Italy light bites and great wine. Like a sports bar and wine bar had a baby.', url: 'https://mrbbarnyc.com' },
+      { name: 'Bar B', note: 'Standing-only wine bar by a Japanese couple focused on amazing Italian wine and bites. Very unique concept you won\'t forget.', url: 'https://www.barbnyc.com' },
+      { name: 'Dickson\'s Farmstand', note: 'Hidden butcher shop in Chelsea Market. Great for housemade charcuterie and affordable wine. Check out their special events like the 175-day dry aged beef dinner.', url: 'https://www.dicksonsfarmstand.com' },
+      { name: 'Sinsa', note: 'Valentine\'s Day prix fixe was memorable.', url: 'https://www.sinsanyc.com' },
+      { name: 'Au Cheval NYC', note: 'The burger. Worth the wait.', url: 'https://www.auchevaldiner.com/nyc/home' },
+      { name: 'Leonetta NYC', note: 'Our large group go-to.', url: 'https://www.leonettanyc.com' },
     ],
   },
   {
@@ -104,10 +110,10 @@ const categories: Category[] = [
     image: 'https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?q=80&w=2070',
     imageAlt: 'Wine glasses',
     spots: [
-      { name: 'La Compagnie des Vins Surnaturels', note: 'French natural wines in NoLita. Perfect pre-dinner.' },
-      { name: 'The Ten Bells', note: 'Wine bar on the LES. Great vibe.' },
-      { name: 'Experimental Cocktail Club' },
-      { name: 'J. Bespoke', note: 'NYE 2026. What a night.' },
+      { name: 'La Compagnie des Vins Surnaturels', note: 'French natural wines in NoLita. Perfect pre-dinner.', url: 'https://www.compagniedesvinssurnaturels.com/nyc' },
+      { name: 'The Ten Bells', note: 'Natural wine bar on the LES. Great vibe. $1.50 oyster happy hour.', url: 'https://tenbellsnyc.com' },
+      { name: 'Experimental Cocktail Club', note: 'Hidden below La Compagnie. Rare spirits and inventive cocktails.', url: 'https://www.experimentalcocktailclub.com/new-york' },
+      { name: 'J. Bespoke', note: 'NYE 2026. What a night. Speakeasy hidden behind a suit shop.', url: 'https://www.jbespoke.com' },
     ],
   },
   {
@@ -119,16 +125,16 @@ const categories: Category[] = [
     image: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?q=80&w=2070',
     imageAlt: 'NYC restaurant scene',
     spots: [
-      { name: 'Keens Steakhouse', note: 'Old-school NYC. Mutton chop is legendary.' },
-      { name: 'Laser Wolf Brooklyn', note: 'Israeli grill. Salatim spread alone is worth it.' },
-      { name: 'The Lavaux', note: 'Swiss fondue bar. Cozy and unique.' },
-      { name: 'ATOBOY', note: 'Korean tasting menu, beautiful plating.' },
-      { name: 'Nudibranch', note: 'Tiny, ambitious, unforgettable.' },
-      { name: 'Pig and Khao', note: 'Southeast Asian on the LES.' },
-      { name: 'OKONOMI / YUJI Ramen', note: 'When ramen is the mood.' },
-      { name: 'CheLi Manhattan', note: 'Sichuan heat done right.' },
-      { name: 'Kisa', note: 'A newer addition to the rotation.' },
-      { name: 'Odd Sister', note: 'Coming soon to our list.' },
+      { name: 'Keens Steakhouse', note: 'Old-school NYC. Mutton chop is legendary.', url: 'https://www.keens.com' },
+      { name: 'Laser Wolf Brooklyn', note: 'Israeli grill. Salatim spread alone is worth it.', url: 'https://www.laserwolfbrooklyn.com' },
+      { name: 'The Lavaux', note: 'Swiss fondue bar. Cozy and unique.', url: 'https://thelavauxwinebar.com' },
+      { name: 'ATOBOY', note: 'Korean tasting menu, beautiful plating.', url: 'https://www.atoboynyc.com' },
+      { name: 'Nudibranch', note: 'Tiny, ambitious, unforgettable.', url: 'https://nudibranchnyc.com' },
+      { name: 'Pig & Khao', note: 'Southeast Asian flavors. Now on the Upper West Side.', url: 'https://www.pigandkhao.com' },
+      { name: 'OKONOMI / YUJI Ramen', note: 'When ramen is the mood.', url: 'https://www.okonomi.us' },
+      { name: 'CheLi Manhattan', note: 'Shanghainese heat done right.', url: 'https://www.che-li.com' },
+      { name: 'Kisa', note: 'Korean diner inspired by taxi driver restaurants. A newer addition.', url: 'https://www.kisaus.com' },
+      { name: 'Odd Sister', note: 'Soho neighborhood spot. Coming soon to our regular rotation.', url: 'https://www.oddsisternyc.com' },
     ],
   },
 ];
@@ -141,33 +147,50 @@ const shows = [
   { name: 'Sunset Blvd.', date: '2024', note: 'Nicole Scherzinger. Unbelievable.' },
   { name: 'Shucked', date: '2023', note: 'Way funnier than it has any right to be. We still quote it.' },
   { name: 'The Lion King', date: 'Apr 2024', note: 'A classic for a reason.' },
-  { name: 'Chicago', date: 'May 2024' },
+  { name: 'Chicago', date: 'May 2024', note: 'A classic — and you can often get cheap tickets.' },
 ];
 
 function SpotCard({ spot, accent, border }: { spot: Spot; accent: string; border: string }) {
-  return (
-    <motion.div variants={fadeIn}>
-      <div
-        className="rounded-xl p-4 h-full transition-all hover:scale-[1.02] hover:shadow-lg bg-white"
-        style={{ border: `1px solid ${border}40` }}
-      >
-        <div className="flex items-start justify-between gap-2 mb-1">
+  const inner = (
+    <div
+      className={`rounded-xl p-4 h-full transition-all hover:scale-[1.02] hover:shadow-lg bg-white ${spot.url ? 'cursor-pointer' : ''}`}
+      style={{ border: `1px solid ${border}40` }}
+    >
+      <div className="flex items-start justify-between gap-2 mb-1">
+        <div className="flex items-center gap-1.5">
           <h3 className="font-bold text-gray-900 text-sm">{spot.name}</h3>
-          {spot.visits && (
-            <span
-              className="flex-shrink-0 px-2 py-0.5 rounded-full text-xs font-bold"
-              style={{ backgroundColor: `${border}30`, color: accent }}
-            >
-              {spot.visits}×
-            </span>
+          {spot.url && (
+            <svg className="w-3 h-3 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+            </svg>
           )}
         </div>
-        {spot.note && (
-          <p className="text-xs text-gray-500 italic leading-relaxed">&ldquo;{spot.note}&rdquo;</p>
+        {spot.visits && (
+          <span
+            className="flex-shrink-0 px-2 py-0.5 rounded-full text-xs font-bold"
+            style={{ backgroundColor: `${border}30`, color: accent }}
+          >
+            {spot.visits}×
+          </span>
         )}
       </div>
-    </motion.div>
+      {spot.note && (
+        <p className="text-xs text-gray-500 italic leading-relaxed">&ldquo;{spot.note}&rdquo;</p>
+      )}
+    </div>
   );
+
+  if (spot.url) {
+    return (
+      <motion.div variants={fadeIn}>
+        <a href={spot.url} target="_blank" rel="noopener noreferrer" className="block h-full">
+          {inner}
+        </a>
+      </motion.div>
+    );
+  }
+
+  return <motion.div variants={fadeIn}>{inner}</motion.div>;
 }
 
 export default function Favorites() {
