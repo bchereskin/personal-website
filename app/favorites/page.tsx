@@ -96,7 +96,6 @@ const categories: Category[] = [
       { name: 'Mr B Bar', note: 'Local favorite — fresh-from-Italy light bites and great wine. Like a sports bar and wine bar had a baby.', url: 'https://mrbbarnyc.com' },
       { name: 'Bar B', note: 'Standing-only wine bar by a Japanese couple focused on amazing Italian wine and bites. Very unique concept you won\'t forget.', url: 'https://www.barbnyc.com' },
       { name: 'Dickson\'s Farmstand', note: 'Hidden butcher shop in Chelsea Market. Great for housemade charcuterie and affordable wine. Check out their special events like the 175-day dry aged beef dinner.', url: 'https://www.dicksonsfarmstand.com' },
-      { name: 'Sinsa', note: 'Valentine\'s Day prix fixe was memorable.', url: 'https://www.sinsanyc.com' },
       { name: 'Au Cheval NYC', note: 'The burger. Worth the wait.', url: 'https://www.auchevaldiner.com/nyc/home' },
       { name: 'Leonetta NYC', note: 'Our large group go-to.', url: 'https://www.leonettanyc.com' },
     ],
