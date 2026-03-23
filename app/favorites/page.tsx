@@ -5,6 +5,9 @@ import Footer from '@/app/components/Footer';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'motion/react';
+import dynamic from 'next/dynamic';
+
+const FavoritesMap = dynamic(() => import('./FavoritesMap'), { ssr: false });
 
 const stagger = {
   hidden: {},
@@ -96,7 +99,6 @@ const categories: Category[] = [
       { name: 'Mr B Bar', note: 'Local favorite — fresh-from-Italy light bites and great wine. Like a sports bar and wine bar had a baby.', url: 'https://mrbbarnyc.com' },
       { name: 'Bar B', note: 'Standing-only wine bar by a Japanese couple focused on amazing Italian wine and bites. Very unique concept you won\'t forget.', url: 'https://www.barbnyc.com' },
       { name: 'Dickson\'s Farmstand', note: 'Hidden butcher shop in Chelsea Market. Great for housemade charcuterie and affordable wine. Check out their special events like the 175-day dry aged beef dinner.', url: 'https://www.dicksonsfarmstand.com' },
-      { name: 'Sinsa', note: 'Valentine\'s Day prix fixe was memorable.', url: 'https://www.sinsanyc.com' },
       { name: 'Au Cheval NYC', note: 'The burger. Worth the wait.', url: 'https://www.auchevaldiner.com/nyc/home' },
       { name: 'Leonetta NYC', note: 'Our large group go-to.', url: 'https://www.leonettanyc.com' },
     ],
@@ -249,6 +251,24 @@ export default function Favorites() {
             >
               🐕 Most of these neighborhoods we discovered walking Tanuki.
             </motion.p>
+          </div>
+        </section>
+
+        {/* Interactive Map */}
+        <section className="py-8 px-6">
+          <div className="max-w-5xl mx-auto">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.2 }}
+              transition={{ duration: 0.5 }}
+            >
+              <div className="text-center mb-6">
+                <h2 className="text-2xl font-black text-gray-900 mb-2">📍 Explore the Map</h2>
+                <p className="text-gray-500 text-sm">Click a dot to see the spot. Filter by category.</p>
+              </div>
+              <FavoritesMap />
+            </motion.div>
           </div>
         </section>
 

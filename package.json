@@ -15,11 +15,14 @@
     "@tiptap/extension-link": "^3.20.1",
     "@tiptap/react": "^3.20.1",
     "@tiptap/starter-kit": "^3.20.1",
+    "@types/leaflet": "^1.9.21",
     "@vercel/analytics": "^1.6.1",
+    "leaflet": "^1.9.4",
     "motion": "^12.35.1",
     "next": "16.1.6",
     "react": "19.2.3",
     "react-dom": "19.2.3",
+    "react-leaflet": "^5.0.0",
     "resend": "^6.9.3"
   },
   "devDependencies": {
