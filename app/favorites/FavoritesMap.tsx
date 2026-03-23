@@ -90,8 +90,6 @@ export default function FavoritesMap() {
         Popup: mod.Popup,
       });
     });
-    // @ts-expect-error -- CSS module import for side effects
-    import('leaflet/dist/leaflet.css');
   }, []);
 
   const filtered = activeCategory
