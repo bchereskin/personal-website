@@ -79,6 +79,31 @@ export async function postExistsBySlug(slug: string): Promise<boolean> {
   return !!data;
 }
 
+export async function getRelatedPosts(currentSlug: string, category: string, limit = 3): Promise<BlogPost[]> {
+  const { data } = await getAdminSupabase()
+    .from('blog_posts')
+    .select('*')
+    .eq('is_published', true)
+    .eq('category', category)
+    .neq('slug', currentSlug)
+    .order('date', { ascending: false })
+    .limit(limit);
+
+  if (data && data.length >= limit) return data.map(rowToPost);
+
+  const remaining = limit - (data?.length ?? 0);
+  const excludeSlugs = [currentSlug, ...(data?.map(d => d.slug) ?? [])];
+  const { data: fallback } = await getAdminSupabase()
+    .from('blog_posts')
+    .select('*')
+    .eq('is_published', true)
+    .not('slug', 'in', `(${excludeSlugs.join(',')})`)
+    .order('date', { ascending: false })
+    .limit(remaining);
+
+  return [...(data ?? []), ...(fallback ?? [])].map(rowToPost);
+}
+
 export function formatDate(dateString: string): string {
   return new Date(dateString).toLocaleDateString('en-US', {
     year: 'numeric',

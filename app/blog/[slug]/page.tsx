@@ -7,7 +7,9 @@ import Footer from '@/app/components/Footer';
 import CommentsSection from '@/app/components/CommentsSection';
 import SubscribeToggle from '@/app/components/SubscribeToggle';
 import { BlogContentRenderer } from '@/app/components/BlogRenderer';
-import { getPostBySlug, formatDate } from '../posts';
+import ShareButtons from '@/app/components/ShareButtons';
+import RelatedPosts from '@/app/components/RelatedPosts';
+import { getPostBySlug, getRelatedPosts, formatDate } from '../posts';
 import { getAdminSupabase } from '@/app/lib/supabase-admin';
 
 export const dynamic = 'force-dynamic';
@@ -54,6 +56,7 @@ export default async function BlogPost({
   if (!post) notFound();
 
   getAdminSupabase().rpc('increment_blog_post_visits', { post_slug: slug }).then(() => {});
+  const relatedPosts = await getRelatedPosts(slug, post.category);
 
   const articleSchema = {
     '@context': 'https://schema.org',
@@ -123,8 +126,9 @@ export default async function BlogPost({
               {post.title}
             </h1>
 
-            <div className="mt-6 animate-fade-in-up delay-200">
+            <div className="mt-6 flex flex-wrap items-center gap-6 animate-fade-in-up delay-200">
               <SubscribeToggle />
+              <ShareButtons title={post.title} slug={post.slug} />
             </div>
           </div>
         </section>
@@ -136,6 +140,8 @@ export default async function BlogPost({
             <BlogContentRenderer content={post.content} />
 
             <CommentsSection slug={slug} />
+
+            <RelatedPosts posts={relatedPosts} />
 
             <div className="mt-10">
               <Link
