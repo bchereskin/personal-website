@@ -1,6 +1,23 @@
+'use client';
+
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+
+const navLinks = [
+  { href: '/', label: 'Home', exact: true },
+  { href: '/about', label: 'About' },
+  { href: '/blog', label: 'Blog' },
+  { href: '/contact', label: 'Contact' },
+];
 
 export default function Navigation() {
+  const pathname = usePathname();
+
+  function isActive(href: string, exact?: boolean) {
+    if (exact) return pathname === href;
+    return pathname === href || pathname.startsWith(href + '/');
+  }
+
   return (
     <nav className="fixed top-0 w-full glass z-50">
       <div className="max-w-6xl mx-auto px-6 py-3">
@@ -31,30 +48,19 @@ export default function Navigation() {
           </Link>
 
           <div className="flex gap-6 md:gap-8">
-            <Link
-              href="/"
-              className="text-[var(--neutral-400)] hover:text-[var(--neutral-50)] transition-colors text-sm md:text-base"
-            >
-              Home
-            </Link>
-            <Link
-              href="/about"
-              className="text-[var(--neutral-400)] hover:text-[var(--neutral-50)] transition-colors text-sm md:text-base"
-            >
-              About
-            </Link>
-            <Link
-              href="/blog"
-              className="text-[var(--neutral-400)] hover:text-[var(--neutral-50)] transition-colors text-sm md:text-base"
-            >
-              Blog
-            </Link>
-            <Link
-              href="/contact"
-              className="text-[var(--neutral-400)] hover:text-[var(--neutral-50)] transition-colors text-sm md:text-base"
-            >
-              Contact
-            </Link>
+            {navLinks.map(({ href, label, exact }) => (
+              <Link
+                key={href}
+                href={href}
+                className={`transition-colors text-sm md:text-base ${
+                  isActive(href, exact)
+                    ? 'text-[var(--primary)] font-medium'
+                    : 'text-[var(--neutral-400)] hover:text-[var(--neutral-50)]'
+                }`}
+              >
+                {label}
+              </Link>
+            ))}
           </div>
         </div>
       </div>
