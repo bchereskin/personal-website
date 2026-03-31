@@ -47,6 +47,27 @@ interface SharedPageEditorState {
   recipient_type: 'person' | 'project' | 'business' | '';
 }
 
+interface SecurePage {
+  id: string;
+  slug: string;
+  title: string;
+  html_content: string;
+  created_at: string;
+  visit_count: number;
+  last_visited_at: string | null;
+  is_active: boolean;
+  allowed_emails: string[];
+}
+
+interface SecurePageEditorState {
+  id?: string;
+  slug: string;
+  title: string;
+  html_content: string;
+  is_active: boolean;
+  allowed_emails: string[];
+}
+
 interface BlogPostRow {
   id: string;
   slug: string;
@@ -110,11 +131,20 @@ const emptySharedEditor: SharedPageEditorState = {
   recipient_type: '',
 };
 
+const emptySecureEditor: SecurePageEditorState = {
+  slug: '',
+  title: '',
+  html_content: '',
+  is_active: true,
+  allowed_emails: [],
+};
+
 export default function AdminDashboard({
   contacts: initialContacts,
   comments: initialComments,
   sharedPages: initialSharedPages,
   blogPosts: initialBlogPosts,
+  securePages: initialSecurePages,
   commentCountMap,
   userEmail,
 }: {
@@ -122,11 +152,12 @@ export default function AdminDashboard({
   comments: Comment[];
   sharedPages: SharedPage[];
   blogPosts: BlogPostRow[];
+  securePages: SecurePage[];
   commentCountMap: Record<string, number>;
   userEmail: string;
 }) {
   const router = useRouter();
-  const [tab, setTab] = useState<'contacts' | 'comments' | 'notify' | 'shared' | 'blog'>('blog');
+  const [tab, setTab] = useState<'contacts' | 'comments' | 'notify' | 'shared' | 'blog' | 'secure'>('blog');
   const [contacts, setContacts] = useState(initialContacts);
   const [comments, setComments] = useState(initialComments);
   const [sharedPages, setSharedPages] = useState(initialSharedPages);
@@ -150,6 +181,12 @@ export default function AdminDashboard({
   const sharedHtmlWrapper = useRef({ headWrapper: '', tailWrapper: '' });
   const [sharedSaving, setSharedSaving] = useState(false);
   const [sharedSaveResult, setSharedSaveResult] = useState<string | null>(null);
+
+  const [securePages, setSecurePages] = useState(initialSecurePages);
+  const [secureEditor, setSecureEditor] = useState<SecurePageEditorState | null>(null);
+  const [secureSaving, setSecureSaving] = useState(false);
+  const [secureSaveResult, setSecureSaveResult] = useState<string | null>(null);
+  const [newEmail, setNewEmail] = useState('');
 
   async function handleLogout() {
     const supabase = createSupabaseBrowser();
@@ -400,6 +437,131 @@ export default function AdminDashboard({
     setDeleting(null);
   }
 
+  function openSecureEditor(page?: SecurePage) {
+    if (page) {
+      setSecureEditor({
+        id: page.id,
+        slug: page.slug,
+        title: page.title,
+        html_content: page.html_content,
+        is_active: page.is_active,
+        allowed_emails: [...page.allowed_emails],
+      });
+    } else {
+      setSecureEditor({ ...emptySecureEditor });
+    }
+    setNewEmail('');
+    setSecureSaveResult(null);
+  }
+
+  async function saveSecurePage() {
+    if (!secureEditor) return;
+    setSecureSaving(true);
+    setSecureSaveResult(null);
+
+    try {
+      const payload = {
+        slug: secureEditor.slug,
+        title: secureEditor.title,
+        html_content: secureEditor.html_content,
+        is_active: secureEditor.is_active,
+        allowed_emails: secureEditor.allowed_emails,
+      };
+
+      let res: Response;
+      if (secureEditor.id) {
+        res = await fetch(`/api/admin/secure-pages/${secureEditor.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+      } else {
+        res = await fetch('/api/admin/secure-pages', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+      }
+
+      if (res.ok) {
+        const data = await res.json();
+        const pageWithEmails = { ...data, allowed_emails: secureEditor.allowed_emails };
+        if (secureEditor.id) {
+          setSecurePages((prev) => prev.map((p) => (p.id === data.id ? pageWithEmails : p)));
+        } else {
+          setSecurePages((prev) => [pageWithEmails, ...prev]);
+        }
+        setSecureSaveResult('Saved!');
+        setTimeout(() => {
+          setSecureEditor(null);
+          setSecureSaveResult(null);
+        }, 1000);
+      } else {
+        const err = await res.json();
+        setSecureSaveResult(err.error || 'Failed to save');
+      }
+    } catch {
+      setSecureSaveResult('Failed to save');
+    } finally {
+      setSecureSaving(false);
+    }
+  }
+
+  async function toggleSecurePage(id: string, currentActive: boolean) {
+    setToggling(id);
+    const res = await fetch(`/api/admin/secure-pages/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ is_active: !currentActive }),
+    });
+    if (res.ok) {
+      setSecurePages((prev) =>
+        prev.map((p) => (p.id === id ? { ...p, is_active: !currentActive } : p))
+      );
+    }
+    setToggling(null);
+  }
+
+  async function deleteSecurePage(id: string) {
+    setDeleting(id);
+    const res = await fetch(`/api/admin/secure-pages/${id}`, { method: 'DELETE' });
+    if (res.ok) setSecurePages((prev) => prev.filter((p) => p.id !== id));
+    setDeleting(null);
+  }
+
+  async function addEmailAccess(pageId: string, email: string) {
+    if (!email.trim()) return;
+    const res = await fetch(`/api/admin/secure-pages/${pageId}/access`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email.trim() }),
+    });
+    if (res.ok) {
+      const trimmed = email.trim().toLowerCase();
+      setSecureEditor((prev) => prev ? { ...prev, allowed_emails: [...prev.allowed_emails, trimmed] } : prev);
+      setSecurePages((prev) => prev.map((p) => p.id === pageId ? { ...p, allowed_emails: [...p.allowed_emails, trimmed] } : p));
+      setNewEmail('');
+    }
+  }
+
+  async function removeEmailAccess(pageId: string, email: string) {
+    const res = await fetch(`/api/admin/secure-pages/${pageId}/access`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
+    if (res.ok) {
+      setSecureEditor((prev) => prev ? { ...prev, allowed_emails: prev.allowed_emails.filter((e) => e !== email) } : prev);
+      setSecurePages((prev) => prev.map((p) => p.id === pageId ? { ...p, allowed_emails: p.allowed_emails.filter((e) => e !== email) } : p));
+    }
+  }
+
+  function copySecureLink(slug: string) {
+    navigator.clipboard.writeText(`https://www.brettchereskin.com/secure/${slug}`);
+    setCopied(`secure-${slug}`);
+    setTimeout(() => setCopied(null), 2000);
+  }
+
   const activePages = sharedPages.filter((p) => p.is_active);
   const totalVisits = sharedPages.reduce((sum, p) => sum + p.visit_count, 0);
   const publishedPosts = blogPosts.filter((p) => p.is_published);
@@ -411,6 +573,142 @@ export default function AdminDashboard({
         ? 'bg-[var(--primary)] text-[var(--background)]'
         : 'text-[var(--neutral-400)] hover:text-[var(--neutral-100)]'
     }`;
+
+  if (secureEditor) {
+    const inputClass = 'w-full bg-[var(--neutral-800)] border border-[var(--neutral-600)] rounded-lg px-4 py-3 text-[var(--neutral-100)] placeholder-[var(--neutral-500)] focus:outline-none focus:border-[var(--primary)] transition-colors text-sm';
+    return (
+      <div className="min-h-screen bg-[var(--background)]">
+        <header className="border-b border-[var(--neutral-700)] px-6 py-4">
+          <div className="max-w-6xl mx-auto flex items-center justify-between">
+            <button
+              onClick={() => setSecureEditor(null)}
+              className="text-sm text-[var(--neutral-400)] hover:text-[var(--neutral-100)] transition-colors"
+            >
+              &larr; Back to dashboard
+            </button>
+            <div className="flex items-center gap-3">
+              {secureSaveResult && (
+                <span className={`text-sm ${secureSaveResult === 'Saved!' ? 'text-[var(--primary)]' : 'text-[var(--accent)]'}`}>{secureSaveResult}</span>
+              )}
+              <button
+                onClick={saveSecurePage}
+                disabled={secureSaving || !secureEditor.slug || !secureEditor.title || !secureEditor.html_content}
+                className="px-5 py-2 rounded-lg bg-[var(--primary)] text-[var(--background)] font-semibold text-sm hover:bg-[var(--primary-light)] disabled:opacity-50 transition-colors"
+              >
+                {secureSaving ? 'Saving…' : secureEditor.id ? 'Update' : 'Create'}
+              </button>
+            </div>
+          </div>
+        </header>
+
+        <main className="max-w-4xl mx-auto px-6 py-8">
+          <div className="grid grid-cols-2 gap-4 mb-6">
+            <div>
+              <label className="block text-sm text-[var(--neutral-300)] mb-1.5">Slug</label>
+              <input
+                value={secureEditor.slug}
+                onChange={(e) => setSecureEditor({ ...secureEditor, slug: e.target.value })}
+                placeholder="trip-italy-2026"
+                className={inputClass}
+                disabled={!!secureEditor.id}
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-[var(--neutral-300)] mb-1.5">Title</label>
+              <input
+                value={secureEditor.title}
+                onChange={(e) => setSecureEditor({ ...secureEditor, title: e.target.value })}
+                placeholder="Italy Trip Itinerary"
+                className={inputClass}
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4 mb-6">
+            <label className="flex items-center gap-2 text-sm text-[var(--neutral-300)] cursor-pointer">
+              <input
+                type="checkbox"
+                checked={secureEditor.is_active}
+                onChange={(e) => setSecureEditor({ ...secureEditor, is_active: e.target.checked })}
+                className="rounded border-[var(--neutral-600)] bg-[var(--neutral-800)]"
+              />
+              Active
+            </label>
+          </div>
+
+          <div className="mb-6">
+            <label className="block text-sm text-[var(--neutral-300)] mb-1.5">Allowed Emails</label>
+            <div className="flex gap-2 mb-3">
+              <input
+                value={newEmail}
+                onChange={(e) => setNewEmail(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && secureEditor.id && newEmail.trim()) {
+                    e.preventDefault();
+                    addEmailAccess(secureEditor.id, newEmail);
+                  }
+                }}
+                placeholder="email@example.com"
+                type="email"
+                className={inputClass}
+              />
+              {secureEditor.id ? (
+                <button
+                  onClick={() => addEmailAccess(secureEditor.id!, newEmail)}
+                  disabled={!newEmail.trim()}
+                  className="px-4 py-2 rounded-lg bg-[var(--primary)] text-[var(--background)] font-semibold text-sm hover:bg-[var(--primary-light)] disabled:opacity-50 transition-colors whitespace-nowrap"
+                >
+                  Add
+                </button>
+              ) : (
+                <button
+                  onClick={() => {
+                    if (newEmail.trim() && !secureEditor.allowed_emails.includes(newEmail.trim().toLowerCase())) {
+                      setSecureEditor({ ...secureEditor, allowed_emails: [...secureEditor.allowed_emails, newEmail.trim().toLowerCase()] });
+                      setNewEmail('');
+                    }
+                  }}
+                  disabled={!newEmail.trim()}
+                  className="px-4 py-2 rounded-lg bg-[var(--primary)] text-[var(--background)] font-semibold text-sm hover:bg-[var(--primary-light)] disabled:opacity-50 transition-colors whitespace-nowrap"
+                >
+                  Add
+                </button>
+              )}
+            </div>
+            {secureEditor.allowed_emails.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {secureEditor.allowed_emails.map((email) => (
+                  <span key={email} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[var(--neutral-800)] border border-[var(--neutral-600)] text-sm text-[var(--neutral-200)]">
+                    {email}
+                    <button
+                      onClick={() => secureEditor.id ? removeEmailAccess(secureEditor.id, email) : setSecureEditor({ ...secureEditor, allowed_emails: secureEditor.allowed_emails.filter((e) => e !== email) })}
+                      className="text-[var(--neutral-500)] hover:text-[var(--accent)] transition-colors ml-1"
+                    >
+                      &times;
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+            {secureEditor.allowed_emails.length === 0 && (
+              <p className="text-xs text-[var(--neutral-500)]">No one has access yet. Add email addresses to grant access.</p>
+            )}
+          </div>
+
+          <div className="mb-4">
+            <label className="block text-sm text-[var(--neutral-300)] mb-1.5">HTML Content</label>
+            <textarea
+              value={secureEditor.html_content}
+              onChange={(e) => setSecureEditor({ ...secureEditor, html_content: e.target.value })}
+              placeholder="<h1>My Trip</h1><p>Day 1: ...</p>"
+              rows={20}
+              className={`${inputClass} font-mono text-xs leading-relaxed resize-y`}
+            />
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   if (sharedEditor) {
     return (
@@ -751,6 +1049,9 @@ export default function AdminDashboard({
           <button className={tabClass(tab === 'shared')} onClick={() => setTab('shared')}>
             Shared Pages ({sharedPages.length})
           </button>
+          <button className={tabClass(tab === 'secure')} onClick={() => setTab('secure')}>
+            Secure Pages ({securePages.length})
+          </button>
           <button className={tabClass(tab === 'notify')} onClick={() => setTab('notify')}>
             Notify Subscribers
           </button>
@@ -983,6 +1284,76 @@ export default function AdminDashboard({
                                 className="text-xs text-[var(--neutral-500)] hover:text-[var(--accent)] transition-colors disabled:opacity-40"
                               >
                                 {deleting === p.id ? '…' : 'Delete'}
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {tab === 'secure' && (
+          <div>
+            <div className="flex justify-end mb-4">
+              <button
+                onClick={() => openSecureEditor()}
+                className="px-5 py-2.5 rounded-lg bg-[var(--primary)] text-[var(--background)] font-semibold text-sm hover:bg-[var(--primary-light)] transition-colors"
+              >
+                + New Secure Page
+              </button>
+            </div>
+            <div className="bg-[var(--card-bg)] border border-[var(--neutral-700)] rounded-2xl overflow-hidden">
+              {securePages.length === 0 ? (
+                <p className="text-[var(--neutral-500)] text-sm p-8 text-center">No secure pages yet.</p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-[var(--neutral-700)]">
+                        <th className="text-left px-4 py-3 text-[var(--neutral-400)] font-medium">Page</th>
+                        <th className="text-left px-4 py-3 text-[var(--neutral-400)] font-medium">Access</th>
+                        <th className="text-left px-4 py-3 text-[var(--neutral-400)] font-medium">Visits</th>
+                        <th className="text-left px-4 py-3 text-[var(--neutral-400)] font-medium">Status</th>
+                        <th className="px-4 py-3 text-[var(--neutral-400)] font-medium text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {securePages.map((p) => (
+                        <tr key={p.id} className="border-b border-[var(--neutral-700)] last:border-0 hover:bg-[var(--neutral-800)]">
+                          <td className="px-4 py-3 min-w-0">
+                            <p className="text-[var(--neutral-100)] font-medium truncate">{p.title}</p>
+                            <p className="text-xs text-[var(--neutral-500)] mt-0.5">{formatDate(p.created_at)}</p>
+                          </td>
+                          <td className="px-4 py-3">
+                            <p className="text-[var(--neutral-300)] text-sm">{p.allowed_emails.length} {p.allowed_emails.length === 1 ? 'person' : 'people'}</p>
+                            {p.allowed_emails.length > 0 && (
+                              <p className="text-xs text-[var(--neutral-500)] mt-0.5 truncate max-w-[200px]">{p.allowed_emails.join(', ')}</p>
+                            )}
+                          </td>
+                          <td className="px-4 py-3 text-[var(--neutral-300)]">{p.visit_count}</td>
+                          <td className="px-4 py-3">
+                            <span className={`text-xs px-2 py-1 rounded-full ${p.is_active ? 'bg-[var(--primary)]/10 text-[var(--primary)]' : 'bg-[var(--accent)]/10 text-[var(--accent)]'}`}>
+                              {p.is_active ? 'Active' : 'Inactive'}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-right">
+                            <div className="flex items-center justify-end gap-3">
+                              <button onClick={() => copySecureLink(p.slug)} className="text-xs text-[var(--neutral-400)] hover:text-[var(--primary)] transition-colors">{copied === `secure-${p.slug}` ? 'Copied!' : 'Copy link'}</button>
+                              <button onClick={() => openSecureEditor(p)} className="text-xs text-[var(--neutral-400)] hover:text-[var(--primary)] transition-colors">Edit</button>
+                              <button onClick={() => toggleSecurePage(p.id, p.is_active)} disabled={toggling === p.id} className={`text-xs transition-colors disabled:opacity-40 ${p.is_active ? 'text-[var(--neutral-500)] hover:text-[var(--accent)]' : 'text-[var(--neutral-500)] hover:text-[var(--primary)]'}`}>
+                                {toggling === p.id ? '...' : p.is_active ? 'Deactivate' : 'Activate'}
+                              </button>
+                              <button
+                                onClick={() => deleteSecurePage(p.id)}
+                                disabled={deleting === p.id}
+                                className="text-xs text-[var(--neutral-500)] hover:text-[var(--accent)] transition-colors disabled:opacity-40"
+                              >
+                                {deleting === p.id ? '...' : 'Delete'}
                               </button>
                             </div>
                           </td>
