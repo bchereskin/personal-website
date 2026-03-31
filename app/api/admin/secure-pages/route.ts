@@ -70,10 +70,26 @@ export async function POST(request: NextRequest) {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
   if (allowed_emails?.length) {
-    const rows = allowed_emails.map((email: string) => ({
-      page_id: page.id,
-      email: email.trim().toLowerCase(),
-    }));
+    const { data: existingUsers } = await admin.auth.admin.listUsers();
+    const existingEmails = new Set(
+      existingUsers?.users?.map((u: { email?: string }) => u.email?.toLowerCase()) ?? []
+    );
+
+    const rows = [];
+    for (const rawEmail of allowed_emails) {
+      const normalized = (rawEmail as string).trim().toLowerCase();
+      rows.push({ page_id: page.id, email: normalized });
+
+      // Ensure auth user exists so magic link works (signups may be disabled)
+      if (!existingEmails.has(normalized)) {
+        await admin.auth.admin.createUser({
+          email: normalized,
+          email_confirm: true,
+        });
+        existingEmails.add(normalized);
+      }
+    }
+
     await admin.from('secure_page_access').insert(rows);
   }
 
