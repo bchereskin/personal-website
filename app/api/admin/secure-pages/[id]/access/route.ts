@@ -24,9 +24,24 @@ export async function POST(
     return NextResponse.json({ error: 'email is required' }, { status: 400 });
   }
 
-  const { data, error } = await getAdminSupabase()
+  const admin = getAdminSupabase();
+  const normalizedEmail = email.trim().toLowerCase();
+
+  // Ensure auth user exists so magic link works (signups may be disabled)
+  const { data: existingUsers } = await admin.auth.admin.listUsers();
+  const userExists = existingUsers?.users?.some(
+    (u: { email?: string }) => u.email?.toLowerCase() === normalizedEmail
+  );
+  if (!userExists) {
+    await admin.auth.admin.createUser({
+      email: normalizedEmail,
+      email_confirm: true,
+    });
+  }
+
+  const { data, error } = await admin
     .from('secure_page_access')
-    .insert({ page_id: id, email: email.trim().toLowerCase() })
+    .insert({ page_id: id, email: normalizedEmail })
     .select()
     .single();
 
