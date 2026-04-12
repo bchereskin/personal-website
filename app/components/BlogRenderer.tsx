@@ -66,18 +66,36 @@ export function parseContent(content: string): Block[] {
   return blocks;
 }
 
-export function RenderBold({ text }: { text: string }) {
-  const parts = text.split(/\*\*(.+?)\*\*/g);
+export function RenderInline({ text }: { text: string }) {
+  const parts = text.split(/(\*\*.+?\*\*|\[.+?\]\(.+?\))/g);
   return (
     <>
-      {parts.map((part, i) =>
-        i % 2 === 1
-          ? <strong key={i} className="text-[var(--neutral-100)] font-semibold">{part}</strong>
-          : part
-      )}
+      {parts.map((part, i) => {
+        const boldMatch = part.match(/^\*\*(.+?)\*\*$/);
+        if (boldMatch) {
+          return <strong key={i} className="text-[var(--neutral-100)] font-semibold">{boldMatch[1]}</strong>;
+        }
+        const linkMatch = part.match(/^\[(.+?)\]\((.+?)\)$/);
+        if (linkMatch) {
+          const isExternal = linkMatch[2].startsWith('http');
+          return (
+            <a
+              key={i}
+              href={linkMatch[2]}
+              className="text-[var(--primary)] underline decoration-[var(--primary)]/40 underline-offset-2 hover:decoration-[var(--primary)] transition-colors"
+              {...(isExternal ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+            >
+              {linkMatch[1]}
+            </a>
+          );
+        }
+        return part;
+      })}
     </>
   );
 }
+
+export const RenderBold = RenderInline;
 
 export function BlogContentRenderer({ content, isPreview }: { content: string; isPreview?: boolean }) {
   const blocks = parseContent(content);
