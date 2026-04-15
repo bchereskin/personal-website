@@ -131,9 +131,9 @@ async function fetchSnapshot(): Promise<Snapshot | null> {
   };
 }
 
-async function fetchAvaxTrades(): Promise<Trade[]> {
+async function fetchAllTrades(): Promise<Trade[]> {
   const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/crypto_trade_log?symbol=eq.AVAX/USD&action=eq.sell&select=symbol,action,strategy,quantity,price,pct_of_position,reason_detail,created_at&order=created_at.asc`,
+    `${SUPABASE_URL}/rest/v1/crypto_trade_log?select=symbol,action,strategy,quantity,price,pct_of_position,reason_detail,created_at&order=created_at.desc`,
     {
       headers: {
         apikey: SUPABASE_ANON_KEY,
@@ -152,9 +152,9 @@ async function fetchAvaxTrades(): Promise<Trade[]> {
   })) as Trade[];
 }
 
-async function fetchAvaxEntryPrice(): Promise<number> {
+async function fetchEntryPrices(): Promise<Record<string, number>> {
   const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/crypto_position_baselines?symbol=eq.AVAX/USD&select=avg_entry_price&limit=1`,
+    `${SUPABASE_URL}/rest/v1/crypto_position_baselines?select=symbol,avg_entry_price`,
     {
       headers: {
         apikey: SUPABASE_ANON_KEY,
@@ -164,8 +164,12 @@ async function fetchAvaxEntryPrice(): Promise<number> {
     }
   );
   const data = await res.json();
-  if (!Array.isArray(data) || data.length === 0) return 9.07; // fallback
-  return Number(data[0].avg_entry_price);
+  if (!Array.isArray(data)) return {};
+  const map: Record<string, number> = {};
+  for (const row of data) {
+    map[row.symbol as string] = Number(row.avg_entry_price);
+  }
+  return map;
 }
 
 /* ── component ────────────────────────────────────────── */
@@ -173,21 +177,21 @@ async function fetchAvaxEntryPrice(): Promise<number> {
 export default function DashboardPage() {
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
   const [trades, setTrades] = useState<Trade[]>([]);
-  const [avaxEntry, setAvaxEntry] = useState<number>(9.07);
+  const [entryPrices, setEntryPrices] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
 
   useEffect(() => {
     async function load() {
       setLoading(true);
-      const [snap, avaxTrades, entryPrice] = await Promise.all([
+      const [snap, allTrades, prices] = await Promise.all([
         fetchSnapshot(),
-        fetchAvaxTrades(),
-        fetchAvaxEntryPrice(),
+        fetchAllTrades(),
+        fetchEntryPrices(),
       ]);
       setSnapshot(snap);
-      setTrades(avaxTrades);
-      setAvaxEntry(entryPrice);
+      setTrades(allTrades);
+      setEntryPrices(prices);
       setLoading(false);
       setLastRefresh(new Date());
     }
@@ -239,10 +243,12 @@ export default function DashboardPage() {
     { key: 'Cash', pct: risk.cash_pct },
   ];
 
-  const totalTrimmedQty = trades.reduce((sum, t) => sum + t.quantity, 0);
-  const totalTrimProceeds = trades.reduce((sum, t) => sum + t.quantity * t.price, 0);
-  const totalTrimCostBasis = trades.reduce((sum, t) => sum + t.quantity * avaxEntry, 0);
-  const totalTrimPnl = totalTrimProceeds - totalTrimCostBasis;
+  const sellTrades = trades.filter((t) => t.action === 'sell');
+  const buyTrades = trades.filter((t) => t.action === 'buy');
+  const totalRealizedPnl = sellTrades.reduce((sum, t) => {
+    const entry = entryPrices[t.symbol] || 0;
+    return sum + (t.price - entry) * t.quantity;
+  }, 0);
 
   return (
     <>
@@ -534,7 +540,7 @@ export default function DashboardPage() {
           </div>
         </section>
 
-        {/* ── AVAX Trim Timeline ───────────────────── */}
+        {/* ── Trade Timeline ─────────────────────── */}
         {trades.length > 0 && (
           <section className="px-6 pb-16">
             <div className="max-w-6xl mx-auto">
@@ -542,15 +548,13 @@ export default function DashboardPage() {
                 <div className="bg-[var(--card-bg)] rounded-xl p-6 border border-[var(--neutral-700)]">
                   <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
                     <h2 className="text-sm font-semibold text-[var(--neutral-300)] uppercase tracking-wider">
-                      AVAX Trim Timeline
+                      Trade Timeline
                     </h2>
                     <div className="flex items-center gap-4 text-xs text-[var(--neutral-500)]">
-                      <span>{trades.length} sells &middot; {fmt(totalTrimmedQty, 2)} units</span>
+                      <span>{sellTrades.length} sells &middot; {buyTrades.length} buys</span>
                       <span className="text-[var(--neutral-600)]">|</span>
-                      <span>Entry: {fmtUsd(avaxEntry, 4)}</span>
-                      <span className="text-[var(--neutral-600)]">|</span>
-                      <span className={totalTrimPnl >= 0 ? 'text-emerald-400' : 'text-red-400'}>
-                        Net P&L: {fmtUsd(totalTrimPnl)}
+                      <span className={totalRealizedPnl >= 0 ? 'text-emerald-400' : 'text-red-400'}>
+                        Realized P&L: {totalRealizedPnl >= 0 ? '+' : ''}{fmtUsd(totalRealizedPnl)}
                       </span>
                     </div>
                   </div>
@@ -560,38 +564,66 @@ export default function DashboardPage() {
                     <div className="absolute left-3 top-2 bottom-2 w-px bg-[var(--neutral-700)]" />
 
                     <div className="space-y-4">
-                      {(() => {
-                        let runningPnl = 0;
-                        return trades.map((trade, i) => {
-                          const tradePnl = (trade.price - avaxEntry) * trade.quantity;
-                          runningPnl += tradePnl;
-                          const isProfit = tradePnl >= 0;
+                      {trades.map((trade, i) => {
+                        const isSell = trade.action === 'sell';
+                        const entry = entryPrices[trade.symbol] || 0;
+                        const tradePnl = isSell
+                          ? (trade.price - entry) * trade.quantity
+                          : 0;
+                        const isProfit = tradePnl >= 0;
+                        const ticker = trade.symbol.replace('/USD', '');
+                        const meta = CRYPTO_META[trade.symbol];
+                        const isLatest = i === 0;
 
-                          return (
-                            <div key={i} className="flex gap-4 relative">
-                              {/* Dot */}
-                              <div className="relative z-10 mt-1.5">
-                                <div
-                                  className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold"
+                        return (
+                          <div key={i} className="flex gap-4 relative">
+                            {/* Dot */}
+                            <div className="relative z-10 mt-1.5">
+                              {isLatest && (
+                                <span
+                                  className="absolute inset-0 rounded-full animate-ping"
                                   style={{
-                                    backgroundColor: isProfit ? '#10b98118' : '#e8414218',
-                                    color: isProfit ? '#10b981' : '#e84142',
+                                    backgroundColor: isSell
+                                      ? (isProfit ? '#10b98130' : '#e8414230')
+                                      : (meta?.color || '#3b82f6') + '30',
+                                  }}
+                                />
+                              )}
+                              <div
+                                className="relative w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold"
+                                style={{
+                                  backgroundColor: isSell
+                                    ? (isProfit ? '#10b98118' : '#e8414218')
+                                    : (meta?.color || '#3b82f6') + '18',
+                                  color: isSell
+                                    ? (isProfit ? '#10b981' : '#e84142')
+                                    : meta?.color || '#3b82f6',
+                                }}
+                              >
+                                {isSell ? '−' : '+'}
+                              </div>
+                            </div>
+
+                            {/* Content */}
+                            <div className="flex-1 pb-1">
+                              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-1">
+                                <span className="text-sm font-medium text-[var(--neutral-100)]">
+                                  {isSell ? 'Sold' : 'Bought'} {fmt(trade.quantity, 2)} {ticker} @{' '}
+                                  {trade.price >= 1
+                                    ? fmtUsd(trade.price, 4)
+                                    : '$' + trade.price.toFixed(4)}
+                                </span>
+                                <span
+                                  className="text-xs px-2 py-0.5 rounded-full border"
+                                  style={{
+                                    backgroundColor: (meta?.color || '#3b82f6') + '10',
+                                    color: meta?.color || '#3b82f6',
+                                    borderColor: (meta?.color || '#3b82f6') + '30',
                                   }}
                                 >
-                                  {i + 1}
-                                </div>
-                              </div>
-
-                              {/* Content */}
-                              <div className="flex-1 pb-1">
-                                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-1">
-                                  <span className="text-sm font-medium text-[var(--neutral-100)]">
-                                    Sold {fmt(trade.quantity, 2)} AVAX @{' '}
-                                    {fmtUsd(trade.price, 4)}
-                                  </span>
-                                  <span className="text-xs px-2 py-0.5 rounded-full bg-[var(--accent)]/10 text-[var(--accent)] border border-[var(--accent)]/20">
-                                    {trade.strategy.replace(/_/g, ' ')}
-                                  </span>
+                                  {trade.strategy.replace(/_/g, ' ')}
+                                </span>
+                                {isSell && (
                                   <span
                                     className={`text-xs font-medium ${
                                       isProfit ? 'text-emerald-400' : 'text-red-400'
@@ -599,19 +631,17 @@ export default function DashboardPage() {
                                   >
                                     {isProfit ? '+' : ''}{fmtUsd(tradePnl)}
                                   </span>
-                                </div>
-                                <p className="text-xs text-[var(--neutral-500)]">
-                                  {formatTradeDate(trade.created_at)} &middot;{' '}
-                                  {fmtUsd(trade.quantity * trade.price)} proceeds &middot;{' '}
-                                  <span className={runningPnl >= 0 ? 'text-emerald-400/60' : 'text-red-400/60'}>
-                                    cumulative: {runningPnl >= 0 ? '+' : ''}{fmtUsd(runningPnl)}
-                                  </span>
-                                </p>
+                                )}
                               </div>
+                              <p className="text-xs text-[var(--neutral-500)]">
+                                {formatTradeDate(trade.created_at)} &middot;{' '}
+                                {fmtUsd(trade.quantity * trade.price)}{' '}
+                                {isSell ? 'proceeds' : 'deployed'}
+                              </p>
                             </div>
-                          );
-                        });
-                      })()}
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 </div>
