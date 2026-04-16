@@ -133,7 +133,7 @@ async function fetchSnapshot(): Promise<Snapshot | null> {
 
 async function fetchAllTrades(): Promise<Trade[]> {
   const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/crypto_trade_log?select=symbol,action,strategy,quantity,price,pct_of_position,reason_detail,created_at&order=created_at.desc`,
+    `${SUPABASE_URL}/rest/v1/dashboard_trades?select=symbol,action,strategy,quantity,price,pct_of_position,reason_detail,created_at&order=created_at.desc`,
     {
       headers: {
         apikey: SUPABASE_ANON_KEY,
@@ -154,7 +154,7 @@ async function fetchAllTrades(): Promise<Trade[]> {
 
 async function fetchEntryPrices(): Promise<Record<string, number>> {
   const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/crypto_position_baselines?select=symbol,avg_entry_price`,
+    `${SUPABASE_URL}/rest/v1/dashboard_baselines?select=symbol,avg_entry_price`,
     {
       headers: {
         apikey: SUPABASE_ANON_KEY,
