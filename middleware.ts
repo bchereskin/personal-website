@@ -26,21 +26,34 @@ export async function middleware(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser();
 
-  const isAdminRoute = request.nextUrl.pathname.startsWith('/admin');
-  const isLoginPage = request.nextUrl.pathname === '/admin/login';
+  const pathname = request.nextUrl.pathname;
+
+  // Admin route protection
+  const isAdminRoute = pathname.startsWith('/admin');
+  const isAdminLoginPage = pathname === '/admin/login';
   const isAdmin = user?.email === process.env.ADMIN_EMAIL;
 
-  if (isAdminRoute && !isLoginPage && !isAdmin) {
+  if (isAdminRoute && !isAdminLoginPage && !isAdmin) {
     return NextResponse.redirect(new URL('/admin/login', request.url));
   }
 
-  if (isLoginPage && isAdmin) {
+  if (isAdminLoginPage && isAdmin) {
     return NextResponse.redirect(new URL('/admin', request.url));
+  }
+
+  // Secure page protection — require any authenticated session
+  const isSecureRoute = pathname.startsWith('/secure');
+  const isSecureLoginPage = pathname === '/secure/login';
+
+  if (isSecureRoute && !isSecureLoginPage && !user) {
+    const loginUrl = new URL('/secure/login', request.url);
+    loginUrl.searchParams.set('redirect', pathname);
+    return NextResponse.redirect(loginUrl);
   }
 
   return supabaseResponse;
 }
 
 export const config = {
-  matcher: ['/admin/:path*'],
+  matcher: ['/admin/:path*', '/secure/:path*'],
 };

@@ -74,7 +74,6 @@ interface RegimeState {
 }
 
 interface Trade {
-  id: string;
   symbol: string;
   action: string;
   strategy: string;
@@ -130,9 +129,8 @@ function useDashboardData() {
         .select('*')
         .order('updated_at', { ascending: false })
         .limit(1),
-      sb.from('crypto_trade_log')
+      sb.from('dashboard_trades_v2')
         .select('*')
-        .eq('strategy_version', 2)
         .order('created_at', { ascending: false })
         .limit(20),
       sb.from('strategy_snapshots')
@@ -496,8 +494,8 @@ export default function DashboardPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {trades.map((t) => (
-                      <tr key={t.id} className="border-b border-[var(--neutral-800)] last:border-0">
+                    {trades.map((t, i) => (
+                      <tr key={`${t.created_at}-${t.symbol}-${i}`} className="border-b border-[var(--neutral-800)] last:border-0">
                         <td className="py-2.5 pr-3 text-xs text-[var(--neutral-400)]">{timeAgo(t.created_at)}</td>
                         <td className="py-2.5 px-3 font-medium text-[var(--neutral-100)]">{t.symbol.split('/')[0]}</td>
                         <td className={`py-2.5 px-3 font-mono text-xs ${t.action === 'buy' ? 'text-emerald-300' : 'text-red-300'}`}>

@@ -1,12 +1,15 @@
 # Claude Code Context — Brett Chereskin's Personal Website
 
 ## Project Overview
-Personal portfolio and blog for Brett Chereskin — COO at dub, West Point grad, Army veteran.
+Personal portfolio, blog, and content platform for Brett Chereskin — COO at dub, West Point grad, Army veteran. Deployed on Vercel, backed by Supabase.
 
 ## Tech Stack
 - **Next.js 16** with App Router
 - **React 19** + **TypeScript 5** (strict mode)
 - **Tailwind CSS v4** via `@tailwindcss/postcss`
+- **Supabase** for database (blog posts, comments, contacts, subscribers, shared pages)
+- **Resend** for transactional email (contact form, subscriber notifications)
+- **Vercel** for hosting and deployment
 - Dark theme only (earthy palette: sage green `#7d9a78`, warm copper `#c4785a`)
 
 ## Key Commands
@@ -19,28 +22,54 @@ npm run lint     # Run ESLint
 ## Project Structure
 ```
 app/
-  page.tsx           # Home page
-  about/             # About page
+  page.tsx             # Home page
+  about/               # About page
+  favorites/           # NYC favorites (restaurants, Broadway, etc.)
   blog/
-    page.tsx         # Blog listing
-    posts.ts         # All blog post data (source of truth)
-    [slug]/page.tsx  # Individual post renderer
-  contact/           # Contact page
-  components/        # Shared components (AnimatedSection, AnimatedCard, etc.)
-  hooks/             # Custom React hooks (scroll animations)
-  globals.css        # CSS variables, animations, utility classes
-public/              # Static assets (Headshot.jpeg, logos, SVGs)
+    page.tsx           # Blog listing (fetches from Supabase)
+    posts.ts           # Supabase query functions for blog posts
+    BlogList.tsx       # Client-side blog list component
+    [slug]/page.tsx    # Individual post renderer
+  contact/             # Contact form page
+  admin/               # Admin dashboard (protected by ADMIN_EMAIL allowlist)
+    login/             # Admin login page
+  shared/[slug]/       # Hosted shared pages (database-backed)
+  api/
+    admin/             # Admin CRUD routes (blog-posts, comments, contacts, shared-pages, notify-subscribers)
+    comments/          # Public comment submission
+    contact/           # Contact form handler
+    subscribe/         # Newsletter subscription
+    unsubscribe/       # Newsletter unsubscribe
+    og/shared/[slug]/  # Dynamic OG image generation for shared pages
+    publish/           # Shared page publishing endpoint
+  components/          # Shared components (Navigation, Footer, MotionSection, BlogRenderer, CommentsSection, etc.)
+  lib/                 # Utilities (supabase clients, sanitize, rate-limit, types)
+  hooks/               # Custom React hooks (scroll animations)
+  globals.css          # CSS variables, animations, utility classes
+public/                # Static assets (Headshot.jpeg, logos, SVGs)
+middleware.ts          # Auth middleware for admin routes
 ```
 
 ## Blog System
-- All posts live in `app/blog/posts.ts` as a TypeScript array — no database, no MDX files
-- `BlogPost` interface: `slug`, `title`, `excerpt`, `date` (YYYY-MM-DD), `readTime`, `category`, `content`
-- Content uses a custom markdown-like format parsed in `[slug]/page.tsx`:
+- Blog posts are stored in **Supabase** (`blog_posts` table), NOT in local files
+- `app/blog/posts.ts` contains query functions (`getPublishedPosts`, `getPostBySlug`, etc.) that fetch from Supabase
+- `BlogPost` interface: `id`, `slug`, `title`, `excerpt`, `date`, `readTime`, `category`, `content`, `is_published`, `visit_count`
+- Content uses a custom markdown-like format parsed by `BlogRenderer.tsx`:
   - `## Heading` / `### Heading` for headers
   - `**bold**` for bold text
   - `- item` for bullet points
   - `[MODEL]` blocks for special model comparison cards
-- To add a new post: add an entry to the array in `posts.ts`
+- To add a new post: use the admin dashboard (`/admin`) or insert directly into Supabase
+- Posts support comments (threaded, stored in Supabase `comments` table)
+- Visit tracking via `increment_blog_post_visits` RPC
+
+## Supabase Database (project: opnsoprahgrfwjiwyvnn)
+- `blog_posts` — blog content (title, slug, content, category, published status, visit count)
+- `comments` — threaded reader comments on blog posts
+- `contacts` — contact form submissions
+- `subscribers` — newsletter email signups
+- `shared_pages` — hosted HTML pages (admin-managed content platform)
+- All tables have RLS enabled
 
 ## Styling Conventions
 - CSS custom properties for all colors (`--primary`, `--accent`, `--neutral-*`, etc.)
@@ -60,11 +89,13 @@ public/              # Static assets (Headshot.jpeg, logos, SVGs)
 - CSP + security headers configured in `next.config.ts`
 - Admin routes protected by `ADMIN_EMAIL` allowlist in middleware + API routes
 - Supabase RLS enabled on all tables
+- Rate limiting on public API routes (`app/lib/rate-limit.ts`)
 
 ## SEO
 - JSON-LD structured data: `Person` + `WebSite` in root layout, `Article` on each blog post
 - RSS feed at `/feed.xml`, sitemap at `/sitemap.xml`, robots at `/robots.txt`
 - Per-post OpenGraph + Twitter metadata via `generateMetadata`
+- Dynamic OG images for shared pages
 
 ## Preferences
 - Keep code simple and avoid over-engineering

@@ -5,7 +5,7 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: '*',
       allow: '/',
-      disallow: ['/admin/', '/api/', '/shared/'],
+      disallow: ['/admin/', '/api/', '/shared/', '/secure/'],
     },
     sitemap: 'https://www.brettchereskin.com/sitemap.xml',
   };
