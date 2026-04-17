@@ -36,9 +36,18 @@ yarn-error.log*
 # mcp-server local files
 mcp-server/run.sh
 
+# claude code local worktrees
+.claude/worktrees/
+
+# backtest research artifacts (code is committed; venv/cache/outputs are not)
+backtest/.venv/
+backtest/cache/
+backtest/equity_curves.csv
+
 # vercel
 .vercel
 
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+.env*.local
