@@ -5,27 +5,29 @@ export default function RelatedPosts({ posts }: { posts: BlogPost[] }) {
   if (posts.length === 0) return null;
 
   return (
-    <section className="mt-16 pt-12 border-t border-[var(--neutral-700)] font-sans">
-      <h2 className="text-xl font-bold text-[var(--neutral-50)] mb-6">Read Next</h2>
-      <div className="grid gap-4">
+    <section className="mt-16 pt-10 border-t border-[var(--rule)]">
+      <div className="font-mono text-[11px] tracking-[0.18em] uppercase text-[var(--ink-4)] mb-5">
+        — Read next
+      </div>
+      <div>
         {posts.map((post) => (
           <Link
             key={post.slug}
             href={`/blog/${post.slug}`}
-            className="group block p-5 rounded-xl bg-[var(--card-bg)] hover:bg-[var(--card-bg-hover)] transition-colors"
+            className="block py-5 border-t border-[var(--rule)] group"
           >
-            <div className="flex items-center gap-3 text-xs mb-2">
-              <span className="bg-[var(--primary)]/20 text-[var(--primary)] px-2 py-0.5 rounded-full font-medium uppercase tracking-wide">
-                {post.category}
+            <div className="flex justify-between items-baseline mb-1.5 font-mono text-[11px] tracking-[0.14em] uppercase text-[var(--ink-4)]">
+              <span>{post.category}</span>
+              <span>
+                {formatDate(post.date)} · {post.readTime}
               </span>
-              <span className="text-[var(--neutral-500)] font-mono">{formatDate(post.date)}</span>
-              <span className="text-[var(--neutral-600)]">/</span>
-              <span className="text-[var(--neutral-500)] font-mono">{post.readTime}</span>
             </div>
-            <h3 className="text-[var(--neutral-100)] group-hover:text-[var(--primary)] transition-colors font-semibold leading-snug">
+            <h3 className="font-serif text-[24px] font-normal m-0 mb-1 -tracking-[0.015em] leading-[1.2] text-[var(--ink)] group-hover:text-[var(--accent)] transition-colors">
               {post.title}
             </h3>
-            <p className="mt-1.5 text-sm text-[var(--neutral-400)] line-clamp-2">{post.excerpt}</p>
+            <p className="font-serif italic text-[16px] leading-[1.6] text-[var(--ink-3)] m-0 line-clamp-2">
+              {post.excerpt}
+            </p>
           </Link>
         ))}
       </div>

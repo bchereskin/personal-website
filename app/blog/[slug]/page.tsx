@@ -1,8 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import Image from 'next/image';
 import { notFound } from 'next/navigation';
-import Navigation from '@/app/components/Navigation';
+import Nav from '@/app/components/Nav';
 import Footer from '@/app/components/Footer';
 import CommentsSection from '@/app/components/CommentsSection';
 import SubscribeToggle from '@/app/components/SubscribeToggle';
@@ -86,57 +85,33 @@ export default async function BlogPost({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
       />
-      <Navigation />
-      <main className="min-h-screen bg-[var(--background)]">
+      <Nav />
+      <main className="bg-[var(--paper)] text-[var(--ink)]">
+        <div className="max-w-[760px] mx-auto px-8 pt-16 pb-20">
+          <Link
+            href="/blog"
+            className="inline-flex items-center gap-2 font-mono text-[11px] tracking-[0.14em] uppercase text-[var(--ink-4)] hover:text-[var(--ink)] transition-colors mb-10"
+          >
+            ← Back to writing
+          </Link>
 
-        {/* Hero */}
-        <section className="relative pt-32 pb-16 px-6 overflow-hidden">
-          <div className="absolute inset-0 z-0">
-            <Image
-              src="https://images.unsplash.com/photo-1488190211105-8b0e65b80b4e?q=80&w=2070"
-              alt="Writing"
-              fill
-              className="object-cover opacity-15"
-              priority
-            />
-            <div className="absolute inset-0 bg-gradient-to-b from-[var(--background)] via-transparent to-[var(--background)]" />
-          </div>
-
-          <div className="max-w-3xl mx-auto relative z-10">
-            <Link
-              href="/blog"
-              className="inline-flex items-center gap-2 text-[var(--neutral-400)] hover:text-[var(--primary)] transition-colors mb-8 text-sm font-medium"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-              Back to Blog
-            </Link>
-
-            <div className="flex flex-wrap items-center gap-3 text-sm mb-5 animate-fade-in-up">
-              <span className="bg-[var(--primary)]/20 text-[var(--primary)] px-3 py-1 rounded-full font-medium text-xs uppercase tracking-wide">
-                {post.category}
+          <header className="pb-8 border-b border-[var(--rule)] mb-10">
+            <div className="flex justify-between items-baseline mb-4 font-mono text-[11px] tracking-[0.14em] uppercase text-[var(--ink-4)]">
+              <span>{post.category}</span>
+              <span>
+                {formatDate(post.date)} · {post.readTime}
               </span>
-              <span className="font-mono text-xs text-[var(--neutral-500)]">{formatDate(post.date)}</span>
-              <span className="text-[var(--neutral-600)]">/</span>
-              <span className="font-mono text-xs text-[var(--neutral-500)]">{post.readTime}</span>
             </div>
-
-            <h1 className="text-4xl md:text-5xl font-bold text-[var(--neutral-50)] leading-[1.15] animate-fade-in-up delay-100">
+            <h1 className="font-serif font-normal -tracking-[0.02em] leading-[1.05] text-[var(--ink)] m-0" style={{ fontSize: 'clamp(36px, 4.5vw, 56px)' }}>
               {post.title}
             </h1>
-
-            <div className="mt-6 flex flex-wrap items-center gap-6 animate-fade-in-up delay-200">
+            <div className="mt-6 flex flex-wrap items-center gap-6">
               <SubscribeToggle />
               <ShareButtons title={post.title} slug={post.slug} />
             </div>
-          </div>
-        </section>
+          </header>
 
-        {/* Content */}
-        <section className="px-6 pb-24">
-          <article className="max-w-3xl mx-auto animate-fade-in-up delay-200 font-serif">
-
+          <article>
             <BlogContentRenderer content={post.content} />
 
             <CommentsSection slug={slug} />
@@ -146,17 +121,13 @@ export default async function BlogPost({
             <div className="mt-10">
               <Link
                 href="/blog"
-                className="inline-flex items-center gap-2 text-[var(--primary)] hover:opacity-80 transition-opacity text-sm font-sans font-medium"
+                className="inline-flex items-center gap-2 font-mono text-[11px] tracking-[0.14em] uppercase text-[var(--ink-4)] hover:text-[var(--ink)] transition-colors"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-                Back to all posts
+                ← Back to all posts
               </Link>
             </div>
           </article>
-        </section>
-
+        </div>
       </main>
       <Footer />
     </>
