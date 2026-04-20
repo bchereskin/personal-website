@@ -73,7 +73,11 @@ export function RenderInline({ text }: { text: string }) {
       {parts.map((part, i) => {
         const boldMatch = part.match(/^\*\*(.+?)\*\*$/);
         if (boldMatch) {
-          return <strong key={i} className="text-[var(--neutral-100)] font-semibold">{boldMatch[1]}</strong>;
+          return (
+            <strong key={i} className="text-[var(--ink)] font-semibold">
+              {boldMatch[1]}
+            </strong>
+          );
         }
         const linkMatch = part.match(/^\[(.+?)\]\((.+?)\)$/);
         if (linkMatch) {
@@ -82,7 +86,7 @@ export function RenderInline({ text }: { text: string }) {
             <a
               key={i}
               href={linkMatch[2]}
-              className="text-[var(--primary)] underline decoration-[var(--primary)]/40 underline-offset-2 hover:decoration-[var(--primary)] transition-colors"
+              className="text-[var(--accent)] underline underline-offset-4 decoration-[var(--accent)]/40 hover:decoration-[var(--accent)] transition-colors"
               {...(isExternal ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
             >
               {linkMatch[1]}
@@ -102,11 +106,14 @@ export function BlogContentRenderer({ content, isPreview }: { content: string; i
   const firstParaIndex = blocks.findIndex(b => b.type === 'p');
 
   return (
-    <div>
+    <div className="font-serif">
       {blocks.map((block, index) => {
         if (block.type === 'h2') {
           return (
-            <h2 key={index} className="text-xl font-bold text-[var(--primary)] mt-14 mb-5 pl-4 border-l-2 border-[var(--accent)] font-sans">
+            <h2
+              key={index}
+              className="font-serif text-[30px] font-normal -tracking-[0.015em] leading-[1.2] text-[var(--ink)] mt-14 mb-5"
+            >
               {block.text}
             </h2>
           );
@@ -114,7 +121,10 @@ export function BlogContentRenderer({ content, isPreview }: { content: string; i
 
         if (block.type === 'h3') {
           return (
-            <h3 key={index} className="text-base font-semibold text-[var(--neutral-100)] uppercase tracking-wider mt-8 mb-3 font-sans">
+            <h3
+              key={index}
+              className="font-serif text-[22px] font-normal -tracking-[0.01em] leading-[1.25] text-[var(--ink)] mt-10 mb-4"
+            >
               {block.text}
             </h3>
           );
@@ -122,7 +132,10 @@ export function BlogContentRenderer({ content, isPreview }: { content: string; i
 
         if (block.type === 'callout') {
           return (
-            <blockquote key={index} className="border-l-2 border-[var(--primary)] pl-5 my-8 text-[var(--neutral-200)] text-[17px] leading-[1.8] italic">
+            <blockquote
+              key={index}
+              className="border-l-2 border-[var(--accent)] pl-5 my-8 font-serif italic text-[18px] leading-[1.7] text-[var(--ink-2)]"
+            >
               <RenderBold text={block.text} />
             </blockquote>
           );
@@ -132,9 +145,16 @@ export function BlogContentRenderer({ content, isPreview }: { content: string; i
           const [name, ...rest] = block.text.split('|').map(s => s.trim());
           const details = rest.join('|');
           return (
-            <div key={index} className="rounded-xl p-5 mb-4 border border-[var(--neutral-700)] bg-[var(--background)] font-sans">
-              <h4 className="font-bold text-[var(--primary)] mb-2 text-sm">{name}</h4>
-              <p className="text-[var(--neutral-400)] text-sm leading-relaxed"><RenderBold text={details} /></p>
+            <div
+              key={index}
+              className="rounded-none p-5 mb-4 border border-[var(--rule)] bg-[var(--paper-2)] font-sans"
+            >
+              <h4 className="font-sans font-semibold text-[var(--accent)] mb-2 text-sm uppercase tracking-[0.12em]">
+                {name}
+              </h4>
+              <p className="text-[var(--ink-3)] text-sm leading-relaxed">
+                <RenderBold text={details} />
+              </p>
             </div>
           );
         }
@@ -142,17 +162,17 @@ export function BlogContentRenderer({ content, isPreview }: { content: string; i
         if (block.type === 'image') {
           return (
             <figure key={index} className="my-10">
-              <div className="relative w-full aspect-[16/9] rounded-lg overflow-hidden border border-[var(--neutral-700)]">
+              <div className="relative w-full aspect-[16/9] overflow-hidden border border-[var(--rule)]">
                 <Image
                   src={block.src}
                   alt={block.alt}
                   fill
                   className="object-cover"
-                  sizes="(max-width: 768px) 100vw, 768px"
+                  sizes="(max-width: 768px) 100vw, 760px"
                 />
               </div>
               {block.caption && (
-                <figcaption className="mt-3 text-center text-sm italic text-[var(--neutral-500)]">
+                <figcaption className="mt-3 text-center text-sm italic text-[var(--ink-4)] font-serif">
                   {block.caption}
                 </figcaption>
               )}
@@ -162,16 +182,13 @@ export function BlogContentRenderer({ content, isPreview }: { content: string; i
 
         if (block.type === 'quote') {
           return (
-            <blockquote key={index} className="my-12 relative pl-8">
-              <span className="absolute left-0 top-0 text-5xl leading-none text-[var(--accent)] opacity-60 font-serif select-none" aria-hidden="true">
-                &ldquo;
-              </span>
-              <p className="text-xl italic text-[var(--neutral-100)] leading-[1.7]">
+            <blockquote key={index} className="my-12 pl-6 border-l-2 border-[var(--accent)]">
+              <p className="font-serif italic text-[22px] leading-[1.55] text-[var(--ink)]">
                 {block.text}
               </p>
               {block.attribution && (
-                <cite className="block mt-3 text-sm font-sans not-italic text-[var(--neutral-400)] text-right">
-                  &mdash; {block.attribution}
+                <cite className="block mt-3 text-sm font-mono not-italic uppercase tracking-[0.14em] text-[var(--ink-4)]">
+                  — {block.attribution}
                 </cite>
               )}
             </blockquote>
@@ -180,17 +197,24 @@ export function BlogContentRenderer({ content, isPreview }: { content: string; i
 
         if (block.type === 'bullets') {
           return (
-            <ul key={index} className="mb-7 space-y-2.5">
+            <ul key={index} className="mb-7 space-y-2.5 list-none p-0">
               {block.items.map((item, i) => {
                 const boldMatch = item.match(/^\*\*(.+?)\*\*:?\s*(.*)/);
                 return (
-                  <li key={i} className="flex items-start gap-3 text-[var(--neutral-300)] leading-[1.75] text-[17px]">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)] mt-[0.65em] flex-shrink-0" />
+                  <li
+                    key={i}
+                    className="flex items-start gap-3 font-serif text-[18px] leading-[1.7] text-[var(--ink-2)]"
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)] mt-[0.7em] flex-shrink-0" />
                     <span>
-                      {boldMatch
-                        ? <><strong className="text-[var(--neutral-100)]">{boldMatch[1]}</strong>{boldMatch[2] ? `: ${boldMatch[2]}` : ''}</>
-                        : <RenderBold text={item} />
-                      }
+                      {boldMatch ? (
+                        <>
+                          <strong className="text-[var(--ink)] font-semibold">{boldMatch[1]}</strong>
+                          {boldMatch[2] ? `: ${boldMatch[2]}` : ''}
+                        </>
+                      ) : (
+                        <RenderBold text={item} />
+                      )}
                     </span>
                   </li>
                 );
@@ -205,8 +229,8 @@ export function BlogContentRenderer({ content, isPreview }: { content: string; i
             key={index}
             className={
               isLead
-                ? 'text-[19px] leading-[1.8] text-[var(--neutral-100)] mb-8 font-[450]'
-                : 'text-[17px] leading-[1.8] text-[var(--neutral-300)] mb-7'
+                ? 'font-serif italic text-[22px] leading-[1.55] text-[var(--ink)] mb-8'
+                : 'font-serif text-[18px] leading-[1.7] text-[var(--ink-2)] mb-6'
             }
           >
             <RenderBold text={block.text} />

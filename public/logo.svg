@@ -1,33 +1,20 @@
-<svg
-  xmlns="http://www.w3.org/2000/svg"
-  viewBox="0 0 512 512"
-  role="img"
-  aria-label="Brett Chereskin personal logo">
-
-  <!-- Shield outline -->
-  <path
-    d="M256 32
-       L416 96
-       V288
-       C416 368 336 432 256 480
-       C176 432 96 368 96 288
-       V96
-       Z"
-    fill="none"
-    stroke="currentColor"
-    stroke-width="24"
-    stroke-linejoin="round"/>
-
-  <!-- Inner ascent / flight vector -->
-  <path
-    d="M256 120
-       L320 240
-       H288
-       V360
-       H224
-       V240
-       H192
-       Z"
-    fill="currentColor"/>
-
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 108 68" role="img" aria-label="Brett Chereskin">
+  <g fill="currentColor" opacity="0.35">
+    <path d="M28 42 Q12 38 0 44 Q14 40 26 44 Z"/>
+    <path d="M80 42 Q96 38 108 44 Q94 40 82 44 Z"/>
+  </g>
+  <g fill="currentColor" opacity="0.6">
+    <path d="M30 38 Q14 32 2 34 Q16 32 28 36 Z"/>
+    <path d="M78 38 Q94 32 106 34 Q92 32 80 36 Z"/>
+  </g>
+  <g fill="currentColor">
+    <path d="M32 34 Q18 28 6 28 Q20 28 30 32 Z"/>
+    <path d="M76 34 Q90 28 102 28 Q88 28 78 32 Z"/>
+  </g>
+  <g transform="translate(22 6)">
+    <path d="M32 4 L56 12 V32 C56 44 46 54 32 60 C18 54 8 44 8 32 V12 Z"
+      fill="#efe9db" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/>
+    <path d="M34 14 L22 34 H30 V48 L42 28 H34 Z" fill="currentColor"/>
+  </g>
+  <path d="M54 0 L55 3 L58 4 L55 5 L54 8 L53 5 L50 4 L53 3 Z" fill="#1f4a7a"/>
 </svg>

@@ -1,22 +1,25 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Newsreader } from "next/font/google";
+import { Source_Serif_4, Inter_Tight, JetBrains_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
-const newsreader = Newsreader({
-  variable: "--font-newsreader",
+const serif = Source_Serif_4({
+  variable: "--font-source-serif-4",
   subsets: ["latin"],
   style: ["normal", "italic"],
+  display: "swap",
+});
+
+const sans = Inter_Tight({
+  variable: "--font-inter-tight",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+const mono = JetBrains_Mono({
+  variable: "--font-jetbrains-mono",
+  subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -25,14 +28,14 @@ export const metadata: Metadata = {
     default: 'Brett Chereskin',
     template: '%s | Brett Chereskin',
   },
-  description: 'COO at dub. West Point graduate and Army veteran building the systems and teams that scale ambitious companies.',
+  description: 'COO at dub — a venture-backed consumer fintech. Fintech operator, AI practitioner, angel investor. West Point \'06.',
   openGraph: {
     type: 'website',
     locale: 'en_US',
     url: 'https://www.brettchereskin.com',
     siteName: 'Brett Chereskin',
     title: 'Brett Chereskin',
-    description: 'COO at dub. West Point graduate and Army veteran building the systems and teams that scale ambitious companies.',
+    description: 'COO at dub — a venture-backed consumer fintech. Fintech operator, AI practitioner, angel investor.',
     images: [{ url: '/opengraph-image', width: 1200, height: 630, alt: 'Brett Chereskin' }],
   },
   twitter: {
@@ -67,7 +70,7 @@ const personSchema = {
     'https://www.linkedin.com/in/brett-chereskin/',
     'https://x.com/BChereskin',
   ],
-  description: 'COO at dub. West Point graduate and Army veteran building the systems and teams that scale ambitious companies.',
+  description: 'COO at dub — a venture-backed consumer fintech. Fintech operator, AI practitioner, angel investor.',
 };
 
 const websiteSchema = {
@@ -96,7 +99,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${newsreader.variable} antialiased`}
+        className={`${serif.variable} ${sans.variable} ${mono.variable} antialiased`}
       >
         {children}
         <Analytics />

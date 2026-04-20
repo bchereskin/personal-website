@@ -218,10 +218,10 @@ function EquityCurve({ points }: { points: { x: number; y: number }[] }) {
 function StrategyPill({ strategy }: { strategy: string }) {
   const s = strategy.toLowerCase();
   const color =
-    s.includes('stop') || s.includes('breakdown') || s.includes('collapse') ? 'bg-red-500/15 text-red-300 border-red-500/30' :
-    s.includes('rotation') ? 'bg-amber-500/15 text-amber-300 border-amber-500/30' :
-    s.includes('deploy') || s.includes('rebuy') ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30' :
-    s.includes('drawdown') ? 'bg-orange-500/15 text-orange-300 border-orange-500/30' :
+    s.includes('stop') || s.includes('breakdown') || s.includes('collapse') ? 'bg-red-500/15 text-red-700 border-red-500/30' :
+    s.includes('rotation') ? 'bg-amber-500/15 text-amber-700 border-amber-500/30' :
+    s.includes('deploy') || s.includes('rebuy') ? 'bg-emerald-500/15 text-emerald-700 border-emerald-500/30' :
+    s.includes('drawdown') ? 'bg-orange-500/15 text-orange-700 border-orange-500/30' :
     'bg-[var(--neutral-700)] text-[var(--neutral-200)] border-[var(--neutral-600)]';
   return <span className={`inline-block text-[10px] px-2 py-0.5 rounded border font-mono ${color}`}>{strategy}</span>;
 }
@@ -244,8 +244,8 @@ export default function DashboardPage() {
   );
 
   const regimeBadge = regime?.mode === 'risk_off'
-    ? { label: 'Risk-off', color: 'text-red-300 bg-red-500/15 border-red-500/30', icon: '●' }
-    : { label: 'Normal', color: 'text-emerald-300 bg-emerald-500/15 border-emerald-500/30', icon: '●' };
+    ? { label: 'Risk-off', color: 'text-red-700 bg-red-500/15 border-red-500/30', icon: '●' }
+    : { label: 'Normal', color: 'text-emerald-700 bg-emerald-500/15 border-emerald-500/30', icon: '●' };
 
   return (
     <>
@@ -298,7 +298,7 @@ export default function DashboardPage() {
 
         {error && (
           <section className="px-6 pb-16">
-            <div className="max-w-6xl mx-auto p-6 rounded-xl border border-red-500/30 bg-red-500/5 text-red-300 text-sm">
+            <div className="max-w-6xl mx-auto p-6 rounded-xl border border-red-500/30 bg-red-500/5 text-red-700 text-sm">
               Failed to load dashboard data: {error}
             </div>
           </section>
@@ -329,7 +329,7 @@ export default function DashboardPage() {
                   label="Regime"
                   value={regimeBadge.label}
                   sub={regime?.triggered_by ? `Triggered by ${regime.triggered_by}` : 'No triggers · all clear'}
-                  accent={regime?.mode === 'risk_off' ? 'text-red-300' : 'text-emerald-300'}
+                  accent={regime?.mode === 'risk_off' ? 'text-red-700' : 'text-emerald-700'}
                 />
               </div>
             </section>
@@ -350,7 +350,7 @@ export default function DashboardPage() {
                             <span className="w-2.5 h-2.5 rounded-full" style={{ background: color }} />
                             <span className="font-bold text-[var(--neutral-50)] text-lg">{sym}</span>
                           </div>
-                          <span className={`text-sm font-mono ${data.return_pct >= 0 ? 'text-emerald-300' : 'text-red-300'}`}>
+                          <span className={`text-sm font-mono ${data.return_pct >= 0 ? 'text-emerald-700' : 'text-red-700'}`}>
                             {fmtPct(data.return_pct)}
                           </span>
                         </div>
@@ -384,14 +384,14 @@ export default function DashboardPage() {
                   <div>
                     <div className="text-xs text-[var(--neutral-500)] mb-1">In profit</div>
                     <div className="text-lg text-[var(--neutral-50)] font-mono">
-                      <span className="text-emerald-300">{snapshot.risk_metrics?.positions_in_profit ?? 0}</span>
+                      <span className="text-emerald-700">{snapshot.risk_metrics?.positions_in_profit ?? 0}</span>
                       {' / '}
-                      <span className="text-red-300">{snapshot.risk_metrics?.positions_in_loss ?? 0}</span>
+                      <span className="text-red-700">{snapshot.risk_metrics?.positions_in_loss ?? 0}</span>
                     </div>
                   </div>
                   <div>
                     <div className="text-xs text-[var(--neutral-500)] mb-1">Unrealized P&L</div>
-                    <div className={`text-lg font-mono ${(snapshot.risk_metrics?.total_unrealized_pl ?? 0) >= 0 ? 'text-emerald-300' : 'text-red-300'}`}>
+                    <div className={`text-lg font-mono ${(snapshot.risk_metrics?.total_unrealized_pl ?? 0) >= 0 ? 'text-emerald-700' : 'text-red-700'}`}>
                       {fmtMoney(snapshot.risk_metrics?.total_unrealized_pl)}
                     </div>
                   </div>
@@ -452,7 +452,7 @@ export default function DashboardPage() {
                       className={`border-b border-[var(--neutral-800)] last:border-0 ${r.name.includes('V2') ? 'bg-[var(--primary)]/5' : ''}`}
                     >
                       <td className="py-3 pr-4 text-[var(--neutral-100)] font-medium">{r.name}</td>
-                      <td className={`py-3 px-3 text-right font-mono ${r.return_pct >= 0 ? 'text-emerald-300' : 'text-red-300'}`}>
+                      <td className={`py-3 px-3 text-right font-mono ${r.return_pct >= 0 ? 'text-emerald-700' : 'text-red-700'}`}>
                         {fmtPct(r.return_pct, 1)}
                       </td>
                       <td className="py-3 px-3 text-right font-mono text-[var(--neutral-300)]">{fmtPct(r.drawdown_pct, 1)}</td>
@@ -498,7 +498,7 @@ export default function DashboardPage() {
                       <tr key={`${t.created_at}-${t.symbol}-${i}`} className="border-b border-[var(--neutral-800)] last:border-0">
                         <td className="py-2.5 pr-3 text-xs text-[var(--neutral-400)]">{timeAgo(t.created_at)}</td>
                         <td className="py-2.5 px-3 font-medium text-[var(--neutral-100)]">{t.symbol.split('/')[0]}</td>
-                        <td className={`py-2.5 px-3 font-mono text-xs ${t.action === 'buy' ? 'text-emerald-300' : 'text-red-300'}`}>
+                        <td className={`py-2.5 px-3 font-mono text-xs ${t.action === 'buy' ? 'text-emerald-700' : 'text-red-700'}`}>
                           {t.action.toUpperCase()}
                         </td>
                         <td className="py-2.5 px-3"><StrategyPill strategy={t.strategy} /></td>

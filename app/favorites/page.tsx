@@ -6,20 +6,6 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'motion/react';
 
-const stagger = {
-  hidden: {},
-  visible: { transition: { staggerChildren: 0.06 } },
-};
-
-const fadeIn = {
-  hidden: { opacity: 0, y: 16 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.35, ease: [0.21, 0.47, 0.32, 0.98] as const },
-  },
-};
-
 interface Spot {
   name: string;
   note?: string;
@@ -152,7 +138,7 @@ const shows = [
 function SpotCard({ spot, accent, border }: { spot: Spot; accent: string; border: string }) {
   const inner = (
     <div
-      className={`rounded-xl p-4 h-full transition-all hover:scale-[1.02] hover:shadow-lg bg-white ${spot.url ? 'cursor-pointer' : ''}`}
+      className={`rounded-xl p-4 h-full transition-shadow hover:shadow-md bg-white ${spot.url ? 'cursor-pointer' : ''}`}
       style={{ border: `1px solid ${border}40` }}
     >
       <div className="flex items-start justify-between gap-2 mb-1">
@@ -181,22 +167,20 @@ function SpotCard({ spot, accent, border }: { spot: Spot; accent: string; border
 
   if (spot.url) {
     return (
-      <motion.div variants={fadeIn}>
-        <a href={spot.url} target="_blank" rel="noopener noreferrer" className="block h-full">
-          {inner}
-        </a>
-      </motion.div>
+      <a href={spot.url} target="_blank" rel="noopener noreferrer" className="block h-full">
+        {inner}
+      </a>
     );
   }
 
-  return <motion.div variants={fadeIn}>{inner}</motion.div>;
+  return inner;
 }
 
 export default function Favorites() {
   return (
     <>
       <Navigation />
-      <main className="min-h-screen" style={{ background: 'linear-gradient(180deg, #fafaf9 0%, #f5f5f4 50%, #fafaf9 100%)' }}>
+      <main className="min-h-screen bg-[var(--paper)]">
         {/* Hero with NYC skyline */}
         <section className="relative pt-24 pb-16 px-6 overflow-hidden">
           <div className="absolute inset-0">
@@ -204,10 +188,12 @@ export default function Favorites() {
               src="https://images.unsplash.com/photo-1534430480872-3498386e7856?q=80&w=2070"
               alt="NYC skyline"
               fill
-              className="object-cover opacity-15"
               priority
+              quality={55}
+              sizes="100vw"
+              className="object-cover opacity-15"
             />
-            <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, #fafaf9, transparent 30%, #fafaf9)' }} />
+            <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, var(--paper), transparent 30%, var(--paper))' }} />
           </div>
 
           <div className="max-w-3xl mx-auto relative z-10 text-center pt-8">
@@ -256,19 +242,16 @@ export default function Favorites() {
           <section key={cat.title} className="py-8 px-6">
             <div className="max-w-5xl mx-auto">
               {/* Category hero image */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.2 }}
-                transition={{ duration: 0.5 }}
-                className="relative h-48 md:h-56 rounded-2xl overflow-hidden mb-6"
-              >
+              <div className="relative h-48 md:h-56 rounded-2xl overflow-hidden mb-6">
                 <Image
                   src={cat.image}
                   alt={cat.imageAlt}
                   fill
+                  loading="lazy"
+                  quality={60}
+                  decoding="async"
                   className="object-cover"
-                  sizes="(max-width: 1024px) 100vw, 1024px"
+                  sizes="(max-width: 768px) 100vw, 896px"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
                 <div className="absolute bottom-0 left-0 right-0 p-6">
@@ -285,19 +268,13 @@ export default function Favorites() {
                     )}
                   </div>
                 </div>
-              </motion.div>
+              </div>
 
-              <motion.div
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, amount: 0.05 }}
-                variants={stagger}
-                className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3"
-              >
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {cat.spots.map((spot) => (
                   <SpotCard key={spot.name} spot={spot} accent={cat.accent} border={cat.border} />
                 ))}
-              </motion.div>
+              </div>
 
               {i < categories.length - 1 && (
                 <div className="mt-10 border-b border-gray-200" />
@@ -307,63 +284,50 @@ export default function Favorites() {
         ))}
 
         {/* Broadway */}
-        <section className="py-14 px-6 mt-4" style={{ background: 'linear-gradient(180deg, #fafaf9 0%, #fef3c7 30%, #fef3c7 70%, #fafaf9 100%)' }}>
+        <section className="py-14 px-6 mt-4" style={{ background: 'linear-gradient(180deg, var(--paper) 0%, #fef3c7 30%, #fef3c7 70%, var(--paper) 100%)' }}>
           <div className="max-w-5xl mx-auto">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.2 }}
-              transition={{ duration: 0.5 }}
-              className="text-center mb-10"
-            >
+            <div className="text-center mb-10">
               <p className="text-5xl mb-4">🎭</p>
               <h2 className="text-3xl md:text-4xl font-black text-gray-900 mb-3">Broadway</h2>
               <p className="text-gray-600 max-w-lg mx-auto">
                 TodayTix Gold members and Broadway lottery regulars.
                 If it&apos;s on stage, we&apos;ve probably tried to see it.
               </p>
-            </motion.div>
+            </div>
 
-            <motion.div
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, amount: 0.1 }}
-              variants={stagger}
-              className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl mx-auto"
-            >
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl mx-auto">
               {shows.map((show) => (
-                <motion.div key={show.name} variants={fadeIn}>
-                  <div className="bg-white rounded-xl p-4 border border-amber-200/50 hover:shadow-lg hover:scale-[1.02] transition-all h-full">
-                    <div className="flex items-start justify-between mb-1">
-                      <h3 className="font-bold text-gray-900 text-sm">{show.name}</h3>
-                      <span className="text-xs text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full font-medium flex-shrink-0 ml-2">
-                        {show.date}
-                      </span>
-                    </div>
-                    {show.note && (
-                      <p className="text-xs text-gray-500 italic leading-relaxed">&ldquo;{show.note}&rdquo;</p>
-                    )}
+                <div
+                  key={show.name}
+                  className="bg-white rounded-xl p-4 border border-amber-200/50 hover:shadow-md transition-shadow h-full"
+                >
+                  <div className="flex items-start justify-between mb-1">
+                    <h3 className="font-bold text-gray-900 text-sm">{show.name}</h3>
+                    <span className="text-xs text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full font-medium flex-shrink-0 ml-2">
+                      {show.date}
+                    </span>
                   </div>
-                </motion.div>
+                  {show.note && (
+                    <p className="text-xs text-gray-500 italic leading-relaxed">&ldquo;{show.note}&rdquo;</p>
+                  )}
+                </div>
               ))}
-            </motion.div>
+            </div>
           </div>
         </section>
 
         {/* NYC Ferry tip */}
         <section className="py-14 px-6">
           <div className="max-w-3xl mx-auto">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.3 }}
-              transition={{ duration: 0.5 }}
-              className="relative rounded-2xl overflow-hidden"
-            >
+            <div className="relative rounded-2xl overflow-hidden">
               <Image
                 src="https://images.unsplash.com/photo-1534430480872-3498386e7856?q=80&w=2070"
                 alt="Brooklyn Bridge from the water"
                 fill
+                loading="lazy"
+                quality={60}
+                decoding="async"
+                sizes="(max-width: 768px) 100vw, 768px"
                 className="object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-gray-900/90 via-gray-900/50 to-gray-900/20" />
@@ -379,7 +343,7 @@ export default function Favorites() {
                   This list is always evolving. If you have a rec, send it our way.
                 </p>
               </div>
-            </motion.div>
+            </div>
           </div>
         </section>
 
