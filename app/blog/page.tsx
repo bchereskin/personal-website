@@ -19,6 +19,12 @@ export default async function Blog() {
             <p className="font-serif italic text-[20px] leading-[1.55] text-[var(--ink-3)] m-0 max-w-[600px]">
               Notes from running a fintech with AI — plus the occasional piece on investing and leadership.
             </p>
+            <Link
+              href="/lab"
+              className="inline-flex items-center gap-2 mt-5 font-mono text-[11px] tracking-[0.14em] uppercase text-[var(--ink-4)] hover:text-[var(--accent)] transition-colors"
+            >
+              Going deeper? Technical build logs live in The Lab →
+            </Link>
           </header>
 
           <section className="pt-6 pb-14">

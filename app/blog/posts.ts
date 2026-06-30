@@ -12,6 +12,7 @@ export interface BlogPost {
   content: string;
   is_published: boolean;
   visit_count: number;
+  track: string;
   last_visited_at: string | null;
   created_at: string;
   updated_at: string;
@@ -28,6 +29,7 @@ interface BlogPostRow {
   content: string;
   is_published: boolean;
   visit_count: number;
+  track: string;
   last_visited_at: string | null;
   created_at: string;
   updated_at: string;
@@ -40,7 +42,32 @@ function rowToPost(row: BlogPostRow): BlogPost {
   };
 }
 
+// Main blog / RSS: operator "notes" track only. Technical work lives in The Lab.
 export async function getPublishedPosts(): Promise<BlogPost[]> {
+  const { data } = await getAdminSupabase()
+    .from('blog_posts')
+    .select('*')
+    .eq('is_published', true)
+    .eq('track', 'notes')
+    .order('date', { ascending: false });
+
+  return (data ?? []).map(rowToPost);
+}
+
+// The Lab: technical / build-in-public track.
+export async function getLabPosts(): Promise<BlogPost[]> {
+  const { data } = await getAdminSupabase()
+    .from('blog_posts')
+    .select('*')
+    .eq('is_published', true)
+    .eq('track', 'lab')
+    .order('date', { ascending: false });
+
+  return (data ?? []).map(rowToPost);
+}
+
+// Every published post regardless of track (used by sitemap).
+export async function getAllPublishedPosts(): Promise<BlogPost[]> {
   const { data } = await getAdminSupabase()
     .from('blog_posts')
     .select('*')
@@ -79,11 +106,12 @@ export async function postExistsBySlug(slug: string): Promise<boolean> {
   return !!data;
 }
 
-export async function getRelatedPosts(currentSlug: string, category: string, limit = 3): Promise<BlogPost[]> {
+export async function getRelatedPosts(currentSlug: string, category: string, limit = 3, track = 'notes'): Promise<BlogPost[]> {
   const { data } = await getAdminSupabase()
     .from('blog_posts')
     .select('*')
     .eq('is_published', true)
+    .eq('track', track)
     .eq('category', category)
     .neq('slug', currentSlug)
     .order('date', { ascending: false })
@@ -97,6 +125,7 @@ export async function getRelatedPosts(currentSlug: string, category: string, lim
     .from('blog_posts')
     .select('*')
     .eq('is_published', true)
+    .eq('track', track)
     .not('slug', 'in', `(${excludeSlugs.join(',')})`)
     .order('date', { ascending: false })
     .limit(remaining);

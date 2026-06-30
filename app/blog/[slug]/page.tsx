@@ -55,7 +55,11 @@ export default async function BlogPost({
   if (!post) notFound();
 
   getAdminSupabase().rpc('increment_blog_post_visits', { post_slug: slug }).then(() => {});
-  const relatedPosts = await getRelatedPosts(slug, post.category);
+  const relatedPosts = await getRelatedPosts(slug, post.category, 3, post.track);
+
+  const isLab = post.track === 'lab';
+  const backHref = isLab ? '/lab' : '/blog';
+  const backLabel = isLab ? '← Back to The Lab' : '← Back to writing';
 
   const articleSchema = {
     '@context': 'https://schema.org',
@@ -89,10 +93,10 @@ export default async function BlogPost({
       <main className="bg-[var(--paper)] text-[var(--ink)]">
         <div className="max-w-[760px] mx-auto px-8 pt-16 pb-20">
           <Link
-            href="/blog"
+            href={backHref}
             className="inline-flex items-center gap-2 font-mono text-[11px] tracking-[0.14em] uppercase text-[var(--ink-4)] hover:text-[var(--ink)] transition-colors mb-10"
           >
-            ← Back to writing
+            {backLabel}
           </Link>
 
           <header className="pb-8 border-b border-[var(--rule)] mb-10">
@@ -120,10 +124,10 @@ export default async function BlogPost({
 
             <div className="mt-10">
               <Link
-                href="/blog"
+                href={backHref}
                 className="inline-flex items-center gap-2 font-mono text-[11px] tracking-[0.14em] uppercase text-[var(--ink-4)] hover:text-[var(--ink)] transition-colors"
               >
-                ← Back to all posts
+                {backLabel}
               </Link>
             </div>
           </article>
