@@ -30,6 +30,7 @@ class Portfolio:
     s4_armed: bool = True  # fires once; re-arms only on NEW all-time peak
     last_s4_peak: float = 0.0  # peak level at last S4 fire
     sell_prices: dict[str, float] = field(default_factory=dict)  # for rebuy tracking
+    low_since_sell: dict[str, float] = field(default_factory=dict)  # running low after exit (V3 re-anchor)
     s2_fire_days: list[int] = field(default_factory=list)  # for contagion detection
     risk_off_until_day: int = -1  # regime-risk-off expiry
     trades: int = 0
@@ -70,6 +71,7 @@ class Portfolio:
             self.trail_high[symbol] = 0.0
             self.cost_basis[symbol] = 0.0
             self.sell_prices[symbol] = price  # remember for rebuy
+            self.low_since_sell[symbol] = price  # seed running low for V3 re-anchor
         self.cash += proceeds
         self.record_trade(strategy)
         return proceeds
@@ -188,7 +190,15 @@ def make_v1(weights: dict[str, float], capital: float) -> Callable:
 
 
 # ----------------- V2 (rotation, regime gate, deploy-to-target) -----------------
-def make_v2(weights: dict[str, float], capital: float) -> Callable:
+def make_v2(weights: dict[str, float], capital: float, macro_gate: bool = False,
+            macro_sma: int = 200) -> Callable:
+
+    def _macro_ok(prices: pd.Series, prev: pd.DataFrame, day: int) -> bool:
+        if not macro_gate:
+            return True
+        if day < macro_sma:
+            return False
+        return prices["BTC"] > prev.iloc[day - macro_sma:day]["BTC"].mean()
 
     def _health_score(s: str, prices: pd.Series, prev: pd.DataFrame, day: int, p: Portfolio) -> float:
         if day < 7:
@@ -286,10 +296,11 @@ def make_v2(weights: dict[str, float], capital: float) -> Callable:
                 p.last_avax_trim_day = day
 
         # Rebuy (price-recovery) — re-enter stopped-out assets
-        _price_based_rebuy(p, prices, prev, day, weights, "V2_rebuy_recovery")
+        if _macro_ok(prices, prev, day):
+            _price_based_rebuy(p, prices, prev, day, weights, "V2_rebuy_recovery")
 
         # Rebuy 4 — Deploy-to-Target: once/day, if cash>1000, most under-weight by >5pp gets $500 tranche
-        if p.cash > 1000 and not _regime_risk_off(prices, prev, day, p):
+        if p.cash > 1000 and not _regime_risk_off(prices, prev, day, p) and _macro_ok(prices, prev, day):
             eq_now = p.equity(prices)
             under = {}
             for s in SYMBOLS:
@@ -303,6 +314,169 @@ def make_v2(weights: dict[str, float], capital: float) -> Callable:
                 spend = min(500.0, p.cash - 200, under[top])
                 if spend > 100:
                     p.buy_usd(top, spend, prices[top], "rebuy4_deploy_target")
+
+    return strategy
+
+
+# ----------------- V3 (proposed: regime-exit, re-entry ladder, re-anchored rebuy, no sentiment) -----------------
+def make_v3(weights: dict[str, float], capital: float, macro_gate: bool = False,
+            ladder_fraction: float = 0.20) -> Callable:
+    """V2 + four fixes:
+      #1 regime-exit signal — clear risk_off early when BTC reclaims its 50d SMA with positive 7d momentum
+      #2 re-entry ladder — replace $500 deploy with trend-filtered DCA: 20% of cash/run across all
+         underweight assets above their 20d SMA (couples re-entry to trend, redeploys in ~5-10 runs)
+      #3 re-anchored rebuy — re-enter on recovery off the LOW SINCE EXIT, not the old sell price
+      #4 S5 removed (sentiment strategies killed; LunarCrush permanently paywalled)
+    """
+    REENTER_RECOVERY = 0.12   # #3: recovery off low-since-exit to re-enter
+    LADDER_FRACTION = ladder_fraction  # #2: deploy this fraction of cash per run
+    UNDER_GATE = 0.05         # >5pp under target to qualify for deploy
+
+    def _macro_ok(prices: pd.Series, prev: pd.DataFrame, day: int) -> bool:
+        # Macro trend gate: only re-enter when BTC is above its 200d SMA (confirmed uptrend)
+        if not macro_gate:
+            return True
+        if day < 200:
+            return False
+        return prices["BTC"] > prev.iloc[day - 200:day]["BTC"].mean()
+
+    def _sma(prev: pd.DataFrame, day: int, s: str, n: int) -> float:
+        lo = max(0, day - n)
+        window = prev.iloc[lo:day][s]
+        return window.mean() if len(window) else prev.iloc[day][s]
+
+    def _health_score(s: str, prices: pd.Series, prev: pd.DataFrame, day: int, p: Portfolio) -> float:
+        if day < 7:
+            return 1.0
+        mom7 = prices[s] / prev.iloc[day - 7][s] - 1
+        eq_now = p.equity(prices)
+        target_usd = eq_now * weights[s]
+        current_usd = p.qty[s] * prices[s]
+        under = max(0.0, (target_usd - current_usd) / max(target_usd, 1))
+        return max((1 + max(mom7, -0.5)) * (0.5 + under), 0.01)
+
+    def _regime_risk_off(prices: pd.Series, prev: pd.DataFrame, day: int, p: Portfolio) -> bool:
+        if day <= p.risk_off_until_day:
+            # #1 regime-exit: leave risk_off early if BTC reclaims 50d SMA w/ positive 7d momentum
+            if day >= 50:
+                btc_50 = prev.iloc[day - 50:day]["BTC"].mean()
+                btc_7d = prices["BTC"] / prev.iloc[day - 7]["BTC"] - 1 if day >= 7 else 0.0
+                if prices["BTC"] > btc_50 and btc_7d > 0:
+                    p.risk_off_until_day = day  # clear early
+                    return False
+            return True
+        recent_s2 = [d for d in p.s2_fire_days if d >= day - 14]
+        if len(recent_s2) >= 3:
+            p.risk_off_until_day = day + 30
+            return True
+        if day >= 200:
+            btc_200 = prev.iloc[day - 200:day]["BTC"].mean()
+            drawdown = p.equity(prices) / p.portfolio_peak - 1 if p.portfolio_peak > 0 else 0
+            if prices["BTC"] < btc_200 and drawdown <= -0.10:
+                return True
+        return False
+
+    def _rotate_proceeds(proceeds: float, sold: str, prices: pd.Series, prev: pd.DataFrame,
+                         day: int, p: Portfolio) -> None:
+        if proceeds <= 0 or _regime_risk_off(prices, prev, day, p):
+            return
+        candidates = [s for s in SYMBOLS if s != sold]
+        scores = {s: _health_score(s, prices, prev, day, p) for s in candidates}
+        healthy = {s: sc for s, sc in scores.items()
+                   if p.trail_high[s] == 0 or prices[s] / p.trail_high[s] - 1 > -TRAIL_PCT[s]}
+        if not healthy:
+            return
+        total = sum(healthy.values())
+        for s, sc in healthy.items():
+            share = proceeds * sc / total
+            if share > 25:
+                p.buy_usd(s, share, prices[s], "rotation_buy")
+
+    def _reanchored_rebuy(prices: pd.Series, prev: pd.DataFrame, day: int, p: Portfolio) -> None:
+        if day < 7 or p.cash < 200 or not _macro_ok(prices, prev, day):
+            return
+        eq = p.equity(prices)
+        for s in list(p.sell_prices.keys()):
+            if p.qty[s] > 0:
+                continue
+            low = p.low_since_sell.get(s, p.sell_prices[s])
+            if low <= 0:
+                continue
+            recovery = prices[s] / low - 1
+            mom7 = prices[s] / prev.iloc[day - 7][s] - 1
+            if recovery > REENTER_RECOVERY and mom7 > 0:
+                spend = min(eq * weights[s] * 0.5, p.cash * 0.5)
+                if spend > 50:
+                    p.buy_usd(s, spend, prices[s], "V3_rebuy_offlow")
+                    p.sell_prices.pop(s, None)
+                    p.low_since_sell.pop(s, None)
+
+    def _ladder_deploy(prices: pd.Series, prev: pd.DataFrame, day: int, p: Portfolio) -> None:
+        if p.cash <= 1000 or _regime_risk_off(prices, prev, day, p) or not _macro_ok(prices, prev, day):
+            return
+        eq = p.equity(prices)
+        qualifying: dict[str, float] = {}
+        for s in SYMBOLS:
+            gap = eq * weights[s] - p.qty[s] * prices[s]
+            if gap > eq * UNDER_GATE and prices[s] > _sma(prev, day, s, 20):  # trend filter
+                qualifying[s] = gap
+        if not qualifying:
+            return
+        budget = min(p.cash * LADDER_FRACTION, sum(qualifying.values()), p.cash - 200)
+        total_gap = sum(qualifying.values())
+        for s, gap in qualifying.items():
+            spend = budget * gap / total_gap
+            if spend > 100:
+                p.buy_usd(s, spend, prices[s], "V3_ladder_deploy")
+
+    def strategy(day: int, prices: pd.Series, prev: pd.DataFrame, p: Portfolio) -> None:
+        if day == 0:
+            initial_deploy(p, prices, weights, capital)
+            return
+
+        eq = update_peaks(p, prices)
+
+        # track running low for stopped-out assets (re-anchor reference)
+        for s in SYMBOLS:
+            if p.qty[s] == 0 and s in p.low_since_sell:
+                p.low_since_sell[s] = min(p.low_since_sell[s], prices[s])
+
+        # S1 — full portfolio stop to cash
+        unrealized = p.invested(prices) - sum(p.cost_basis[s] * p.qty[s] for s in SYMBOLS)
+        if capital > 0 and unrealized / capital < -0.25:
+            for s in SYMBOLS:
+                if p.qty[s] > 0:
+                    p.sell_pct(s, 1.0, prices[s], "S1_portfolio_stop")
+            return
+
+        # S6 — 24h breakdown → rotate
+        if day >= 1:
+            yday = prev.iloc[day - 1]
+            for s in SYMBOLS:
+                if p.qty[s] > 0 and yday[s] > 0 and prices[s] / yday[s] - 1 <= -0.20:
+                    proc = p.sell_pct(s, 1.0, prices[s], "S6_tech_breakdown")
+                    _rotate_proceeds(proc, s, prices, prev, day, p)
+
+        # S2 — trailing stop → rotate (or cash if risk-off)
+        for s in SYMBOLS:
+            if p.qty[s] > 0 and p.trail_high[s] > 0 and prices[s] / p.trail_high[s] - 1 <= -TRAIL_PCT[s]:
+                proc = p.sell_pct(s, 1.0, prices[s], "S2_trailing_stop")
+                p.s2_fire_days.append(day)
+                _rotate_proceeds(proc, s, prices, prev, day, p)
+
+        # S4 — portfolio drawdown, once per event, to cash
+        if p.portfolio_peak > 0 and eq / p.portfolio_peak - 1 <= -0.15 and p.s4_armed:
+            for s in SYMBOLS:
+                if p.qty[s] > 0:
+                    p.sell_pct(s, 0.25, prices[s], "S4_portfolio_drawdown")
+            p.s4_armed = False
+            p.last_s4_peak = p.portfolio_peak
+
+        # (S5 removed — sentiment strategies killed)
+
+        # Re-entry: re-anchored rebuy, then trend-filtered ladder deploy
+        _reanchored_rebuy(prices, prev, day, p)
+        _ladder_deploy(prices, prev, day, p)
 
     return strategy
 

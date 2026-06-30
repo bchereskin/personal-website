@@ -10,6 +10,7 @@ from strategies import (
     make_hodl,
     make_v1,
     make_v2,
+    make_v3,
     simulate,
 )
 
@@ -48,9 +49,15 @@ def main() -> None:
     print(f"\nLoaded {len(prices)} days: {prices.index[0].date()} -> {prices.index[-1].date()}\n")
 
     results = [
-        simulate(prices, make_hodl(V2_WEIGHTS, CAPITAL), CAPITAL, "HODL (v2 weights)"),
-        simulate(prices, make_v1(V1_WEIGHTS, CAPITAL), CAPITAL, "V1 rules (current)"),
-        simulate(prices, make_v2(V2_WEIGHTS, CAPITAL), CAPITAL, "V2 rules (proposed)"),
+        # NOTE: the deployed scheduled task (crypto-monitor/SKILL.md, revised 2026-06-24)
+        # IS macro-gated. "V2 ungated" below is the counterfactual baseline, NOT what runs live.
+        simulate(prices, make_hodl(V2_WEIGHTS, CAPITAL), CAPITAL, "HODL (target wts)"),
+        simulate(prices, make_v1(V1_WEIGHTS, CAPITAL), CAPITAL, "V1 rules (original)"),
+        simulate(prices, make_v2(V2_WEIGHTS, CAPITAL), CAPITAL, "V2 ungated (counterfac)"),
+        simulate(prices, make_v2(V2_WEIGHTS, CAPITAL, macro_gate=True), CAPITAL, "V2 + macro gate (LIVE)"),
+        # V3's extra machinery (re-entry ladder, re-anchored rebuy) did NOT beat V2+gate — shelved.
+        simulate(prices, make_v3(V2_WEIGHTS, CAPITAL), CAPITAL, "V3 aggressive (shelved)"),
+        simulate(prices, make_v3(V2_WEIGHTS, CAPITAL, macro_gate=True), CAPITAL, "V3 gated (shelved)"),
     ]
 
     for r in results:
