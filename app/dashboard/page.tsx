@@ -25,9 +25,10 @@ const TARGET_WEIGHT: Record<string, number> = {
 const DISPLAY_ORDER = ['BTC/USD', 'ETH/USD', 'SOL/USD', 'LINK/USD', 'DOGE/USD', 'AVAX/USD'];
 
 const BACKTEST = [
-  { name: 'HODL (target weights)', return_pct: -2.3,  drawdown_pct: -60.7, sharpe: 0.28, trades: 6,  note: 'Crypto had a tough 12-month window. Buy-and-hold lost 2% with a brutal 60% drawdown mid-cycle.' },
-  { name: 'V1 rules (original)',    return_pct: 27.8, drawdown_pct: -12.7, sharpe: 1.07, trades: 38, note: 'Trailing stops preserved capital, but the strategy dumped to cash and couldn\u2019t opportunistically redeploy.' },
-  { name: 'V2 rules (live)',         return_pct: 35.2, drawdown_pct: -13.4, sharpe: 1.28, trades: 81, note: 'Rotation-on-sell + contagion regime gate + deploy-to-target. Highest return, best Sharpe, same drawdown as V1.' },
+  { name: 'HODL (target weights)', return_pct: -44.8, drawdown_pct: -65.5, sharpe: -0.69, trades: 6,  note: 'A brutal 12-month window for crypto. Buy-and-hold lost 45% with a 65% peak-to-trough drawdown.' },
+  { name: 'V1 rules (original)',    return_pct: 15.4, drawdown_pct: -15.0, sharpe: 0.90, trades: 28, note: 'Trailing stops preserved capital, but the strategy dumped to cash and redeployed only on price recovery.' },
+  { name: 'V2 ungated',             return_pct: -2.3, drawdown_pct: -27.3, sharpe: -0.02, trades: 94, note: 'Rotation-on-sell without a trend filter kept redeploying into the downtrend \u2014 activity without edge.' },
+  { name: 'V2 + macro gate (live)',  return_pct: 16.7, drawdown_pct: -13.2, sharpe: 1.05, trades: 55, note: 'Only redeploys cash when BTC is above its 200-day average. Best return, lowest drawdown, best Sharpe \u2014 and held up across 400 bootstrapped market paths (~80% win-rate vs ungated). This is what runs live.' },
 ];
 
 // ---------- types ----------
@@ -86,16 +87,33 @@ interface Trade {
 
 // ---------- formatters ----------
 
-const fmtMoney = (v: number | undefined | null, digits = 0) =>
-  v == null ? '—' : `$${v.toLocaleString('en-US', { minimumFractionDigits: digits, maximumFractionDigits: digits })}`;
+const toNum = (v: unknown): number | null => {
+  if (v == null) return null;
+  const n = typeof v === 'number' ? v : Number(v);
+  return Number.isFinite(n) ? n : null;
+};
 
-const fmtPct = (v: number | undefined | null, digits = 2) =>
-  v == null ? '—' : `${v >= 0 ? '+' : ''}${v.toFixed(digits)}%`;
+const fmtMoney = (v: unknown, digits = 0) => {
+  const n = toNum(v);
+  return n == null ? '—' : `$${n.toLocaleString('en-US', { minimumFractionDigits: digits, maximumFractionDigits: digits })}`;
+};
 
-const fmtPrice = (v: number) => {
-  if (v >= 1000) return `$${v.toLocaleString('en-US', { maximumFractionDigits: 0 })}`;
-  if (v >= 1)    return `$${v.toFixed(2)}`;
-  return `$${v.toFixed(4)}`;
+const fmtPct = (v: unknown, digits = 2) => {
+  const n = toNum(v);
+  return n == null ? '—' : `${n >= 0 ? '+' : ''}${n.toFixed(digits)}%`;
+};
+
+const fmtPrice = (v: unknown) => {
+  const n = toNum(v);
+  if (n == null) return '—';
+  if (n >= 1000) return `$${n.toLocaleString('en-US', { maximumFractionDigits: 0 })}`;
+  if (n >= 1)    return `$${n.toFixed(2)}`;
+  return `$${n.toFixed(4)}`;
+};
+
+const fmtNum = (v: unknown, digits = 1) => {
+  const n = toNum(v);
+  return n == null ? '—' : n.toFixed(digits);
 };
 
 const timeAgo = (iso: string) => {
@@ -232,10 +250,13 @@ export default function DashboardPage() {
   const { snapshot, regime, trades, history, loading, error } = useDashboardData();
 
   const positionCards = useMemo(() => {
-    if (!snapshot) return [] as { symbol: string; data: PositionData }[];
+    if (!snapshot?.positions) return [] as { symbol: string; data: PositionData }[];
     return DISPLAY_ORDER
-      .filter((s) => snapshot.positions[s])
-      .map((symbol) => ({ symbol, data: snapshot.positions[symbol] }));
+      .map((symbol) => {
+        const data = snapshot.positions[symbol] ?? snapshot.positions[symbol.split('/')[0]];
+        return data ? { symbol, data } : null;
+      })
+      .filter((x): x is { symbol: string; data: PositionData } => x !== null);
   }, [snapshot]);
 
   const curvePoints = useMemo(
@@ -275,7 +296,7 @@ export default function DashboardPage() {
               <span className="gradient-text"> · Live Portfolio</span>
             </h1>
             <p className="mt-4 text-[var(--neutral-300)] animate-fade-in-up delay-100">
-              Rule-based crypto portfolio with rotation-on-sell, a contagion regime gate, and daily deploy-to-target rebuys. Rebuilt from the ground up after backtesting exposed flaws in v1.{' '}
+              Rule-based crypto portfolio with a 200-day macro-trend gate, rotation-on-sell, and trend-filtered redeployment. Cash only goes back to work when Bitcoin is above its 200-day average — the rule that drove the biggest backtest gains.{' '}
               <Link href="/blog/crypto-strategy-v2-overhaul" className="text-[var(--primary)] hover:text-[var(--primary-light)] underline decoration-dotted underline-offset-4">
                 Read the build notes →
               </Link>
@@ -343,6 +364,10 @@ export default function DashboardPage() {
                     const sym = symbol.split('/')[0];
                     const color = ASSET_COLOR[symbol];
                     const target = (TARGET_WEIGHT[symbol] ?? 0) * 100;
+                    // Tolerate both v1 (return_pct/weight_pct) and v2 (unrealized_plpc/target_weight_pct) schemas
+                    const returnPct = toNum(data.return_pct ?? (data as unknown as Record<string, unknown>).unrealized_plpc) ?? 0;
+                    const weightPct = toNum(data.weight_pct) ?? 0;
+                    const qty = toNum(data.qty) ?? 0;
                     return (
                       <div key={symbol} className="rounded-xl border border-[var(--neutral-700)] bg-[var(--card-bg)] p-5 hover-lift">
                         <div className="flex items-center justify-between">
@@ -350,8 +375,8 @@ export default function DashboardPage() {
                             <span className="w-2.5 h-2.5 rounded-full" style={{ background: color }} />
                             <span className="font-bold text-[var(--neutral-50)] text-lg">{sym}</span>
                           </div>
-                          <span className={`text-sm font-mono ${data.return_pct >= 0 ? 'text-emerald-700' : 'text-red-700'}`}>
-                            {fmtPct(data.return_pct)}
+                          <span className={`text-sm font-mono ${returnPct >= 0 ? 'text-emerald-700' : 'text-red-700'}`}>
+                            {fmtPct(returnPct)}
                           </span>
                         </div>
                         <div className="mt-3 flex items-baseline justify-between">
@@ -360,13 +385,13 @@ export default function DashboardPage() {
                         </div>
                         <div className="mt-4">
                           <div className="flex items-center justify-between text-[10px] uppercase tracking-wider text-[var(--neutral-500)] mb-1.5">
-                            <span>Weight {data.weight_pct?.toFixed(1)}%</span>
+                            <span>Weight {fmtNum(weightPct)}%</span>
                             <span>Target {target.toFixed(0)}%</span>
                           </div>
-                          <WeightBar actual={data.weight_pct ?? 0} target={target} color={color} />
+                          <WeightBar actual={weightPct} target={target} color={color} />
                         </div>
                         <div className="mt-3 pt-3 border-t border-[var(--neutral-700)] flex items-center justify-between text-xs text-[var(--neutral-400)]">
-                          <span>Qty {data.qty.toLocaleString('en-US', { maximumFractionDigits: 4 })}</span>
+                          <span>Qty {qty.toLocaleString('en-US', { maximumFractionDigits: 4 })}</span>
                           <span>Cost {fmtMoney(data.cost_basis)}</span>
                         </div>
                       </div>
@@ -400,7 +425,7 @@ export default function DashboardPage() {
                     <div className="text-lg text-[var(--neutral-50)] font-mono">
                       {snapshot.risk_metrics?.largest_position?.split('/')[0] ?? '—'}
                       <span className="text-[var(--neutral-400)] text-sm ml-1">
-                        {snapshot.risk_metrics?.largest_position_pct?.toFixed(1)}%
+                        {fmtNum(snapshot.risk_metrics?.largest_position_pct)}%
                       </span>
                     </div>
                   </div>
@@ -432,7 +457,7 @@ export default function DashboardPage() {
           <div className="max-w-6xl mx-auto rounded-xl border border-[var(--neutral-700)] bg-[var(--card-bg)] p-5">
             <div className="flex items-baseline justify-between mb-4">
               <h2 className="text-sm uppercase tracking-widest text-[var(--neutral-400)] font-mono">Backtest Validation</h2>
-              <span className="text-xs text-[var(--neutral-500)] font-mono">12-mo window · Apr 2025 → Apr 2026</span>
+              <span className="text-xs text-[var(--neutral-500)] font-mono">12-mo window · Jun 2025 → Jun 2026</span>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
@@ -449,7 +474,7 @@ export default function DashboardPage() {
                   {BACKTEST.map((r) => (
                     <tr
                       key={r.name}
-                      className={`border-b border-[var(--neutral-800)] last:border-0 ${r.name.includes('V2') ? 'bg-[var(--primary)]/5' : ''}`}
+                      className={`border-b border-[var(--neutral-800)] last:border-0 ${r.name.includes('live') ? 'bg-[var(--primary)]/5' : ''}`}
                     >
                       <td className="py-3 pr-4 text-[var(--neutral-100)] font-medium">{r.name}</td>
                       <td className={`py-3 px-3 text-right font-mono ${r.return_pct >= 0 ? 'text-emerald-700' : 'text-red-700'}`}>
