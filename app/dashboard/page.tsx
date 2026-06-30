@@ -365,7 +365,7 @@ export default function DashboardPage() {
                     const color = ASSET_COLOR[symbol];
                     const target = (TARGET_WEIGHT[symbol] ?? 0) * 100;
                     // Tolerate both v1 (return_pct/weight_pct) and v2 (unrealized_plpc/target_weight_pct) schemas
-                    const returnPct = toNum(data.return_pct ?? (data as Record<string, unknown>).unrealized_plpc) ?? 0;
+                    const returnPct = toNum(data.return_pct ?? (data as unknown as Record<string, unknown>).unrealized_plpc) ?? 0;
                     const weightPct = toNum(data.weight_pct) ?? 0;
                     const qty = toNum(data.qty) ?? 0;
                     return (
