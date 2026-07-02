@@ -91,6 +91,7 @@ export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
     .from('blog_posts')
     .select('*')
     .eq('slug', slug)
+    .eq('is_published', true)
     .single();
 
   return data ? rowToPost(data) : null;
@@ -101,6 +102,7 @@ export async function postExistsBySlug(slug: string): Promise<boolean> {
     .from('blog_posts')
     .select('id')
     .eq('slug', slug)
+    .eq('is_published', true)
     .single();
 
   return !!data;
@@ -134,9 +136,11 @@ export async function getRelatedPosts(currentSlug: string, category: string, lim
 }
 
 export function formatDate(dateString: string): string {
+  // Date-only strings parse as UTC midnight; format in UTC so the day doesn't shift
   return new Date(dateString).toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
+    timeZone: 'UTC',
   });
 }

@@ -67,7 +67,7 @@ export function parseContent(content: string): Block[] {
 }
 
 export function RenderInline({ text }: { text: string }) {
-  const parts = text.split(/(\*\*.+?\*\*|\[.+?\]\(.+?\))/g);
+  const parts = text.split(/(\*\*.+?\*\*|\*[^*\s][^*]*\*|\[.+?\]\(.+?\))/g);
   return (
     <>
       {parts.map((part, i) => {
@@ -78,6 +78,10 @@ export function RenderInline({ text }: { text: string }) {
               {boldMatch[1]}
             </strong>
           );
+        }
+        const italicMatch = part.match(/^\*([^*]+)\*$/);
+        if (italicMatch) {
+          return <em key={i}>{italicMatch[1]}</em>;
         }
         const linkMatch = part.match(/^\[(.+?)\]\((.+?)\)$/);
         if (linkMatch) {
@@ -199,7 +203,6 @@ export function BlogContentRenderer({ content, isPreview }: { content: string; i
           return (
             <ul key={index} className="mb-7 space-y-2.5 list-none p-0">
               {block.items.map((item, i) => {
-                const boldMatch = item.match(/^\*\*(.+?)\*\*:?\s*(.*)/);
                 return (
                   <li
                     key={i}
@@ -207,14 +210,7 @@ export function BlogContentRenderer({ content, isPreview }: { content: string; i
                   >
                     <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)] mt-[0.7em] flex-shrink-0" />
                     <span>
-                      {boldMatch ? (
-                        <>
-                          <strong className="text-[var(--ink)] font-semibold">{boldMatch[1]}</strong>
-                          {boldMatch[2] ? `: ${boldMatch[2]}` : ''}
-                        </>
-                      ) : (
-                        <RenderBold text={item} />
-                      )}
+                      <RenderInline text={item} />
                     </span>
                   </li>
                 );
