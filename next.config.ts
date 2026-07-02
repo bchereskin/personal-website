@@ -3,14 +3,7 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'images.unsplash.com',
-      },
-      {
-        protocol: 'https',
-        hostname: 'img.youtube.com',
-      },
+      // Podcast thumbnails on /about
       {
         protocol: 'https',
         hostname: 'i.ytimg.com',
@@ -19,17 +12,10 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'thenest.concentrix.com',
       },
+      // Editorial food/NYC photography on /favorites
       {
         protocol: 'https',
-        hostname: 'logo.clearbit.com',
-      },
-      {
-        protocol: 'https',
-        hostname: 'upload.wikimedia.org',
-      },
-      {
-        protocol: 'https',
-        hostname: 'blog.resy.com',
+        hostname: 'images.unsplash.com',
       },
     ],
   },
@@ -44,7 +30,7 @@ const nextConfig: NextConfig = {
               "default-src 'self'",
               "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com",
               "style-src 'self' 'unsafe-inline'",
-              "img-src 'self' data: https://images.unsplash.com https://img.youtube.com https://i.ytimg.com https://thenest.concentrix.com https://logo.clearbit.com https://upload.wikimedia.org https://blog.resy.com",
+              "img-src 'self' data: https://i.ytimg.com https://thenest.concentrix.com https://images.unsplash.com",
               "font-src 'self'",
               "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://va.vercel-scripts.com",
               "frame-ancestors 'none'",
