@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import Navigation from '@/app/components/Navigation';
+import Navigation from '@/app/components/Nav';
 import Footer from '@/app/components/Footer';
 import { createSupabaseBrowser } from '@/app/lib/supabase-browser';
 
@@ -135,13 +135,28 @@ const fmtNum = (v: unknown, digits = 1) => {
   return n == null ? '—' : n.toFixed(digits);
 };
 
-const timeAgo = (iso: string) => {
-  const diff = (Date.now() - new Date(iso).getTime()) / 1000;
+const timeAgo = (iso: string, now: number) => {
+  if (!now) return '';
+  const diff = (now - new Date(iso).getTime()) / 1000;
   if (diff < 60) return `${Math.floor(diff)}s ago`;
   if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
   if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
   return `${Math.floor(diff / 86400)}d ago`;
 };
+
+// A mount-stable clock so relative times don't call Date.now() during render
+// (which React flags as impure). Ticks once a minute so "Updated 2m ago" stays live.
+function useNow() {
+  const [now, setNow] = useState(0);
+  useEffect(() => {
+    // Intentional: seed the clock on mount (client-only) and tick it every minute.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setNow(Date.now());
+    const id = setInterval(() => setNow(Date.now()), 60_000);
+    return () => clearInterval(id);
+  }, []);
+  return now;
+}
 
 // ---------- hook ----------
 
@@ -159,16 +174,16 @@ function useDashboardData() {
 
     Promise.all([
       sb.from('strategy_snapshots')
-        .select('*')
+        .select('id, snapshot_time, total_nav, cash_balance, invested_value, total_return_pct, positions, risk_metrics')
         .eq('strategy_version', 2)
         .order('snapshot_time', { ascending: false })
         .limit(1),
       sb.from('strategy_regime_state')
-        .select('*')
+        .select('mode, triggered_by, portfolio_peak, expires_at, updated_at')
         .order('updated_at', { ascending: false })
         .limit(1),
       sb.from('dashboard_trades_v2')
-        .select('*')
+        .select('symbol, action, strategy, quantity, price, pct_of_position, reason_detail, created_at')
         .order('created_at', { ascending: false })
         .limit(20),
       sb.from('strategy_snapshots')
@@ -177,7 +192,7 @@ function useDashboardData() {
         .order('snapshot_time', { ascending: false })
         .limit(200),
       sb.from('backtest_results')
-        .select('*')
+        .select('name, return_pct, drawdown_pct, sharpe, trades, note, window_label')
         .order('display_order', { ascending: true }),
     ])
       .then(([snap, reg, tr, hist, bt]) => {
@@ -272,6 +287,7 @@ function StrategyPill({ strategy }: { strategy: string }) {
 
 export default function DashboardPage() {
   const { snapshot, regime, trades, history, backtest, loading, error } = useDashboardData();
+  const now = useNow();
 
   const backtestRows: BacktestRow[] = backtest.length ? backtest : (BACKTEST_FALLBACK as BacktestRow[]);
   const backtestWindow = backtest[0]?.window_label || '12-mo window · Jun 2025 → Jun 2026';
@@ -281,7 +297,8 @@ export default function DashboardPage() {
   const regimeExpired =
     regime?.mode === 'risk_off' &&
     !!regime.expires_at &&
-    new Date(regime.expires_at).getTime() < Date.now();
+    !!now &&
+    new Date(regime.expires_at).getTime() < now;
   const regimeIsRiskOff = regime?.mode === 'risk_off' && !regimeExpired;
 
   const positionCards = useMemo(() => {
@@ -374,7 +391,7 @@ export default function DashboardPage() {
                 <KpiCard
                   label="Strategy NAV"
                   value={fmtMoney(snapshot.total_nav)}
-                  sub={`Updated ${timeAgo(snapshot.snapshot_time)}`}
+                  sub={`Updated ${timeAgo(snapshot.snapshot_time, now)}`}
                 />
                 <KpiCard
                   label="Return (v2)"
@@ -589,7 +606,7 @@ export default function DashboardPage() {
                   <tbody>
                     {trades.map((t, i) => (
                       <tr key={`${t.created_at}-${t.symbol}-${i}`} className="border-b border-[var(--neutral-800)] last:border-0">
-                        <td className="py-2.5 pr-3 text-xs text-[var(--neutral-400)]">{timeAgo(t.created_at)}</td>
+                        <td className="py-2.5 pr-3 text-xs text-[var(--neutral-400)]">{timeAgo(t.created_at, now)}</td>
                         <td className="py-2.5 px-3 font-medium text-[var(--neutral-100)]">{t.symbol.split('/')[0]}</td>
                         <td className={`py-2.5 px-3 font-mono text-xs ${t.action === 'buy' ? 'text-emerald-700' : 'text-red-700'}`}>
                           {t.action.toUpperCase()}

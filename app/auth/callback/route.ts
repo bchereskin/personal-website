@@ -6,7 +6,12 @@ export async function GET(request: NextRequest) {
   const code = searchParams.get('code');
   const token_hash = searchParams.get('token_hash');
   const type = searchParams.get('type');
-  const next = searchParams.get('next') || '/secure/login';
+  const nextParam = searchParams.get('next') || '/secure/login';
+  // Only allow same-origin relative paths — never an absolute/protocol-relative
+  // URL — so ?next=https://evil.com can't turn this into an open redirect.
+  const next = nextParam.startsWith('/') && !nextParam.startsWith('//')
+    ? nextParam
+    : '/secure/login';
   const error = searchParams.get('error');
   const error_description = searchParams.get('error_description');
 

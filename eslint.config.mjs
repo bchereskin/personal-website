@@ -12,6 +12,13 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Non-app code that shouldn't be linted as part of the site:
+    "backtest/**",
+    "mcp-server/**",
+    "handoff/**",
+    "**/.venv/**",
+    "**/node_modules/**",
+    ".claude/**",
   ]),
 ]);
 

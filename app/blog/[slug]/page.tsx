@@ -27,11 +27,13 @@ export async function generateMetadata({
     title: post.title,
     description: post.excerpt,
     authors: [{ name: 'Brett Chereskin', url: 'https://www.brettchereskin.com' }],
+    alternates: { canonical: `https://www.brettchereskin.com/blog/${post.slug}` },
     openGraph: {
       title: post.title,
       description: post.excerpt,
       type: 'article',
       publishedTime: post.date,
+      modifiedTime: post.updated_at || post.date,
       authors: ['Brett Chereskin'],
       url: `https://www.brettchereskin.com/blog/${post.slug}`,
     },
@@ -67,6 +69,8 @@ export default async function BlogPost({
     headline: post.title,
     description: post.excerpt,
     datePublished: post.date,
+    dateModified: post.updated_at || post.date,
+    image: 'https://www.brettchereskin.com/opengraph-image',
     author: {
       '@type': 'Person',
       name: 'Brett Chereskin',

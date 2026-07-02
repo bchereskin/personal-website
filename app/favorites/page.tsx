@@ -1,6 +1,6 @@
 'use client';
 
-import Navigation from '@/app/components/Navigation';
+import Navigation from '@/app/components/Nav';
 import Footer from '@/app/components/Footer';
 import Link from 'next/link';
 import Image from 'next/image';

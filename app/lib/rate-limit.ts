@@ -13,9 +13,12 @@ export function rateLimit(
   request: NextRequest,
   { maxRequests = 10, windowMs = 60_000 }: { maxRequests?: number; windowMs?: number } = {}
 ): NextResponse | null {
+  // Prefer x-real-ip: on Vercel it's set by the platform to the true client IP
+  // and can't be spoofed. The leftmost x-forwarded-for entry is client-supplied,
+  // so it's only a fallback for non-Vercel environments.
   const ip =
+    request.headers.get('x-real-ip')?.trim() ||
     request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-    request.headers.get('x-real-ip') ||
     'unknown';
 
   const key = `${ip}:${request.nextUrl.pathname}`;

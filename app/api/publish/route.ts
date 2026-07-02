@@ -24,10 +24,11 @@ function checkRateLimit(ip: string, maxRequests = 30, windowMs = 60_000): boolea
 function authenticate(request: NextRequest): boolean {
   const key = process.env.PUBLISH_API_KEY;
   if (!key) return false;
-  const provided = request.headers.get('Authorization') ?? '';
-  const expected = `Bearer ${key}`;
+  const provided = Buffer.from(request.headers.get('Authorization') ?? '');
+  const expected = Buffer.from(`Bearer ${key}`);
+  // timingSafeEqual throws if lengths differ, so guard on byte length first.
   if (provided.length !== expected.length) return false;
-  return timingSafeEqual(Buffer.from(provided), Buffer.from(expected));
+  return timingSafeEqual(provided, expected);
 }
 
 function unauthorized() {

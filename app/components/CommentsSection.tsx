@@ -494,7 +494,8 @@ export default function CommentsSection({ slug }: { slug: string }) {
         if (newComment.edit_token) {
           saveEditToken(newComment.id, newComment.edit_token);
         }
-        const { edit_token: _token, ...commentWithoutToken } = newComment;
+        const commentWithoutToken = { ...newComment };
+        delete commentWithoutToken.edit_token;
         setComments((prev) => [...prev, commentWithoutToken]);
       }
       setName('');

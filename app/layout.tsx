@@ -67,7 +67,7 @@ const personSchema = {
   ],
   url: 'https://www.brettchereskin.com',
   sameAs: [
-    'https://www.linkedin.com/in/brett-chereskin/',
+    'https://www.linkedin.com/in/brettchereskin/',
     'https://x.com/BChereskin',
   ],
   description: 'COO at dub — a venture-backed consumer fintech. Fintech operator, AI practitioner, angel investor.',

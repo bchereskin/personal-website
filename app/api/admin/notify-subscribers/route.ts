@@ -3,6 +3,7 @@ import { Resend } from 'resend';
 import { createSupabaseServer } from '@/app/lib/supabase-server';
 import { getAdminSupabase } from '@/app/lib/supabase-admin';
 import { getPostBySlug } from '@/app/blog/posts';
+import { escapeHtml } from '@/app/lib/sanitize';
 
 export async function POST(request: NextRequest) {
   const supabase = await createSupabaseServer();
@@ -26,6 +27,8 @@ export async function POST(request: NextRequest) {
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://brettchereskin.com';
   const resend = new Resend(process.env.RESEND_API_KEY);
+  const safeTitle = escapeHtml(post.title);
+  const safeExcerpt = escapeHtml(post.excerpt);
 
   const { error } = await resend.batch.send(
     subscribers.map((sub) => ({
@@ -36,9 +39,9 @@ export async function POST(request: NextRequest) {
         <div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;">
           <p style="color:#888;font-size:12px;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">New from Brett Chereskin</p>
           <h2 style="color:#f5f2ed;margin-bottom:12px;">
-            <a href="${siteUrl}/blog/${post.slug}" style="color:#f5f2ed;text-decoration:none;">${post.title}</a>
+            <a href="${siteUrl}/blog/${post.slug}" style="color:#f5f2ed;text-decoration:none;">${safeTitle}</a>
           </h2>
-          <p style="color:#a89f91;line-height:1.6;margin-bottom:24px;">${post.excerpt}</p>
+          <p style="color:#a89f91;line-height:1.6;margin-bottom:24px;">${safeExcerpt}</p>
           <a href="${siteUrl}/blog/${post.slug}" style="display:inline-block;background:#7d9a78;color:#1a1816;padding:10px 24px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;">
             Read the post
           </a>

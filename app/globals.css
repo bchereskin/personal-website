@@ -11,7 +11,7 @@
   --ink:   #1a1814;
   --ink-2: #322d24;
   --ink-3: #6a6355;
-  --ink-4: #9a9180;
+  --ink-4: #857c6b;
 
   /* Rule */
   --rule: #c9bf9f;
@@ -110,13 +110,6 @@ body {
   background: rgba(239, 233, 219, 0.7);
   backdrop-filter: blur(12px);
   border: 1px solid var(--rule);
-}
-
-.gradient-orb {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(80px);
-  pointer-events: none;
 }
 
 /* TipTap rich text editor — light theme */
