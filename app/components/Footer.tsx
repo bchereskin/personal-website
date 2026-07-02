@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 export default function Footer() {
   return (
     <footer className="border-t border-[var(--rule)] mt-24 py-10 px-8">
@@ -6,6 +8,9 @@ export default function Footer() {
           Brett Chereskin · written from New York
         </div>
         <div className="flex gap-4 font-mono text-[11px] tracking-[0.14em] uppercase text-[var(--ink-4)]">
+          <Link href="/lab" className="hover:text-[var(--ink)] transition-colors">
+            The Lab
+          </Link>
           <a
             href="mailto:Brett.Chereskin@gmail.com"
             className="hover:text-[var(--ink)] transition-colors"

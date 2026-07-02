@@ -1,12 +1,12 @@
 import type { MetadataRoute } from 'next';
-import { getPublishedPosts } from './blog/posts';
+import { getAllPublishedPosts } from './blog/posts';
 
 export const dynamic = 'force-dynamic';
 
 const BASE_URL = 'https://www.brettchereskin.com';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const posts = await getPublishedPosts();
+  const posts = await getAllPublishedPosts();
 
   const blogPosts = posts.map((post) => ({
     url: `${BASE_URL}/blog/${post.slug}`,
@@ -33,6 +33,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: new Date(),
       changeFrequency: 'weekly',
       priority: 0.9,
+    },
+    {
+      url: `${BASE_URL}/lab`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.7,
     },
     ...blogPosts,
     {
