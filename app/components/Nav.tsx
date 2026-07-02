@@ -9,13 +9,18 @@ const links = [
   { href: '/',        label: 'home'    },
   { href: '/about',   label: 'about'   },
   { href: '/blog',    label: 'blog'    },
+  { href: '/lab',     label: 'the lab' },
   { href: '/contact', label: 'contact' },
 ];
 
 export default function Nav() {
   const path = usePathname();
   const [open, setOpen] = useState(false);
-  const active = (href: string) => (href === '/' ? path === '/' : path.startsWith(href));
+  const active = (href: string) => {
+    if (href === '/') return path === '/';
+    if (href === '/lab') return path.startsWith('/lab') || path.startsWith('/dashboard');
+    return path.startsWith(href);
+  };
 
   return (
     <header className="border-b border-[var(--rule)] bg-[var(--paper)]">

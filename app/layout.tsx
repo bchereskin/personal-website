@@ -67,7 +67,7 @@ const personSchema = {
   ],
   url: 'https://www.brettchereskin.com',
   sameAs: [
-    'https://www.linkedin.com/in/brett-chereskin/',
+    'https://www.linkedin.com/in/brettchereskin/',
     'https://x.com/BChereskin',
   ],
   description: 'COO at dub — a venture-backed consumer fintech. Fintech operator, AI practitioner, angel investor.',
@@ -87,7 +87,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${serif.variable} ${sans.variable} ${mono.variable}`}>
       <head>
         <script
           type="application/ld+json"
@@ -98,9 +98,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
         />
       </head>
-      <body
-        className={`${serif.variable} ${sans.variable} ${mono.variable} antialiased`}
-      >
+      <body className="antialiased">
         {children}
         <Analytics />
       </body>

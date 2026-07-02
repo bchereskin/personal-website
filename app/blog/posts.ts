@@ -44,25 +44,29 @@ function rowToPost(row: BlogPostRow): BlogPost {
 
 // Main blog / RSS: operator "notes" track only. Technical work lives in The Lab.
 export async function getPublishedPosts(): Promise<BlogPost[]> {
-  const { data } = await getAdminSupabase()
+  const { data, error } = await getAdminSupabase()
     .from('blog_posts')
     .select('*')
     .eq('is_published', true)
     .eq('track', 'notes')
     .order('date', { ascending: false });
 
+  // Surface outages instead of silently rendering an empty blog (a visitor
+  // can't tell "the DB is down" from "this person never writes").
+  if (error) throw new Error(`Failed to load blog posts: ${error.message}`);
   return (data ?? []).map(rowToPost);
 }
 
 // The Lab: technical / build-in-public track.
 export async function getLabPosts(): Promise<BlogPost[]> {
-  const { data } = await getAdminSupabase()
+  const { data, error } = await getAdminSupabase()
     .from('blog_posts')
     .select('*')
     .eq('is_published', true)
     .eq('track', 'lab')
     .order('date', { ascending: false });
 
+  if (error) throw new Error(`Failed to load lab posts: ${error.message}`);
   return (data ?? []).map(rowToPost);
 }
 
@@ -91,6 +95,7 @@ export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
     .from('blog_posts')
     .select('*')
     .eq('slug', slug)
+    .eq('is_published', true)
     .single();
 
   return data ? rowToPost(data) : null;
@@ -101,6 +106,7 @@ export async function postExistsBySlug(slug: string): Promise<boolean> {
     .from('blog_posts')
     .select('id')
     .eq('slug', slug)
+    .eq('is_published', true)
     .single();
 
   return !!data;
@@ -134,9 +140,11 @@ export async function getRelatedPosts(currentSlug: string, category: string, lim
 }
 
 export function formatDate(dateString: string): string {
+  // Date-only strings parse as UTC midnight; format in UTC so the day doesn't shift
   return new Date(dateString).toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
+    timeZone: 'UTC',
   });
 }

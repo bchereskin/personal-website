@@ -1,7 +1,11 @@
 """Entry point: run HODL vs V1 vs V2 over historical data and print comparison."""
 from __future__ import annotations
 
+import os
+from datetime import datetime, timezone
+
 import pandas as pd
+import requests
 
 from data import load_prices
 from strategies import (
@@ -76,6 +80,54 @@ def main() -> None:
     out = eq_df
     out.to_csv("equity_curves.csv")
     print(f"\nWrote equity_curves.csv ({len(out)} rows)")
+
+    push_results_to_supabase(results, prices)
+
+
+# The /dashboard Backtest Validation table reads the backtest_results table, so
+# publishing here keeps the site in sync with this code. Notes are editorial and
+# managed in the table directly — only the numbers are overwritten.
+DASHBOARD_NAMES = {
+    "HODL (target wts)": "HODL (target weights)",
+    "V1 rules (original)": "V1 rules (original)",
+    "V2 ungated (counterfac)": "V2 ungated",
+    "V2 + macro gate (LIVE)": "V2 + macro gate (live)",
+}
+
+
+def push_results_to_supabase(results: list[dict], prices: pd.DataFrame) -> None:
+    url = os.environ.get("SUPABASE_URL")
+    key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
+    if not url or not key:
+        print("\nSUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY not set — skipping dashboard sync.")
+        return
+
+    window = f"12-mo window · {prices.index[0]:%b %Y} → {prices.index[-1]:%b %Y}"
+    rows = []
+    for order, r in enumerate((r for r in results if r["name"] in DASHBOARD_NAMES), start=1):
+        rows.append({
+            "name": DASHBOARD_NAMES[r["name"]],
+            "return_pct": round(r["total_return_pct"], 1),
+            "drawdown_pct": round(r["max_drawdown_pct"], 1),
+            "sharpe": round(r["sharpe"], 2),
+            "trades": r["n_trades"],
+            "display_order": order,
+            "window_label": window,
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+        })
+
+    resp = requests.post(
+        f"{url}/rest/v1/backtest_results?on_conflict=name",
+        json=rows,
+        headers={
+            "apikey": key,
+            "Authorization": f"Bearer {key}",
+            "Prefer": "resolution=merge-duplicates",
+        },
+        timeout=30,
+    )
+    resp.raise_for_status()
+    print(f"Synced {len(rows)} rows to backtest_results — dashboard is up to date.")
 
 
 if __name__ == "__main__":

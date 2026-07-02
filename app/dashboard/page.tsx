@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import Navigation from '@/app/components/Navigation';
+import Navigation from '@/app/components/Nav';
 import Footer from '@/app/components/Footer';
 import { createSupabaseBrowser } from '@/app/lib/supabase-browser';
 
@@ -24,7 +24,16 @@ const TARGET_WEIGHT: Record<string, number> = {
 
 const DISPLAY_ORDER = ['BTC/USD', 'ETH/USD', 'SOL/USD', 'LINK/USD', 'DOGE/USD', 'AVAX/USD'];
 
-const BACKTEST = [
+const V2_START_LABEL = 'Apr 17, 2026';
+
+const REGIME_TRIGGER_LABEL: Record<string, string> = {
+  classic: 'BTC below 200-day avg + drawdown',
+  contagion: '3+ trailing stops in 14 days',
+};
+
+// Fallback only — the live numbers come from the backtest_results table,
+// which backtest/run.py keeps in sync.
+const BACKTEST_FALLBACK = [
   { name: 'HODL (target weights)', return_pct: -44.8, drawdown_pct: -65.5, sharpe: -0.69, trades: 6,  note: 'A brutal 12-month window for crypto. Buy-and-hold lost 45% with a 65% peak-to-trough drawdown.' },
   { name: 'V1 rules (original)',    return_pct: 15.4, drawdown_pct: -15.0, sharpe: 0.90, trades: 28, note: 'Trailing stops preserved capital, but the strategy dumped to cash and redeployed only on price recovery.' },
   { name: 'V2 ungated',             return_pct: -2.3, drawdown_pct: -27.3, sharpe: -0.02, trades: 94, note: 'Rotation-on-sell without a trend filter kept redeploying into the downtrend \u2014 activity without edge.' },
@@ -85,6 +94,16 @@ interface Trade {
   created_at: string;
 }
 
+interface BacktestRow {
+  name: string;
+  return_pct: number;
+  drawdown_pct: number;
+  sharpe: number;
+  trades: number;
+  note: string | null;
+  window_label: string;
+}
+
 // ---------- formatters ----------
 
 const toNum = (v: unknown): number | null => {
@@ -116,13 +135,28 @@ const fmtNum = (v: unknown, digits = 1) => {
   return n == null ? '—' : n.toFixed(digits);
 };
 
-const timeAgo = (iso: string) => {
-  const diff = (Date.now() - new Date(iso).getTime()) / 1000;
+const timeAgo = (iso: string, now: number) => {
+  if (!now) return '';
+  const diff = (now - new Date(iso).getTime()) / 1000;
   if (diff < 60) return `${Math.floor(diff)}s ago`;
   if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
   if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
   return `${Math.floor(diff / 86400)}d ago`;
 };
+
+// A mount-stable clock so relative times don't call Date.now() during render
+// (which React flags as impure). Ticks once a minute so "Updated 2m ago" stays live.
+function useNow() {
+  const [now, setNow] = useState(0);
+  useEffect(() => {
+    // Intentional: seed the clock on mount (client-only) and tick it every minute.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setNow(Date.now());
+    const id = setInterval(() => setNow(Date.now()), 60_000);
+    return () => clearInterval(id);
+  }, []);
+  return now;
+}
 
 // ---------- hook ----------
 
@@ -131,6 +165,7 @@ function useDashboardData() {
   const [regime, setRegime] = useState<RegimeState | null>(null);
   const [trades, setTrades] = useState<Trade[]>([]);
   const [history, setHistory] = useState<Snapshot[]>([]);
+  const [backtest, setBacktest] = useState<BacktestRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -139,35 +174,39 @@ function useDashboardData() {
 
     Promise.all([
       sb.from('strategy_snapshots')
-        .select('*')
+        .select('id, snapshot_time, total_nav, cash_balance, invested_value, total_return_pct, positions, risk_metrics')
         .eq('strategy_version', 2)
         .order('snapshot_time', { ascending: false })
         .limit(1),
       sb.from('strategy_regime_state')
-        .select('*')
+        .select('mode, triggered_by, portfolio_peak, expires_at, updated_at')
         .order('updated_at', { ascending: false })
         .limit(1),
       sb.from('dashboard_trades_v2')
-        .select('*')
+        .select('symbol, action, strategy, quantity, price, pct_of_position, reason_detail, created_at')
         .order('created_at', { ascending: false })
         .limit(20),
       sb.from('strategy_snapshots')
         .select('snapshot_time, total_nav, total_return_pct')
         .eq('strategy_version', 2)
-        .order('snapshot_time', { ascending: true })
+        .order('snapshot_time', { ascending: false })
         .limit(200),
+      sb.from('backtest_results')
+        .select('name, return_pct, drawdown_pct, sharpe, trades, note, window_label')
+        .order('display_order', { ascending: true }),
     ])
-      .then(([snap, reg, tr, hist]) => {
+      .then(([snap, reg, tr, hist, bt]) => {
         if (snap.data?.[0]) setSnapshot(snap.data[0] as Snapshot);
         if (reg.data?.[0]) setRegime(reg.data[0] as RegimeState);
         if (tr.data) setTrades(tr.data as Trade[]);
-        if (hist.data) setHistory(hist.data as Snapshot[]);
+        if (hist.data) setHistory((hist.data as Snapshot[]).slice().reverse());
+        if (bt.data?.length) setBacktest(bt.data as BacktestRow[]);
       })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
   }, []);
 
-  return { snapshot, regime, trades, history, loading, error };
+  return { snapshot, regime, trades, history, backtest, loading, error };
 }
 
 // ---------- small components ----------
@@ -247,7 +286,20 @@ function StrategyPill({ strategy }: { strategy: string }) {
 // ---------- main ----------
 
 export default function DashboardPage() {
-  const { snapshot, regime, trades, history, loading, error } = useDashboardData();
+  const { snapshot, regime, trades, history, backtest, loading, error } = useDashboardData();
+  const now = useNow();
+
+  const backtestRows: BacktestRow[] = backtest.length ? backtest : (BACKTEST_FALLBACK as BacktestRow[]);
+  const backtestWindow = backtest[0]?.window_label || '12-mo window · Jun 2025 → Jun 2026';
+
+  // An expired risk-off means the strategy trades normally on its next run —
+  // don't display a stale red badge in the meantime.
+  const regimeExpired =
+    regime?.mode === 'risk_off' &&
+    !!regime.expires_at &&
+    !!now &&
+    new Date(regime.expires_at).getTime() < now;
+  const regimeIsRiskOff = regime?.mode === 'risk_off' && !regimeExpired;
 
   const positionCards = useMemo(() => {
     if (!snapshot?.positions) return [] as { symbol: string; data: PositionData }[];
@@ -264,7 +316,7 @@ export default function DashboardPage() {
     [history]
   );
 
-  const regimeBadge = regime?.mode === 'risk_off'
+  const regimeBadge = regimeIsRiskOff
     ? { label: 'Risk-off', color: 'text-red-700 bg-red-500/15 border-red-500/30', icon: '●' }
     : { label: 'Normal', color: 'text-emerald-700 bg-emerald-500/15 border-emerald-500/30', icon: '●' };
 
@@ -274,32 +326,38 @@ export default function DashboardPage() {
       <main className="min-h-screen bg-[var(--background)]">
 
         {/* Header */}
-        <section className="pt-32 pb-10 px-6">
+        <section className="pt-16 pb-10 px-6">
           <div className="max-w-6xl mx-auto">
-            <div className="flex flex-wrap items-center gap-3 mb-6">
-              <span className="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-widest px-3 py-1 rounded-full border border-[var(--primary)]/40 bg-[var(--primary)]/10 text-[var(--primary-light)]">
-                <span className="w-1.5 h-1.5 rounded-full bg-[var(--primary)] animate-pulse" />
-                Strategy v2 · Live
-              </span>
-              <a
-                href="https://www.brettchereskin.com/shared/crypto-dashboard"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xs font-mono uppercase tracking-widest text-[var(--neutral-500)] hover:text-[var(--neutral-300)] transition-colors underline decoration-dotted underline-offset-4"
+            <div className="flex flex-wrap items-center gap-4 mb-5">
+              <Link
+                href="/lab"
+                className="inline-flex items-center gap-2 font-mono text-[11px] tracking-[0.14em] uppercase text-[var(--ink-4)] hover:text-[var(--ink)] transition-colors"
               >
-                v1 dashboard (deprecated)
-              </a>
+                ← The Lab
+              </Link>
+              <span className="inline-flex items-center gap-2 font-mono text-[11px] tracking-[0.14em] uppercase px-3 py-1 rounded-full border border-[var(--accent)]/40 bg-[var(--accent)]/5 text-[var(--accent)]">
+                <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)] animate-pulse" />
+                Strategy v2 · Live · paper account
+              </span>
             </div>
 
-            <h1 className="text-4xl md:text-5xl font-bold text-[var(--neutral-50)] leading-[1.15] animate-fade-in-up">
+            <h1
+              className="font-serif font-normal -tracking-[0.02em] leading-[1.05] text-[var(--ink)] m-0"
+              style={{ fontSize: 'clamp(34px, 4.5vw, 52px)' }}
+            >
               AI Crypto Strategy
-              <span className="gradient-text"> · Live Portfolio</span>
             </h1>
-            <p className="mt-4 text-[var(--neutral-300)] animate-fade-in-up delay-100">
-              Rule-based crypto portfolio with a 200-day macro-trend gate, rotation-on-sell, and trend-filtered redeployment. Cash only goes back to work when Bitcoin is above its 200-day average — the rule that drove the biggest backtest gains.{' '}
-              <Link href="/blog/crypto-strategy-v2-overhaul" className="text-[var(--primary)] hover:text-[var(--primary-light)] underline decoration-dotted underline-offset-4">
-                Read the build notes →
-              </Link>
+            <p className="mt-4 font-serif italic text-[19px] leading-[1.6] text-[var(--ink-3)] max-w-[680px]">
+              A rule-based crypto portfolio with one load-bearing rule: cash only goes back to work
+              when Bitcoin is above its 200-day moving average. Read the{' '}
+              <Link href="/blog/crypto-strategy-v2-overhaul" className="text-[var(--accent)] underline underline-offset-4 decoration-[var(--accent)]/40 hover:decoration-[var(--accent)]">
+                build notes
+              </Link>{' '}
+              and the{' '}
+              <Link href="/blog/crypto-strategy-macro-gate-stress-test" className="text-[var(--accent)] underline underline-offset-4 decoration-[var(--accent)]/40 hover:decoration-[var(--accent)]">
+                stress test
+              </Link>{' '}
+              behind it.
             </p>
           </div>
         </section>
@@ -333,13 +391,13 @@ export default function DashboardPage() {
                 <KpiCard
                   label="Strategy NAV"
                   value={fmtMoney(snapshot.total_nav)}
-                  sub={`Updated ${timeAgo(snapshot.snapshot_time)}`}
+                  sub={`Updated ${timeAgo(snapshot.snapshot_time, now)}`}
                 />
                 <KpiCard
                   label="Return (v2)"
                   value={fmtPct(snapshot.total_return_pct)}
-                  sub={`Since ${new Date(snapshot.snapshot_time).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`}
-                  accent={snapshot.total_return_pct >= 0 ? 'text-[var(--primary-light)]' : 'text-[var(--accent)]'}
+                  sub={`Since v2 launch · ${V2_START_LABEL}`}
+                  accent={snapshot.total_return_pct >= 0 ? 'text-emerald-700' : 'text-red-700'}
                 />
                 <KpiCard
                   label="Deployed"
@@ -349,8 +407,14 @@ export default function DashboardPage() {
                 <KpiCard
                   label="Regime"
                   value={regimeBadge.label}
-                  sub={regime?.triggered_by ? `Triggered by ${regime.triggered_by}` : 'No triggers · all clear'}
-                  accent={regime?.mode === 'risk_off' ? 'text-red-700' : 'text-emerald-700'}
+                  sub={
+                    regimeExpired
+                      ? 'Risk-off expired · awaiting next run'
+                      : regimeIsRiskOff && regime?.triggered_by
+                        ? (REGIME_TRIGGER_LABEL[regime.triggered_by] ?? `Triggered by ${regime.triggered_by}`)
+                        : 'No triggers · all clear'
+                  }
+                  accent={regimeIsRiskOff ? 'text-red-700' : 'text-emerald-700'}
                 />
               </div>
             </section>
@@ -359,6 +423,19 @@ export default function DashboardPage() {
             <section className="px-6 pb-6">
               <div className="max-w-6xl mx-auto">
                 <h2 className="text-sm uppercase tracking-widest text-[var(--neutral-400)] font-mono mb-4">Positions</h2>
+                {positionCards.length === 0 && (
+                  <div className="rounded-xl border border-[var(--rule)] bg-[var(--card-bg)] p-6">
+                    <div className="font-mono text-[11px] tracking-[0.14em] uppercase text-[var(--accent)] mb-2">
+                      100% cash — by design
+                    </div>
+                    <p className="font-serif italic text-[17px] leading-[1.65] text-[var(--ink-2)] m-0 max-w-[640px]">
+                      The macro gate is closed: Bitcoin is trading below its 200-day moving average,
+                      so sell proceeds stay in cash and redeployment is paused. Sitting out downtrends
+                      is where the strategy&apos;s edge comes from — positions return when BTC reclaims
+                      the 200-day line.
+                    </p>
+                  </div>
+                )}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {positionCards.map(({ symbol, data }) => {
                     const sym = symbol.split('/')[0];
@@ -457,7 +534,7 @@ export default function DashboardPage() {
           <div className="max-w-6xl mx-auto rounded-xl border border-[var(--neutral-700)] bg-[var(--card-bg)] p-5">
             <div className="flex items-baseline justify-between mb-4">
               <h2 className="text-sm uppercase tracking-widest text-[var(--neutral-400)] font-mono">Backtest Validation</h2>
-              <span className="text-xs text-[var(--neutral-500)] font-mono">12-mo window · Jun 2025 → Jun 2026</span>
+              <span className="text-xs text-[var(--neutral-500)] font-mono">{backtestWindow}</span>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
@@ -471,17 +548,17 @@ export default function DashboardPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {BACKTEST.map((r) => (
+                  {backtestRows.map((r) => (
                     <tr
                       key={r.name}
                       className={`border-b border-[var(--neutral-800)] last:border-0 ${r.name.includes('live') ? 'bg-[var(--primary)]/5' : ''}`}
                     >
                       <td className="py-3 pr-4 text-[var(--neutral-100)] font-medium">{r.name}</td>
-                      <td className={`py-3 px-3 text-right font-mono ${r.return_pct >= 0 ? 'text-emerald-700' : 'text-red-700'}`}>
+                      <td className={`py-3 px-3 text-right font-mono ${(toNum(r.return_pct) ?? 0) >= 0 ? 'text-emerald-700' : 'text-red-700'}`}>
                         {fmtPct(r.return_pct, 1)}
                       </td>
                       <td className="py-3 px-3 text-right font-mono text-[var(--neutral-300)]">{fmtPct(r.drawdown_pct, 1)}</td>
-                      <td className="py-3 px-3 text-right font-mono text-[var(--neutral-300)]">{r.sharpe.toFixed(2)}</td>
+                      <td className="py-3 px-3 text-right font-mono text-[var(--neutral-300)]">{fmtNum(r.sharpe, 2)}</td>
                       <td className="py-3 pl-3 text-right font-mono text-[var(--neutral-400)]">{r.trades}</td>
                     </tr>
                   ))}
@@ -489,11 +566,19 @@ export default function DashboardPage() {
               </table>
             </div>
             <div className="mt-4 space-y-1.5 text-xs text-[var(--neutral-400)] leading-relaxed">
-              {BACKTEST.map((r) => (
+              {backtestRows.filter((r) => r.note).map((r) => (
                 <div key={r.name}>
                   <span className="font-semibold text-[var(--neutral-200)]">{r.name}:</span> {r.note}
                 </div>
               ))}
+            </div>
+            <div className="mt-4 pt-4 border-t border-[var(--neutral-800)] text-xs">
+              <Link
+                href="/blog/crypto-strategy-macro-gate-stress-test"
+                className="text-[var(--accent)] underline underline-offset-4 decoration-[var(--accent)]/40 hover:decoration-[var(--accent)]"
+              >
+                How these numbers were validated — parameter sweeps and 400 Monte Carlo paths →
+              </Link>
             </div>
           </div>
         </section>
@@ -521,7 +606,7 @@ export default function DashboardPage() {
                   <tbody>
                     {trades.map((t, i) => (
                       <tr key={`${t.created_at}-${t.symbol}-${i}`} className="border-b border-[var(--neutral-800)] last:border-0">
-                        <td className="py-2.5 pr-3 text-xs text-[var(--neutral-400)]">{timeAgo(t.created_at)}</td>
+                        <td className="py-2.5 pr-3 text-xs text-[var(--neutral-400)]">{timeAgo(t.created_at, now)}</td>
                         <td className="py-2.5 px-3 font-medium text-[var(--neutral-100)]">{t.symbol.split('/')[0]}</td>
                         <td className={`py-2.5 px-3 font-mono text-xs ${t.action === 'buy' ? 'text-emerald-700' : 'text-red-700'}`}>
                           {t.action.toUpperCase()}
@@ -544,10 +629,14 @@ export default function DashboardPage() {
         <section className="px-6 pb-16">
           <div className="max-w-6xl mx-auto rounded-xl border border-[var(--neutral-700)] bg-[var(--card-bg)] p-6">
             <h2 className="text-sm uppercase tracking-widest text-[var(--neutral-400)] font-mono mb-4">How v2 Works</h2>
+            <div className="mb-6 rounded-lg border border-[var(--accent)]/30 bg-[var(--accent)]/5 p-4 text-sm text-[var(--neutral-300)] leading-relaxed">
+              <div className="text-[var(--accent)] font-semibold mb-1">The macro gate — the rule that matters most</div>
+              <p>Cash is only redeployed when Bitcoin trades above its 200-day moving average. Below the line, sells go to cash and stay there. In backtest, this single trend filter is the difference between +16.7% (gated) and -2.3% (ungated) — and it held up across 400 bootstrapped market paths.</p>
+            </div>
             <div className="grid md:grid-cols-2 gap-6 text-sm text-[var(--neutral-300)] leading-relaxed">
               <div>
                 <div className="text-[var(--primary-light)] font-semibold mb-1">Rotation on sells</div>
-                <p>When a trailing stop, sentiment collapse, or technical breakdown fires, proceeds rotate into other assets scored by 7d momentum × under-allocation — not dumped to cash.</p>
+                <p>When a trailing stop or technical breakdown fires, proceeds rotate into other assets scored by 7d momentum × under-allocation — not dumped to cash (unless the regime is risk-off).</p>
               </div>
               <div>
                 <div className="text-[var(--primary-light)] font-semibold mb-1">Contagion regime gate</div>
@@ -564,7 +653,15 @@ export default function DashboardPage() {
             </div>
             <div className="mt-5 pt-5 border-t border-[var(--neutral-700)] flex items-center justify-between flex-wrap gap-3 text-xs">
               <div className="text-[var(--neutral-500)] font-mono">
-                Runs 3× daily · 8AM, 1PM, 7PM ET · paper account
+                Runs 3× daily · 8AM, 1PM, 7PM ET · paper account ·{' '}
+                <a
+                  href="https://www.brettchereskin.com/shared/crypto-dashboard"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline decoration-dotted underline-offset-4 hover:text-[var(--ink)]"
+                >
+                  v1 dashboard (archived)
+                </a>
               </div>
               <Link
                 href="/blog/crypto-strategy-v2-overhaul"

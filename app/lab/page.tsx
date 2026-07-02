@@ -4,6 +4,34 @@ import Footer from '@/app/components/Footer';
 import SectionHead from '@/app/components/SectionHead';
 import Link from 'next/link';
 import { getLabPosts, formatDate } from '../blog/posts';
+import { getSupabase } from '@/app/lib/supabase';
+
+interface StrategyStatus {
+  deployed: boolean;
+  positionCount: number;
+  returnPct: number | null;
+}
+
+async function getStrategyStatus(): Promise<StrategyStatus | null> {
+  try {
+    const { data } = await getSupabase()
+      .from('strategy_snapshots')
+      .select('invested_value, total_return_pct, positions')
+      .eq('strategy_version', 2)
+      .order('snapshot_time', { ascending: false })
+      .limit(1);
+    const snap = data?.[0];
+    if (!snap) return null;
+    const invested = Number(snap.invested_value) || 0;
+    return {
+      deployed: invested > 0,
+      positionCount: snap.positions ? Object.keys(snap.positions).length : 0,
+      returnPct: Number.isFinite(Number(snap.total_return_pct)) ? Number(snap.total_return_pct) : null,
+    };
+  } catch {
+    return null;
+  }
+}
 
 export const dynamic = 'force-dynamic';
 
@@ -20,7 +48,13 @@ export const metadata: Metadata = {
 };
 
 export default async function Lab() {
-  const posts = await getLabPosts();
+  const [posts, status] = await Promise.all([getLabPosts(), getStrategyStatus()]);
+
+  const statusLine = !status
+    ? 'Real-time NAV, positions, regime state, and the macro-gated backtest behind the strategy.'
+    : status.deployed
+      ? `Real-time NAV, positions, regime state, and the macro-gated backtest behind the strategy. Currently deployed across ${status.positionCount} position${status.positionCount === 1 ? '' : 's'}.`
+      : 'Real-time NAV, positions, regime state, and the macro-gated backtest behind the strategy. Currently sitting in cash by design — see why.';
 
   return (
     <>
@@ -51,8 +85,7 @@ export default async function Lab() {
                 AI Crypto Strategy — Live Dashboard
               </h2>
               <p className="font-serif italic text-[17px] leading-[1.6] text-[var(--ink-3)] m-0">
-                Real-time NAV, positions, regime state, and the macro-gated backtest behind the
-                strategy. Currently sitting in cash by design — see why. →
+                {statusLine} →
               </p>
             </Link>
           </section>

@@ -140,6 +140,9 @@ export async function POST(request: NextRequest) {
 const EDIT_WINDOW_MS = 15 * 60 * 1000;
 
 export async function PUT(request: NextRequest) {
+  const limited = rateLimit(request, { maxRequests: 20, windowMs: 3600_000 });
+  if (limited) return limited;
+
   const { id, edit_token, body: newBody } = await request.json();
 
   if (!id || !edit_token || !newBody) {

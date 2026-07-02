@@ -10,7 +10,7 @@ Personal portfolio, blog, and content platform for Brett Chereskin — COO at du
 - **Supabase** for database (blog posts, comments, contacts, subscribers, shared pages)
 - **Resend** for transactional email (contact form, subscriber notifications)
 - **Vercel** for hosting and deployment
-- Dark theme only (earthy palette: sage green `#7d9a78`, warm copper `#c4785a`)
+- Light "Field Notes" theme only (warm paper `#efe9db`, ink `#1a1814`, single ink-blue accent `#1f4a7a`, Source Serif 4 display)
 
 ## Key Commands
 ```bash
@@ -28,7 +28,7 @@ app/
   blog/
     page.tsx           # Blog listing (fetches from Supabase)
     posts.ts           # Supabase query functions for blog posts
-    BlogList.tsx       # Client-side blog list component
+    [slug]/page.tsx    # Individual post renderer (server component)
     [slug]/page.tsx    # Individual post renderer
   contact/             # Contact form page
   admin/               # Admin dashboard (protected by ADMIN_EMAIL allowlist)
@@ -74,10 +74,8 @@ middleware.ts          # Auth middleware for admin routes
 ## Styling Conventions
 - CSS custom properties for all colors (`--primary`, `--accent`, `--neutral-*`, etc.)
 - Use Tailwind arbitrary values like `bg-[var(--background)]` to reference CSS vars
-- Key utility classes defined in `globals.css`: `glass`, `gradient-text`, `gradient-orb`, `hover-lift`, `link-underline`
-- Staggered animations use `delay-100`, `delay-200`, etc.
-- All pages/components use `'use client'` directive
-- Scroll animations via IntersectionObserver (see hooks/)
+- CSS vars remap legacy `--neutral-*`/`--primary` aliases onto the Field Notes palette (see top of `globals.css`)
+- Prefer server components; use `'use client'` only where interactivity requires it (forms, dashboard, comments)
 
 ## Image Handling
 - Local images in `/public` — use Next.js `<Image>` component
@@ -100,7 +98,7 @@ middleware.ts          # Auth middleware for admin routes
 ## Preferences
 - Keep code simple and avoid over-engineering
 - Don't add unnecessary comments or docstrings
-- Dark theme only — no light mode
+- Light theme only — the dark theme was fully removed in the April 2026 redesign
 
 ## Roadmap
 
