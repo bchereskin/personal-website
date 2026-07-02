@@ -25,9 +25,12 @@ interface Spot {
   note?: string;
   visits?: string;
   url?: string;
+  favorite?: boolean; // "current favorite" — only where our own note says so
+  benched?: boolean; // tried it, pulled it from the rotation
 }
 
 interface Category {
+  id: string;
   num: string;
   title: string;
   kicker: string;
@@ -40,6 +43,7 @@ interface Category {
 
 const categories: Category[] = [
   {
+    id: 'omakase',
     num: '01',
     title: 'Omakase & Sushi',
     kicker: 'The regulars',
@@ -48,17 +52,18 @@ const categories: Category[] = [
     imageAlt: 'Nigiri sushi on a wooden board',
     tint: '#b5623a',
     spots: [
-      { name: 'SourAji', note: 'Our absolute go-to. All-you-can-eat omakase and sake — what makes it unique.', visits: '8+', url: 'https://resy.com/cities/new-york-ny/venues/souraji' },
+      { name: 'SourAji', note: "Our absolute go-to. All-you-can-eat omakase and sake — we haven't found anything else like it in the city.", visits: '8+', favorite: true, url: 'https://resy.com/cities/new-york-ny/venues/souraji' },
       { name: 'Kaki Sushi Omakase', note: 'BYOB sake with no corkage. Great for parties and group celebrations.', visits: '4', url: 'https://resy.com/cities/new-york-ny/venues/kaki' },
       { name: 'TSUMO', note: 'Incredible value — under $60 for a legit omakase.', visits: '3' },
       { name: 'Sushi by M', note: 'Two locations — one on 5th and a smaller "party room" on 4th. The party room has better vibes, but both are great.', url: 'http://www.sushibym.com' },
       { name: 'Takumi Omakase', note: 'BYOB and super fun vibe.', url: 'https://takumiomakase.com' },
       { name: 'Sushi Dairo', note: 'Super small, owned by the chefs. Phone reservations only.', url: 'https://omakasesushidairo.com' },
       { name: 'Kawa Omakase', note: 'New and up-and-coming.', url: 'https://kawaomakase.com' },
-      { name: 'Kissaki Omakase Bowery', note: 'Not our favorite — pulled off the regular rotation.' },
+      { name: 'Kissaki Omakase Bowery', note: 'Not our favorite — pulled off the regular rotation. Listed for honesty.', benched: true },
     ],
   },
   {
+    id: 'korean',
     num: '02',
     title: 'Korean BBQ & Korean',
     kicker: 'Fire at the table',
@@ -67,7 +72,7 @@ const categories: Category[] = [
     imageAlt: 'Korean BBQ grilling over charcoal',
     tint: '#a8443f',
     spots: [
-      { name: 'HOWOO', note: 'Our favorite KBBQ right now. Premium meats, owned by the Nubiani folks. Great for large groups and upleveled eating.', visits: '4', url: 'https://www.howoo.nyc' },
+      { name: 'HOWOO', note: 'Our favorite KBBQ right now. Premium meats, owned by the Nubiani folks. Great for large groups and upleveled eating.', visits: '4', favorite: true, url: 'https://www.howoo.nyc' },
       { name: 'NUBIANI', note: "Love this place but hard to get a resy now. Also has a midtown east location that's easier to reserve.", visits: '4', url: 'https://www.nubianinyc.com' },
       { name: 'Cote', note: 'The Korean steakhouse. Michelin-starred for a reason.', url: 'https://www.cotekoreansteakhouse.com' },
       { name: 'HYUN', note: 'Pricey but insanely decadent — all-you-can-eat true A5 Wagyu. Once-in-a-lifetime type experience, not a daily event.', url: 'https://www.hyunnyc.com' },
@@ -76,6 +81,7 @@ const categories: Category[] = [
     ],
   },
   {
+    id: 'date-night',
     num: '03',
     title: 'Date Night',
     kicker: 'When it matters',
@@ -84,7 +90,7 @@ const categories: Category[] = [
     imageAlt: 'Warm, candlelit restaurant dining room',
     tint: '#7c5cae',
     spots: [
-      { name: 'Noreetuh', note: "Favorite place right now. Celebrated Lisa's birthday here. Insane wine list featuring German wines (which Lisa loves). Large format dishes are great.", visits: '5', url: 'https://www.noreetuh.com' },
+      { name: 'Noreetuh', note: "Favorite place right now. Celebrated Lisa's birthday here. Insane wine list featuring German wines (which Lisa loves). Large format dishes are great.", visits: '5', favorite: true, url: 'https://www.noreetuh.com' },
       { name: 'Minetta Tavern', note: 'The Red Label Burger is a must-order — my favorite burger in NYC, hands down.', url: 'https://www.minettatavernny.com' },
       { name: 'Carbone', note: 'Yes, it lives up to the hype.', url: 'https://carbonenewyork.com' },
       { name: 'Torrisi Bar & Restaurant', note: "The pasta. That's it. That's the review.", visits: '2', url: 'https://torrisinyc.com' },
@@ -99,6 +105,7 @@ const categories: Category[] = [
     ],
   },
   {
+    id: 'drinks',
     num: '04',
     title: 'Wine & Cocktails',
     kicker: 'Before or after',
@@ -114,6 +121,7 @@ const categories: Category[] = [
     ],
   },
   {
+    id: 'everything-else',
     num: '05',
     title: 'Everything Else',
     kicker: 'The wide net',
@@ -160,7 +168,7 @@ const ExternalArrow = () => (
 
 function SpotRow({ spot, tint }: { spot: Spot; tint: string }) {
   const name = (
-    <span className="font-serif text-[19px] leading-tight text-[var(--ink)]">
+    <span className={`font-serif text-[19px] leading-tight ${spot.benched ? 'text-[var(--ink-4)] line-through decoration-[var(--ink-4)]/40 decoration-1' : 'text-[var(--ink)]'}`}>
       {spot.name}
       {spot.url && <ExternalArrow />}
     </span>
@@ -169,20 +177,33 @@ function SpotRow({ spot, tint }: { spot: Spot; tint: string }) {
   return (
     <div className="group/spot py-4 border-t border-[var(--rule)] first:border-t-0">
       <div className="flex items-baseline justify-between gap-4">
-        {spot.url ? (
-          <a href={spot.url} target="_blank" rel="noopener noreferrer" className="hover:text-[var(--accent)] transition-colors">
-            {name}
-          </a>
-        ) : (
-          name
-        )}
-        {spot.visits && (
-          <span
-            className="flex-shrink-0 font-mono text-[10px] tracking-[0.1em] uppercase text-white rounded-full px-2.5 py-0.5 rotate-2"
-            style={{ background: tint }}
-          >
-            {spot.visits} visits
+        <span className="flex items-baseline gap-2 flex-wrap">
+          {spot.url ? (
+            <a href={spot.url} target="_blank" rel="noopener noreferrer" className="hover:text-[var(--accent)] transition-colors">
+              {name}
+            </a>
+          ) : (
+            name
+          )}
+          {spot.favorite && (
+            <span className="font-mono text-[10px] tracking-[0.1em] uppercase -rotate-1" style={{ color: tint }}>
+              ★ current favorite
+            </span>
+          )}
+        </span>
+        {spot.benched ? (
+          <span className="flex-shrink-0 font-mono text-[10px] tracking-[0.1em] uppercase text-[var(--ink-4)] border border-[var(--rule)] rounded-full px-2.5 py-0.5 rotate-2">
+            benched
           </span>
+        ) : (
+          spot.visits && (
+            <span
+              className="flex-shrink-0 font-mono text-[10px] tracking-[0.1em] uppercase text-white rounded-full px-2.5 py-0.5 rotate-2"
+              style={{ background: tint }}
+            >
+              {spot.visits} visits
+            </span>
+          )
         )}
       </div>
       {spot.note && (
@@ -230,6 +251,11 @@ export default function Favorites() {
               the places we <mark className="bg-[#f5e6a8] text-[var(--ink)] px-1 rounded-sm">keep going back to</mark> — the
               standing reservations, the birthday spots, and the ones we drag every out-of-town visitor to.
             </p>
+            <p className="mt-5 font-serif italic text-[16px] leading-[1.6] text-[var(--ink-3)] max-w-[660px]">
+              House rules: nothing makes this page unless we&apos;d go back tomorrow. Visit counts are real
+              (and probably undercounted). And when a place falls off the rotation, we say so instead of
+              quietly deleting it.
+            </p>
             <p className="mt-4 font-mono text-[12px] tracking-[0.04em] text-[var(--ink-4)]">
               🐕 Most of these neighborhoods we found on foot, walking Tanuki.
             </p>
@@ -250,11 +276,31 @@ export default function Favorites() {
                 </div>
               ))}
             </div>
+
+            {/* Jump nav */}
+            <nav aria-label="Jump to a category" className="mt-8 flex flex-wrap gap-2">
+              {categories.map((cat) => (
+                <a
+                  key={cat.id}
+                  href={`#${cat.id}`}
+                  className="group/jump font-mono text-[11px] tracking-[0.08em] uppercase text-[var(--ink-3)] border border-[var(--rule)] rounded-full px-3 py-1.5 hover:border-[var(--ink)] hover:text-[var(--ink)] transition-colors"
+                >
+                  {cat.title}
+                  <span className="text-[var(--ink-4)] group-hover/jump:text-[var(--ink-3)]"> · {cat.spots.length}</span>
+                </a>
+              ))}
+              <a
+                href="#broadway"
+                className="group/jump font-mono text-[11px] tracking-[0.08em] uppercase text-[var(--ink-3)] border border-[var(--rule)] rounded-full px-3 py-1.5 hover:border-[var(--ink)] hover:text-[var(--ink)] transition-colors"
+              >
+                Broadway<span className="text-[var(--ink-4)] group-hover/jump:text-[var(--ink-3)]"> · {shows.length}</span>
+              </a>
+            </nav>
           </section>
 
           {/* Categories */}
           {categories.map((cat) => (
-            <section key={cat.title} className="py-12 border-b border-[var(--rule)]">
+            <section key={cat.title} id={cat.id} className="py-12 border-b border-[var(--rule)] scroll-mt-24">
               {/* Banner photo with overlaid title */}
               <div className="relative h-52 md:h-64 w-full overflow-hidden rounded-xl mb-8">
                 <Image src={cat.image} alt={cat.imageAlt} fill loading="lazy" quality={65} sizes="(max-width: 768px) 100vw, 896px" className="object-cover" />
@@ -282,7 +328,7 @@ export default function Favorites() {
           ))}
 
           {/* Broadway */}
-          <section className="py-12 border-b border-[var(--rule)]">
+          <section id="broadway" className="py-12 border-b border-[var(--rule)] scroll-mt-24">
             <div className="mb-8">
               <div className="inline-block font-mono text-[10px] tracking-[0.16em] uppercase text-white px-2 py-1 rounded-sm -rotate-1 mb-3" style={{ background: '#b5623a' }}>
                 06 · On stage
@@ -328,7 +374,11 @@ export default function Favorites() {
                   $3 a ride with a 10-pack. We take every visitor on the East River route. It&apos;s non-negotiable.
                 </p>
                 <p className="mt-5 font-serif italic text-[15px] text-white/70">
-                  This list is always evolving. If you&apos;ve got a rec, send it our way. ❤️
+                  This list is always evolving. Got a spot we&apos;re missing?{' '}
+                  <Link href="/contact" className="text-white underline decoration-white/40 underline-offset-4 hover:decoration-white">
+                    Send it our way
+                  </Link>
+                  . ❤️
                 </p>
               </div>
             </div>
