@@ -4,8 +4,17 @@ import { getAdminSupabase } from '@/app/lib/supabase-admin';
 
 export const dynamic = 'force-dynamic';
 
-export async function generateMetadata() {
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const supabase = await createSupabaseServer();
+  const { data } = await supabase
+    .from('secure_pages')
+    .select('title')
+    .eq('slug', slug)
+    .eq('is_active', true)
+    .single();
   return {
+    title: data?.title,
     robots: { index: false, follow: false },
   };
 }
@@ -51,19 +60,9 @@ export default async function SecurePage({ params }: { params: Promise<{ slug: s
     });
 
   return (
-    <div className="min-h-screen bg-[var(--background)]">
-      <div className="px-4 py-8">
-        <div className="mb-6 flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-[var(--neutral-50)]">{page.title}</h1>
-          <span className="text-xs text-[var(--neutral-500)] bg-[var(--neutral-800)] px-2 py-1 rounded">
-            {user.email}
-          </span>
-        </div>
-        <div
-          className="prose prose-invert max-w-none bg-[var(--card-bg)] border border-[var(--neutral-700)] rounded-xl p-6 md:p-8 [&_a]:text-[var(--primary)] [&_a:hover]:text-[var(--primary-light)] [&_h1]:text-[var(--neutral-50)] [&_h2]:text-[var(--neutral-100)] [&_h3]:text-[var(--neutral-200)] [&_p]:text-[var(--neutral-300)] [&_li]:text-[var(--neutral-300)] [&_strong]:text-[var(--neutral-100)] [&_img]:rounded-lg [&_img]:mx-auto"
-          dangerouslySetInnerHTML={{ __html: page.html_content }}
-        />
-      </div>
-    </div>
+    <div
+      className="min-h-screen bg-[var(--background)]"
+      dangerouslySetInnerHTML={{ __html: page.html_content }}
+    />
   );
 }
