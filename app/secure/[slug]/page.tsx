@@ -52,7 +52,7 @@ export default async function SecurePage({ params }: { params: Promise<{ slug: s
 
   return (
     <div className="min-h-screen bg-[var(--background)]">
-      <div className="max-w-4xl mx-auto px-4 py-8">
+      <div className="px-4 py-8">
         <div className="mb-6 flex items-center justify-between">
           <h1 className="text-2xl font-bold text-[var(--neutral-50)]">{page.title}</h1>
           <span className="text-xs text-[var(--neutral-500)] bg-[var(--neutral-800)] px-2 py-1 rounded">
